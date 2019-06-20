@@ -15,23 +15,23 @@
 
 .bb_boot_card_link_button {
   padding: 10px 20px 12px !important;
-  background: transparent;
   border-radius: 4px;
   font-weight: $weight-light;
   letter-spacing: 1px;
   border: 1px solid $color-purple;
+  background: $color-purple;
 
   .bb_boot_button {
-    color: $color-purple;
+    color: $color-white;
     font-family: $font-roboto;
     font-size: 17px;
   }
 
   &:hover {
-    background: rgba($color-purple, 0.9) !important;
+    background: $color-white !important;
 
     .bb_boot_button {
-      color: $color-white;
+      color: $color-purple;
     }
   }
 }
@@ -48,5 +48,24 @@
   &:hover {
     background: rgba($color-purple, 0.9);
     color: $color-white;
+  }
+}
+
+.fl-builder-content .btn-secondary {
+  .fl-button {
+    background: $color-purple !important;
+    border: 1px solid $color-purple !important;
+
+    .fl-button-text {
+      color: $color-white;
+    }
+
+    &:hover {
+      background: $color-white !important;
+
+      .fl-button-text {
+        color: $color-purple;
+      }
+    }
   }
 }

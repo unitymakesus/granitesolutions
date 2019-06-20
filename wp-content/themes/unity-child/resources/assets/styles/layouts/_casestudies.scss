@@ -1,0 +1,25 @@
+.case-study {
+  border: none;
+  box-shadow: $box-shadow;
+  // height: 325px;
+  display: flex;
+
+  &:nth-of-type(even) {
+    flex-direction: row-reverse;
+  }
+
+  .fl-post-feed-image {
+    width: 50%;
+
+    img {
+      height: 100% !important;
+      object-fit: cover;
+    }
+  }
+
+  .fl-post-feed-text {
+    width: 50%;
+    padding: 20px;
+    margin-left: 0 !important;
+  }
+}

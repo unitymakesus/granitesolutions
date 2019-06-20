@@ -172,6 +172,7 @@ add_action('widgets_init', function () {
     'menu_icon' => 'dashicons-media-text',
     'capability_type' => 'page',
     'hierarchical' => false,
+    'show_in_rest' => true,
     'supports' => array(
       'title',
       'editor',
@@ -190,7 +191,7 @@ add_action( 'init', __NAMESPACE__.'\\case_studies_post' );
 
 function case_studies_tax() {
 
-	$argsCaseCategories = array(
+	$argsCaseStudies = array(
 		'labels' => array(
 			'name' => __( 'Types' ),
 			'singular_name' => __( 'Type' )
@@ -202,7 +203,7 @@ function case_studies_tax() {
 		'hierarchical' => true,
 		'rewrite' => false
 	);
-	register_taxonomy('case-studies-category', 'case-studies', $argsCaseCategories);
+	register_taxonomy('case-studies-category', 'case-studies', $argsCaseStudies);
 
 }
 add_action( 'init', __NAMESPACE__.'\\case_studies_tax' );
