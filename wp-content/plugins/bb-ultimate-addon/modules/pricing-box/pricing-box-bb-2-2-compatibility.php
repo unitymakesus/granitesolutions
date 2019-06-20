@@ -638,36 +638,15 @@ FLBuilder::register_settings_form(
 					'btn-link'          => array( // Section.
 						'title'  => __( 'Link', 'uabb' ),
 						'fields' => array(
-							'btn_link'          => array(
-								'type'        => 'link',
-								'label'       => __( 'Link', 'uabb' ),
-								'placeholder' => 'http://www.example.com',
-								'preview'     => array(
+							'btn_link' => array(
+								'type'          => 'link',
+								'label'         => __( 'Link', 'uabb' ),
+								'placeholder'   => 'http://www.example.com',
+								'preview'       => array(
 									'type' => 'none',
 								),
-							),
-							'btn_link_target'   => array(
-								'type'    => 'select',
-								'label'   => __( 'Link Target', 'uabb' ),
-								'default' => '_self',
-								'options' => array(
-									'_self'  => __( 'Same Window', 'uabb' ),
-									'_blank' => __( 'New Window', 'uabb' ),
-								),
-								'preview' => array(
-									'type' => 'none',
-								),
-							),
-							'btn_link_nofollow' => array(
-								'type'        => 'select',
-								'label'       => __( 'Link nofollow', 'uabb' ),
-								'description' => '',
-								'default'     => '0',
-								'help'        => __( 'Enable this to make this link nofollow', 'uabb' ),
-								'options'     => array(
-									'1' => __( 'Yes', 'uabb' ),
-									'0' => __( 'No', 'uabb' ),
-								),
+								'show_target'   => true,
+								'show_nofollow' => true,
 							),
 						),
 					),

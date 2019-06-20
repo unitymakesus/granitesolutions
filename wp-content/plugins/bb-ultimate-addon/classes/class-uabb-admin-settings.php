@@ -52,7 +52,24 @@ final class UABBBuilderAdminSettings {
 			self::save();
 		}
 	}
+	/**
+	 * Show Branding tab.
+	 *
+	 * @since 1.16.1
+	 * @return bool true | false
+	 */
+	public static function show_branding() {
+		$show_branding = true;
 
+		if ( true == get_option( 'uabb_hide_branding' ) ) {
+			$show_branding = false;
+		}
+
+		if ( defined( 'WP_UABB_WHITE_LABEL' ) && WP_UABB_WHITE_LABEL ) {
+			$show_branding = false;
+		}
+		return apply_filters( 'uabb_show_branding', $show_branding );
+	}
 	/**
 	 * Renders the admin settings menu.
 	 *
@@ -219,8 +236,7 @@ final class UABBBuilderAdminSettings {
 			'show'     => ! is_network_admin() || ! FLBuilderAdminSettings::multisite_support(),
 			'priority' => 509,
 		);
-
-		if ( get_option( 'uabb_hide_branding' ) != true ) {
+		if ( self::show_branding() ) {
 			$items['uabb-branding'] = array(
 				'title'    => __( 'Branding', 'uabb' ),
 				'show'     => is_network_admin() || ! FLBuilderAdminSettings::multisite_support(),
@@ -388,6 +404,8 @@ final class UABBBuilderAdminSettings {
 				$uabb['uabb-knowledge-base-url'] = sanitize_text_field( $_POST['uabb-knowledge-base-url'] );   }
 			if ( isset( $_POST['uabb-contact-support-url'] ) ) {
 				$uabb['uabb-contact-support-url'] = sanitize_text_field( $_POST['uabb-contact-support-url'] );  }
+			if ( isset( $_POST['uabb-plugin-icon-url'] ) ) {
+				$uabb['uabb-plugin-icon-url'] = sanitize_text_field( $_POST['uabb-plugin-icon-url'] );   }
 
 			/* Enable / Disable Template Cloud */
 			$uabb['uabb-enable-template-cloud'] = false;

@@ -248,10 +248,11 @@ if ( 'right' == $settings->creative_menu_alignment ) {
 	.fl-node-<?php echo $id; ?> .uabb-creative-menu.full-screen .uabb-menu-overlay .uabb-menu-toggle:before,
 	.fl-node-<?php echo $id; ?> .uabb-creative-menu.full-screen .uabb-menu-overlay .sub-menu .uabb-menu-toggle:before {
 		content: '\f107';
-		font-family: 'fontAwesome';
+		font-family: 'Font Awesome 5 Free';
 		z-index: 1;
 		font-size: inherit;
 		line-height: 0;
+		font-weight: 900;
 		<?php
 		if ( $settings->creative_menu_responsive_link_color ) {
 			?>
@@ -263,9 +264,10 @@ if ( 'right' == $settings->creative_menu_alignment ) {
 	.fl-node-<?php echo $id; ?> .uabb-creative-menu.full-screen .uabb-menu-overlay .uabb-menu-toggle:before,
 	.fl-node-<?php echo $id; ?> .uabb-creative-menu.full-screen .uabb-menu-overlay .sub-menu .uabb-menu-toggle:before {
 		content: '\f067';
-		font-family: 'fontAwesome';
+		font-family: 'Font Awesome 5 Free';
 		font-size: 0.7em;
 		z-index: 1;
+		font-weight: 900;
 		<?php
 		if ( $settings->creative_menu_responsive_link_color ) {
 			?>
@@ -279,10 +281,11 @@ if ( ( ( 'horizontal' == $settings->creative_menu_layout || 'vertical' == $setti
 	?>
 	.fl-node-<?php echo $id; ?> .uabb-creative-menu .uabb-menu-toggle:before {
 		content: '\f107';
-		font-family: 'fontAwesome';
+		font-family: 'Font Awesome 5 Free';
 		z-index: 1;
 		font-size: inherit;
 		line-height: 0;
+		font-weight: 900;
 	}
 	<?php
 
@@ -291,9 +294,10 @@ if ( ( ( 'horizontal' == $settings->creative_menu_layout || 'vertical' == $setti
 	?>
 	.fl-node-<?php echo $id; ?> .uabb-creative-menu .uabb-menu-toggle:before {
 		content: '\f067';
-		font-family: 'fontAwesome';
+		font-family: 'Font Awesome 5 Free';
 		font-size: 0.7em;
 		z-index: 1;
+		font-weight: 900;
 	}
 	<?php
 }
@@ -978,15 +982,17 @@ if ( '' != $settings->creative_menu_border_hover_color ) {
 	}
 	<?php
 } else {
-	if ( class_exists( 'FLBuilderCSS' ) ) {
-		// Border - Settings.
-		FLBuilderCSS::border_field_rule(
-			array(
-				'settings'     => $settings,
-				'setting_name' => 'submenu_border',
-				'selector'     => ".fl-node-$id .uabb-creative-menu .uabb-creative-menu-vertical .sub-menu, .fl-node-$id .uabb-creative-menu .uabb-creative-menu-horizontal .sub-menu",
-			)
-		);
+	if ( isset( $settings->creative_submenu_border_settings_option ) && 'yes' == $settings->creative_submenu_border_settings_option ) {
+		if ( class_exists( 'FLBuilderCSS' ) ) {
+			// Border - Settings.
+			FLBuilderCSS::border_field_rule(
+				array(
+					'settings'     => $settings,
+					'setting_name' => 'submenu_border',
+					'selector'     => ".fl-node-$id .uabb-creative-menu .uabb-creative-menu-vertical .sub-menu, .fl-node-$id .uabb-creative-menu .uabb-creative-menu-horizontal .sub-menu",
+				)
+			);
+		}
 	}
 }
 
@@ -1096,43 +1102,44 @@ if ( ! $version_bb_check ) {
 
 /* Toggle button */
 <?php if ( isset( $settings->creative_menu_mobile_toggle ) && 'expanded' != $settings->creative_menu_mobile_toggle ) { ?>
-
 	.fl-node-<?php echo $id; ?> .uabb-creative-menu-mobile-toggle {
 		<?php
 		if ( ! empty( $settings->creative_menu_mobile_toggle_color ) ) {
 			echo 'color: #' . $settings->creative_menu_mobile_toggle_color . ';';
 		}
-		if ( ! $version_bb_check ) {
-			if ( isset( $settings->creative_menu_link_text_transform ) ) {
-				echo 'text-transform: ' . $settings->creative_menu_link_text_transform . ';';
-			}
-			if ( 'Default' != $settings->creative_menu_link_font_family['family'] ) {
-				?>
-				<?php FLBuilderFonts::font_css( $settings->creative_menu_link_font_family ); ?>
-			<?php } ?>
-			<?php if ( 'custom' == $settings->creative_menu_link_font_size && $settings->creative_menu_link_font_size_custom ) { ?>
-				font-size: <?php echo $settings->creative_menu_link_font_size_custom; ?>px;
-			<?php } ?>
-			<?php
-		} else {
-			if ( 'custom' == $settings->creative_menu_link_typo ) {
-				if ( isset( $settings->creative_submenu_link_font_typo['text_transform'] ) ) {
-					echo 'text-transform: ' . $settings->creative_submenu_link_font_typo['text_transform'] . ';';
-				}
-				if ( isset( $settings->creative_submenu_link_font_typo['font_family'] ) ) {
-					echo 'font-family:' . $settings->creative_submenu_link_font_typo['font_family'] . ';';
-				}
-				if ( isset( $settings->creative_submenu_link_font_typo['font_weight'] ) ) {
-					echo 'weight:' . $settings->creative_submenu_link_font_typo['font_weight'] . ';';
-				}
-				if ( isset( $settings->creative_menu_link_typo['font_size']['length'] ) ) {
-					echo 'font-size:' . $settings->creative_menu_link_typo['font_size']['length'] . 'px;';
-				}
-			}
-		}
 		?>
-
 	}
+<?php if ( ! $version_bb_check ) { ?>
+	.fl-node-<?php echo $id; ?> .uabb-creative-menu-mobile-toggle {
+		<?php
+		if ( isset( $settings->creative_menu_link_text_transform ) ) {
+			echo 'text-transform: ' . $settings->creative_menu_link_text_transform . ';';
+		}
+		if ( 'Default' != $settings->creative_menu_link_font_family['family'] ) {
+			?>
+			<?php FLBuilderFonts::font_css( $settings->creative_menu_link_font_family ); ?>
+		<?php } ?>
+		<?php if ( 'custom' == $settings->creative_menu_link_font_size && $settings->creative_menu_link_font_size_custom ) { ?>
+			font-size: <?php echo $settings->creative_menu_link_font_size_custom; ?>px;
+		<?php
+}
+		?>
+	}
+<?php
+} else {
+	if ( 'custom' == $settings->creative_menu_link_typo ) {
+		if ( class_exists( 'FLBuilderCSS' ) ) {
+			FLBuilderCSS::typography_field_rule(
+				array(
+					'settings'     => $settings,
+					'setting_name' => 'creative_menu_link_font_typo',
+					'selector'     => ".fl-node-$id .uabb-creative-menu-mobile-toggle",
+				)
+			);
+		}
+	}
+}
+?>
 	.fl-node-<?php echo $id; ?> .uabb-creative-menu-mobile-toggle-container,
 	.fl-node-<?php echo $id; ?> .uabb-creative-menu-mobile-toggle-container > .uabb-creative-menu-mobile-toggle.text {
 		text-align: <?php echo $settings->creative_menu_navigation_alignment; ?>;

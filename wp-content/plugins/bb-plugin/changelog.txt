@@ -1,3 +1,17 @@
+<h4>2.2.3.3 - 06/19/2019</h4>
+<p><strong>Hot Fix</strong></p>
+<ul>
+	<li>Fix unclosed element in icon markup.</li>
+</ul>
+
+<h4>2.2.3.2 - 06/19/2019</h4>
+<p><strong>Bug Fixes</strong></p>
+<ul>
+	<li>Fixed wrong CSS when in preview mode and typography is set to vw.</li>
+	<li>Fixed Featured Image size missing in List layout.</li>
+	<li>Fixed text field not working on Icon module when using render_module_html function.</li>
+</ul>
+
 <h4>2.2.3.1 - 06/13/2019</h4>
 <p><strong>Enhancements</strong></p>
 <ul>

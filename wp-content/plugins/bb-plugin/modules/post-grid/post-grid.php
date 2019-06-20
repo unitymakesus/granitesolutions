@@ -560,7 +560,7 @@ FLBuilder::register_module('FLPostGridModule', array(
 							),
 							'feed'    => array(
 								'sections' => array( 'posts', 'image', 'content', 'terms', 'post_style', 'text_style' ),
-								'fields'   => array( 'feed_post_spacing', 'feed_post_padding', 'image_position', 'image_spacing', 'image_width', 'show_author', 'show_comments', 'info_separator', 'content_type', 'image_fallback', 'show_image' ),
+								'fields'   => array( 'feed_post_spacing', 'feed_post_padding', 'image_position', 'image_spacing', 'image_width', 'show_author', 'show_comments', 'info_separator', 'content_type', 'image_fallback', 'image_size', 'show_image' ),
 							),
 						),
 					),

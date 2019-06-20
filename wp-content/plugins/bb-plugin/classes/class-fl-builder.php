@@ -779,6 +779,12 @@ final class FLBuilder {
 			 * @see fl_builder_crash_white_label_text
 			 */
 			'labeled_txt' => apply_filters( 'fl_builder_crash_white_label_text', '' ),
+			'vars'        => array(
+				'PHP Version'    => phpversion(),
+				'Memory Limit'   => FL_Debug::safe_ini_get( 'memory_limit' ),
+				'max_input_vars' => FL_Debug::safe_ini_get( 'max_input_vars' ),
+				'modsecfix'      => ( defined( 'FL_BUILDER_MODSEC_FIX' ) && FL_BUILDER_MODSEC_FIX ) ? 'Enabled' : 'Disabled',
+			),
 		);
 		wp_localize_script( 'fl-builder-min', 'crash_vars', $args );
 		wp_localize_script( 'fl-builder', 'crash_vars', $args );

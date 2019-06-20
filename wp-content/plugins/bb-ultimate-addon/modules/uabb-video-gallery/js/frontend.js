@@ -115,7 +115,7 @@
 				});
 
 				if('lightbox' === action ){
-					$('.uabb-video-gallery-fancybox').magnificPopup({
+					nodeClass.find('.uabb-video-gallery-fancybox').magnificPopup({
 						type: 'iframe',
 						mainClass: 'mfp-fade',
 						removalDelay: 160,
@@ -145,6 +145,8 @@
 			                	autoplaySpeed: self.autoplaySpeed,
 			                	pauseOnHover:self.pauseOnHover,
 			                	speed:self.speed,
+								prevArrow: '<button type="button" data-role="none" class="slick-prev" aria-label="Previous" tabindex="0" role="button"><i class="fas fa-angle-left"></i></button>',
+								nextArrow: '<button type="button" data-role="none" class="slick-next" aria-label="Next" tabindex="0" role="button"><i class="fas fa-angle-right"></i></button>',
 			                	responsive: [
 			                    {
 			                        breakpoint:self.medium_breakpoint,

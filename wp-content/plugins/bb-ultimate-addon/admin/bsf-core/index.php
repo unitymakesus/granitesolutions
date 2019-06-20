@@ -732,6 +732,13 @@ if ( ! function_exists( 'brainstorm_get_all_products' ) ) {
 
 				foreach ( $parent as $key => $product ) {
 
+					// bail from merging bundled plguins if they are not installed on the website.
+					if ( 'plugin' === $product->type ) {
+						if ( ! isset( $product->init ) || ! file_exists( dirname( realpath( WP_PLUGIN_DIR . '/' . $product->init ) ) ) ) {
+							continue;
+						}
+					}
+
 					if ( isset( $all_products[ $product->id ] ) ) {
 						$all_products[ $product->id ] = array_merge( $all_products[ $product->id ], (array) $product );
 					} else {
@@ -1324,7 +1331,7 @@ function bsf_systeminfo() {
 		</tr>
 		<tr>
 			<td>PHP Max Input Vars</td>
-			<td><?php echo ini_get( 'max_input_vars' ); ?></td>
+			<td><?php echo ini_get( 'max_input_vars' ); // PHPCS:ignore:PHPCompatibility.IniDirectives.NewIniDirectives.max_input_varsFound ?></td>
 		</tr>
 		<tr>
 			<td>Max Upload Size</td>

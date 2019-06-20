@@ -9695,8 +9695,14 @@
 				labeled   = window.crash_vars.white_label,
 				label_txt = window.crash_vars.labeled_txt;
 
+
+
 				message  = product + " has detected a plugin conflict that is preventing the page from saving.<p>( In technical terms there’s probably a PHP error in Ajax. )</p>"
 				info     = "If you contact Beaver Builder Support, we need to know what the error is in the JavaScript console in your browser.<p>To open the JavaScript console:<br />Chrome: View > Developer > JavaScript Console<br />Firefox: Tools > Web Developer > Browser Console<br />Safari: Develop > Show JavaScript console</p>Copy the errors you find there and submit them with your Support ticket. It saves us having to ask you that as a second step.<br /><br />If you want to troubleshoot further, you can check our <a class='link' target='_blank' href='https://kb.wpbeaverbuilder.com/article/42-known-beaver-builder-incompatibilities'>Knowledge Base</a> for plugins we know to be incompatible. Then deactivate your plugins one by one while you try to save the page in the Beaver Builder editor. When the page saves normally, you have identified the plugin causing the conflict. <a class='link' target='_blank' href='https://www.wpbeaverbuilder.com/beaver-builder-support/'>Contact Support</a> if you need further help."
+
+				if ( FLBuilderConfig.MaxInputVars <= 3000 ) {
+					info += '<br /><br />The PHP config value max_input_vars is only set to ' + FLBuilderConfig.MaxInputVars + '. If you are using 3rd party addons this could very likely be the cause of this error. [<a class="link" href="https://kb.wpbeaverbuilder.com/article/746-troubleshooting-number-of-settings-being-saved-exceeds-php-max-input-vars">doc link</a>].'
+				}
 
 				debug    = false
 				if ( labeled ) {
@@ -9837,6 +9843,10 @@
 						FLBuilder.log( "Debug Info" );
 						console.log( data );
 				}
+				// Show debug data in console.
+				$.each( window.crash_vars.vars, function(i,t) {
+					console.log(i + ': ' + t)
+				})
 				FLBuilder.log( '************************************************************************' );
 				if ( 'undefined' != typeof data && data ) {
 					message = data + "\n" + message
@@ -9888,6 +9898,9 @@
 		 * @param {string} data the JSON containing error(s)
 		 */
 		_parseError: function( data ) {
+			if( data.indexOf('</head>') ) {
+				return 'AJAX returned HTML page instead of data. (Possible 404 or max_input_vars)';
+			}
 			php = data.match(/^<.*/gm) || false;
 			if ( php && php.length > 0 ) {
 				var txt = '';

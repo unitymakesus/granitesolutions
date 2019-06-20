@@ -2893,9 +2893,13 @@
 			} else {
 
 				if ( unit.length && '' !== value ) {
-					value += 'SELECT' === unit.prop( 'tagName' ) ? unit.val() : 'px';
+					if ( 'vw' === unit.val() ) {
+						// calc(14px + 5vw);
+						value = 'calc(' + FLBuilderConfig.global.responsive_base_fontsize + 'px + ' + value + 'vw)'
+					} else {
+						value += 'SELECT' === unit.prop( 'tagName' ) ? unit.val() : 'px';
+					}
 				}
-
 				this.updateCSSRule( selector, property, value + important, responsive );
 			}
 		},

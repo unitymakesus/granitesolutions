@@ -44,8 +44,8 @@
 	margin-top:-10px;
 	right: 0px;
 }
-.uabb-testimonials-wrap.wide .fa {
-	font-size: 23px;
+.uabb-testimonials-wrap.wide .far {
+	font-size: 20px;
 	position: relative;
 	z-index: 1;
 }
@@ -199,12 +199,10 @@
 .uabb-testimonial .uabb-rating__input{
 	display: none;
 }
-.uabb-testimonial .uabb-rating .uabb-rating__wrap .fa {
-    font-family: FontAwesome !important;
-}
 .uabb-testimonial .uabb-rating__input.uabb-checked ~ .uabb-rating__ico:before
 {
 	content: "\f005";
+	font-weight: 900;
 }
 
 /* Text
