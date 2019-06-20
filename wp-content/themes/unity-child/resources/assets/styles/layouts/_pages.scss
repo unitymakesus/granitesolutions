@@ -1,0 +1,9 @@
+.contact {
+  h3 {
+    margin-bottom: 0;
+
+    + p {
+      margin-top: 10px;
+    }
+  }
+}

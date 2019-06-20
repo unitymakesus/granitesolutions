@@ -8,7 +8,7 @@ defined( 'THE_SEO_FRAMEWORK_PRESENT' ) or die;
 
 /**
  * The SEO Framework plugin
- * Copyright (C) 2015 - 2018 Sybre Waaijer, CyberWire (https://cyberwire.nl/)
+ * Copyright (C) 2015 - 2019 Sybre Waaijer, CyberWire (https://cyberwire.nl/)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as published
@@ -77,6 +77,7 @@ class Site_Options extends Sanitize {
 		 * @since 2.2.7
 		 * @param array $options The default site options.
 		 */
+		// phpcs:disable WordPress.Arrays.MultipleStatementAlignment.DoubleArrowNotAligned -- precision alignment OK.
 		return (array) \apply_filters(
 			'the_seo_framework_default_site_options',
 			[
@@ -116,9 +117,6 @@ class Site_Options extends Sanitize {
 
 				// Description.
 				'auto_description'      => 1, // Enables auto description.
-				'description_separator' => 'pipe', // Description separator, dropdown
-				'description_additions' => 0,  // "Title on Blogname" within Description
-				'description_blogname'  => 1,  // "on Blogname" within Description
 
 				// Robots index.
 				'category_noindex'   => 0, // Category Archive robots noindex
@@ -160,15 +158,15 @@ class Site_Options extends Sanitize {
 				'home_paged_noindex' => 0, // Every second or later homepage noindex
 
 				// Robots home.
-				'homepage_noindex'   => 0, // Home Page robots noindex
-				'homepage_nofollow'  => 0, // Home Page robots noarchive
-				'homepage_noarchive' => 0, // Home Page robots nofollow
+				'homepage_noindex'   => 0, // Homepage robots noindex
+				'homepage_nofollow'  => 0, // Homepage robots noarchive
+				'homepage_noarchive' => 0, // Homepage robots nofollow
 
 				// Home meta.
-				'homepage_title'         => '', // Home Page Title string
-				'homepage_tagline'       => 1,  // Home Page add blog Tagline
-				'homepage_description'   => '', // Home Page Description string
-				'homepage_title_tagline' => '', // Home Page Tagline string
+				'homepage_title'         => '', // Homepage Title string
+				'homepage_tagline'       => 1,  // Homepage add blog Tagline
+				'homepage_description'   => '', // Homepage Description string
+				'homepage_title_tagline' => '', // Homepage Tagline string
 				'home_title_location'    => $h_titleloc, // Title separation location
 
 				// Homepage Social
@@ -250,7 +248,6 @@ class Site_Options extends Sanitize {
 
 				'ping_google'          => 1, // Ping Google
 				'ping_bing'            => 1, // Ping Bing
-				'ping_yandex'          => 1, // Ping Yandex
 
 				'sitemap_styles'       => 1,        // Whether to style the sitemap
 				'sitemap_logo'         => 1,        // Whether to add logo to sitemap
@@ -266,6 +263,7 @@ class Site_Options extends Sanitize {
 				'ld_json_breadcrumbs' => 1, // LD+Json Breadcrumbs
 			]
 		);
+		// phpcs:enable WordPress.Arrays.MultipleStatementAlignment.DoubleArrowNotAligned
 	}
 
 	/**
@@ -296,8 +294,8 @@ class Site_Options extends Sanitize {
 				'title_rem_additions' => 1, // Title remove additions.
 				'site_noindex'        => 1, // Site Page robots noindex
 				'site_nofollow'       => 1, // Site Page robots nofollow
-				'homepage_noindex'    => 1, // Home Page robots noindex
-				'homepage_nofollow'   => 1, // Home Page robots noarchive
+				'homepage_noindex'    => 1, // Homepage robots noindex
+				'homepage_nofollow'   => 1, // Homepage robots noarchive
 			]
 		);
 	}
@@ -327,7 +325,7 @@ class Site_Options extends Sanitize {
 	 *
 	 * @param string $setting The setting key.
 	 * @param bool $use_current Whether to use WordPress' version and update the cache
-	 *             or use locally the cached version.
+	 *             or use the locally cached version.
 	 * @return array Options.
 	 */
 	public function get_all_options( $setting = null, $use_current = false ) {
@@ -361,7 +359,8 @@ class Site_Options extends Sanitize {
 	 * second DB interaction.
 	 *
 	 * @since 2.0.0
-	 * @since 2.8.2 : No longer decodes entities on request.
+	 * @since 2.8.2 No longer decodes entities on request.
+	 * @since 3.1.0 Now uses the filterable call when caching is disbaled.
 	 * @staticvar array $cache
 	 * @thanks StudioPress (http://www.studiopress.com/) for some code.
 	 *
@@ -375,7 +374,7 @@ class Site_Options extends Sanitize {
 		if ( ! $setting ) return '';
 
 		if ( ! $use_cache ) {
-			$options = \get_option( $setting );
+			$options = $this->get_all_options( $setting, true );
 			return isset( $options[ $key ] ) ? \stripslashes_deep( $options[ $key ] ) : '';
 		}
 

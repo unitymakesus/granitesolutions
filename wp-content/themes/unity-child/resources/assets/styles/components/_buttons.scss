@@ -1,0 +1,52 @@
+.fl-builder-content a.fl-button {
+  color: $color-white !important;
+  background: transparent !important;
+  border-color: $color-white !important;
+  padding: 1em 2em;
+  text-transform: uppercase;
+  font-size: 17px;
+  letter-spacing: 1px;
+  box-shadow: $box-shadow;
+
+  &:hover {
+    background: rgba($color-purple, 0.9) !important;
+  }
+}
+
+.bb_boot_card_link_button {
+  padding: 10px 20px 12px !important;
+  background: transparent;
+  border-radius: 4px;
+  font-weight: $weight-light;
+  letter-spacing: 1px;
+  border: 1px solid $color-purple;
+
+  .bb_boot_button {
+    color: $color-purple;
+    font-family: $font-roboto;
+    font-size: 17px;
+  }
+
+  &:hover {
+    background: rgba($color-purple, 0.9) !important;
+
+    .bb_boot_button {
+      color: $color-white;
+    }
+  }
+}
+
+.main .button {
+  @extend .bb_boot_card_link_button;
+
+  color: $color-purple;
+  font-family: $font-roboto;
+  font-size: 17px;
+  transition: all 0.3s;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba($color-purple, 0.9);
+    color: $color-white;
+  }
+}

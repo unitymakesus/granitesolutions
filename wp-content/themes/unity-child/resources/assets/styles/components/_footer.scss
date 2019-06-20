@@ -1,0 +1,21 @@
+.page-footer {
+  background: $color-light-green;
+
+  .footer-center {
+    width: 100% !important;
+
+    .menu {
+      display: flex;
+      justify-content: center;
+      margin-top: 3em;
+
+      li {
+        margin: 0 15px;
+      }
+    }
+  }
+
+  .footer-copyright {
+    background: $color-green;
+  }
+}

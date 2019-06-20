@@ -8,7 +8,7 @@ defined( 'THE_SEO_FRAMEWORK_PRESENT' ) or die;
 
 /**
  * The SEO Framework plugin
- * Copyright (C) 2015 - 2018 Sybre Waaijer, CyberWire (https://cyberwire.nl/)
+ * Copyright (C) 2015 - 2019 Sybre Waaijer, CyberWire (https://cyberwire.nl/)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as published
@@ -767,9 +767,9 @@ class Render extends Admin_Init {
 		if ( ! $this->output_published_time() )
 			return '';
 
-		$id = $this->get_the_real_ID();
-
+		$id   = $this->get_the_real_ID();
 		$post = \get_post( $id );
+
 		$post_date_gmt = $post->post_date_gmt;
 
 		if ( '0000-00-00 00:00:00' === $post_date_gmt )
@@ -851,11 +851,14 @@ class Render extends Admin_Init {
 	 *
 	 * @since 2.0.6
 	 * @since 3.0.0 Deleted filter `the_seo_framework_output_canonical`.
+	 * @since 3.2.4 Now no longer returns a value when the post is not indexed with a non-custom URL.
 	 * @uses $this->get_current_canonical_url()
 	 *
 	 * @return string The Canonical URL meta tag.
 	 */
 	public function canonical() {
+
+		$_url = $this->get_current_canonical_url();
 
 		/**
 		 * @since 2.6.5
@@ -865,14 +868,20 @@ class Render extends Admin_Init {
 		$url = (string) \apply_filters_ref_array(
 			'the_seo_framework_rel_canonical_output',
 			[
-				$this->get_current_canonical_url(),
+				$_url,
 				$this->get_the_real_ID(),
 			]
 		);
 
-		/**
-		 * @since 2.7.0 Listens to the second filter.
-		 */
+		// If the page should not be indexed, consider removing the canonical URL.
+		if ( in_array( 'noindex', $this->get_robots_meta(), true ) ) {
+			// If the URL is filtered, don't empty it.
+			// If a custom canonical URL is set, don't empty it.
+			if ( $url === $_url && ! $this->has_custom_canonical_url() ) {
+				$url = '';
+			}
+		}
+
 		if ( $url )
 			return '<link rel="canonical" href="' . $url . '" />' . PHP_EOL;
 
@@ -1031,18 +1040,7 @@ class Render extends Admin_Init {
 		if ( false === $this->is_blog_public() )
 			return '';
 
-		/**
-		 * @since 2.6.0
-		 * @param array $meta The robots meta.
-		 * @param int   $id   The current post or term ID.
-		 */
-		$meta = (array) \apply_filters_ref_array(
-			'the_seo_framework_robots_meta',
-			[
-				$this->robots_meta(),
-				$this->get_the_real_ID(),
-			]
-		);
+		$meta = $this->get_robots_meta();
 
 		if ( empty( $meta ) )
 			return '';
@@ -1051,10 +1049,34 @@ class Render extends Admin_Init {
 	}
 
 	/**
+	 * Returns the robots meta array.
+	 *
+	 * @since 3.2.4
+	 * @staticvar array|null $cache
+	 *
+	 * @return array
+	 */
+	public function get_robots_meta() {
+		static $cache = null;
+		/**
+		 * @since 2.6.0
+		 * @param array $meta The robots meta.
+		 * @param int   $id   The current post or term ID.
+		 */
+		return isset( $cache ) ? $cache : $cache = (array) \apply_filters_ref_array(
+			'the_seo_framework_robots_meta',
+			[
+				$this->robots_meta(),
+				$this->get_the_real_ID(),
+			]
+		);
+	}
+
+	/**
 	 * Renders Shortlink meta tag
 	 *
 	 * @since 2.2.2
-	 * @since 2.9.3 : Now work when home page is a blog.
+	 * @since 2.9.3 Now work when homepage is a blog.
 	 * @uses $this->get_shortlink()
 	 *
 	 * @return string The Shortlink meta tag.
@@ -1229,13 +1251,23 @@ class Render extends Admin_Init {
 	 *
 	 * @since 2.6.0
 	 * @since 3.1.0 Removed cache.
+	 * @since 3.1.4 : 1. Added filter.
+	 *                2. Reintroduced cache because of filter.
 	 * @TODO add facebook validation.
 	 * @staticvar bool $cache
 	 *
 	 * @return bool
 	 */
 	public function use_og_tags() {
-		return (bool) $this->get_option( 'og_tags' );
+		static $cache;
+		/**
+		 * @since 3.1.4
+		 * @param bool $use
+		 */
+		return isset( $cache ) ? $cache : $cache = (bool) \apply_filters(
+			'the_seo_framework_use_og_tags',
+			(bool) $this->get_option( 'og_tags' )
+		);
 	}
 
 	/**
@@ -1243,27 +1275,43 @@ class Render extends Admin_Init {
 	 *
 	 * @since 2.6.0
 	 * @since 3.1.0 Removed cache.
+	 * @since 3.1.4 : 1. Added filter.
+	 *                2. Reintroduced cache because of filter.
 	 * @staticvar bool $cache
 	 *
 	 * @return bool
 	 */
 	public function use_facebook_tags() {
-		return (bool) $this->get_option( 'facebook_tags' );
+		static $cache;
+		/**
+		 * @since 3.1.4
+		 * @param bool $use
+		 */
+		return isset( $cache ) ? $cache : $cache = (bool) \apply_filters(
+			'the_seo_framework_use_facebook_tags',
+			(bool) $this->get_option( 'facebook_tags' )
+		);
 	}
 
 	/**
 	 * Determines whether we can use Twitter tags on the front-end.
 	 *
 	 * @since 2.6.0
-	 * @since 2.8.2 : Now also considers Twitter card type output.
+	 * @since 2.8.2 Now also considers Twitter card type output.
+	 * @since 3.1.4 Added filter.
 	 * @staticvar bool $cache
 	 *
 	 * @return bool
 	 */
 	public function use_twitter_tags() {
-		static $cache = null;
-		return isset( $cache )
-			? $cache
-			: $cache = $this->get_option( 'twitter_tags' ) && $this->get_current_twitter_card_type();
+		static $cache;
+		/**
+		 * @since 3.1.4
+		 * @param bool $use
+		 */
+		return isset( $cache ) ? $cache : $cache = (bool) \apply_filters(
+			'the_seo_framework_use_twitter_tags',
+			$this->get_option( 'twitter_tags' ) && $this->get_current_twitter_card_type()
+		);
 	}
 }

@@ -1,0 +1,32 @@
+.grid-container {
+  @extend .container;
+
+  margin: 4em auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  column-gap: 1.5em;
+  row-gap: 1.5em;
+}
+
+.excerpt {
+  border-radius: 0;
+  box-shadow: $box-shadow;
+
+  .entry-summary {
+    padding: 0 20px 20px;
+  }
+
+  img {
+    border-radius: 0;
+    height: 150px;
+    object-fit: cover;
+  }
+
+  .entry-title {
+    margin: 10px 0;
+  }
+
+  .meta {
+    margin: 10px 0;
+  }
+}

@@ -1,0 +1,53 @@
+.home .banner {
+  position: absolute;
+  width: 100%;
+  z-index: 100;
+  background-color: transparent;
+}
+
+.banner {
+  background: $color-green;
+}
+
+.page-header {
+  background: $color-green;
+
+  h1 {
+    margin: 0;
+    padding: 0.5em 0 1em;
+    color: $color-white;
+  }
+}
+
+nav {
+  box-shadow: none;
+}
+
+nav ul a {
+  color: $color-white;
+  font-size: 16px;
+  text-transform: uppercase;
+  transition: all 0.4s;
+  cursor: pointer;
+
+  &:hover {
+    color: $color-white;
+    background-color: rgba(0, 0, 0, 0.2);
+  }
+}
+
+.header-inline nav ul a {
+  padding: 1rem 15px;
+}
+
+.navbar-menu li.menu-item-has-children:hover .sub-menu {
+  box-shadow: $box-shadow;
+}
+
+.navbar-menu li:hover > a {
+  text-decoration: none;
+}
+
+.navbar-menu li.menu-item-has-children .sub-menu a {
+  color: $color-green;
+}

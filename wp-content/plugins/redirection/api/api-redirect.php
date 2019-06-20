@@ -1,5 +1,22 @@
 <?php
 
+/**
+ * @api {get} /redirection/v1/redirect Get list of redirects
+ * @apiDescription Get list of redirects
+ * @apiGroup Redirect
+ *
+ * @apiParam {string} orderby
+ * @apiParam {string} direction
+ * @apiParam {string} filter
+ * @apiParam {string} per_page
+ * @apiParam {string} page
+ *
+ * @apiSuccess {Array} ip Array of redirects
+ * @apiSuccess {Integer} total Number of items
+ *
+ * @apiUse 400Error
+ */
+
 class Redirection_Api_Redirect extends Redirection_Api_Filter_Route {
 	public function __construct( $namespace ) {
 		$filters = array( 'url', 'group' );
@@ -23,10 +40,24 @@ class Redirection_Api_Redirect extends Redirection_Api_Filter_Route {
 	}
 
 	public function route_create( WP_REST_Request $request ) {
-		$redirect = Red_Item::create( $request->get_params() );
+		$params = $request->get_params();
+		$urls = array();
 
-		if ( is_wp_error( $redirect ) ) {
-			return $this->add_error_details( $redirect, __LINE__ );
+		if ( isset( $params['url'] ) ) {
+			$urls = array( $params['url'] );
+
+			if ( is_array( $params['url'] ) ) {
+				$urls = $params['url'];
+			}
+
+			foreach ( $urls as $url ) {
+				$params['url'] = $url;
+				$redirect = Red_Item::create( $params );
+
+				if ( is_wp_error( $redirect ) ) {
+					return $this->add_error_details( $redirect, __LINE__ );
+				}
+			}
 		}
 
 		return $this->route_list( $request );
