@@ -215,6 +215,7 @@ add_action('customize_register', function (\WP_Customize_Manager $wp_customize) 
        'inline-left'     => 'Inline Left',
        'float-left'      => 'Float Left',
        'float-center'    => 'Float Center',
+       'no-logo'         => 'Hide Logo',
      )
     )
   );

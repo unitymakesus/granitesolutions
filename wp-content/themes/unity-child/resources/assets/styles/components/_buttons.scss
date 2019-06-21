@@ -1,37 +1,60 @@
-.fl-builder-content a.fl-button {
-  color: $color-white !important;
-  background: transparent !important;
-  border-color: $color-white !important;
-  padding: 1em 2em;
-  text-transform: uppercase;
-  font-size: 17px;
-  letter-spacing: 1px;
-  box-shadow: $box-shadow;
-
-  &:hover {
-    background: rgba($color-purple, 0.9) !important;
-  }
-}
-
-.bb_boot_card_link_button {
-  padding: 10px 20px 12px !important;
-  border-radius: 4px;
-  font-weight: $weight-light;
-  letter-spacing: 1px;
-  border: 1px solid $color-purple;
-  background: $color-purple;
-
-  .bb_boot_button {
+.fl-builder-content.fl-builder-content {
+  a.fl-button.fl-button {
     color: $color-white;
-    font-family: $font-roboto;
+    background: transparent;
+    border: 1px solid $color-white;
+    padding: 1em 2em;
+    text-transform: uppercase;
     font-size: 17px;
+    letter-spacing: 1px;
+    box-shadow: $box-shadow;
+
+    &:hover, &:active, &:focus {
+      background: rgba($color-purple, 0.9);
+    }
   }
 
-  &:hover {
-    background: $color-white !important;
+  .fl-button-width-full a.fl-button {
+    display: block;
+  }
+
+  .btn-secondary a.fl-button {
+    background: $color-purple;
+    border: 1px solid $color-purple;
+
+    .fl-button-text {
+      color: $color-white;
+    }
+
+    &:hover, &:active, &:focus {
+      background: $color-white;
+
+      .fl-button-text {
+        color: $color-purple;
+      }
+    }
+  }
+
+  .bb_boot_card_link_button {
+    padding: 10px 20px 12px;
+    border-radius: 4px;
+    font-weight: $weight-light;
+    letter-spacing: 1px;
+    border: 1px solid $color-purple;
+    background: $color-purple;
 
     .bb_boot_button {
-      color: $color-purple;
+      color: $color-white;
+      font-family: $font-roboto;
+      font-size: 17px;
+    }
+
+    &:hover, &:active, &:focus {
+      background: $color-white;
+
+      .bb_boot_button {
+        color: $color-purple;
+      }
     }
   }
 }
@@ -45,27 +68,8 @@
   transition: all 0.3s;
   cursor: pointer;
 
-  &:hover {
+  &:hover, &:active, &:focus {
     background: rgba($color-purple, 0.9);
     color: $color-white;
-  }
-}
-
-.fl-builder-content .btn-secondary {
-  .fl-button {
-    background: $color-purple !important;
-    border: 1px solid $color-purple !important;
-
-    .fl-button-text {
-      color: $color-white;
-    }
-
-    &:hover {
-      background: $color-white !important;
-
-      .fl-button-text {
-        color: $color-purple;
-      }
-    }
   }
 }

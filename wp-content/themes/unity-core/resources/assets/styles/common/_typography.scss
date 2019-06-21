@@ -59,64 +59,83 @@ h1, .h1 {
 h2, .h2 {
   font-size: rem-calc(36px);
   font-weight: 600;
+  line-height: 1.3em;
+
+  &:first-child {
+    margin-top: 0;
+  }
 }
 
 h3, .h3 {
   font-size: rem-calc(24px);
   font-weight: 600;
   letter-spacing: 1px;
+
+  &:first-child {
+    margin-top: 0;
+  }
 }
 
 h4, .h4 {
   font-size: rem-calc(24px);
+
+  &:first-child {
+    margin-top: 0;
+  }
 }
 
 h5, .h5 {
   font-size: 1rem;
   text-transform: uppercase;
-}
 
-a {
-  text-decoration: underline;
-  font-weight: bold;
-  transition: all 0.3s;
-
-  &:hover, &:active {
-    text-decoration-style: double;
-    // color: $color-green;
-
-    html[data-contrast="true"] & {
-      color: $color-white;
-    }
-  }
-
-  @for $n from 1 through length($themes-list) {
-    [data-color="#{nth($themes-list, $n)}"] & {
-      color: nth($color-link-list, $n);
-    }
+  &:first-child {
+    margin-top: 0;
   }
 }
 
-.main {
-  p, li, dt, dd {
-    line-height: 1.6em;
-  }
-
-  dt {
+.entry-content, .fl-module-content.fl-module-content {
+  a {
+    text-decoration: underline;
     font-weight: bold;
-    clear: both;
-  }
+    transition: all 0.3s;
 
-  dd {
-    margin-bottom: 1em;
-    margin-left: 2em;
+    &:hover, &:active {
+      text-decoration-style: double;
+      // color: $color-green;
 
-    @media #{$xsmall-and-down} {
-      margin-left: 1em;
+      html[data-contrast="true"] & {
+        color: $color-white;
+      }
+    }
+
+    @for $n from 1 through length($themes-list) {
+      [data-color="#{nth($themes-list, $n)}"] & {
+        color: nth($color-link-list, $n);
+      }
     }
   }
+}
 
-  ul {
+p, li, dt, dd {
+  line-height: 1.6em;
+}
+
+dt {
+  font-weight: bold;
+  clear: both;
+}
+
+dd {
+  margin-bottom: 1em;
+  margin-left: 2em;
+
+  @media #{$xsmall-and-down} {
+    margin-left: 1em;
+  }
+}
+
+.entry-content {
+  ul:not(.select-dropdown) {
     li {
       list-style: none;
       position: relative;
@@ -160,6 +179,7 @@ blockquote {
 
 strong {
   font-weight: 700;
+  line-height: 1em;
 }
 
 abbr[title] {

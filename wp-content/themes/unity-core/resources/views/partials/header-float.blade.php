@@ -17,30 +17,32 @@
 <header class="banner header-float" role="banner" style="background-color: {{ $header_color }}">
   <nav class="nav-primary" role="navigation">
     <div class="container-wide relative flex flex-center space-between">
-      <div class="{{ $logo_align }}">
-        @php
-          if (!empty($logo_width)) {
-            $custom_logo_width = 'style=width:' . $logo_width . 'px;';
-          } else {
-            $custom_logo_width = '';
-          }
-        @endphp
-        <a class="logo" href="{{ home_url('/') }}" rel="home" {{ $custom_logo_width }}>
-          @if (has_custom_logo())
-            @php
-              $custom_logo_id = get_theme_mod( 'custom_logo' );
-              $logo = wp_get_attachment_image_src( $custom_logo_id , 'simple-logo' );
-              $logo_2x = wp_get_attachment_image_src( $custom_logo_id, 'simple-logo-2x' );
-            @endphp
-            <img src="{{ $logo[0] }}"
-                 srcset="{{ $logo[0] }} 1x, {{ $logo_2x[0] }} 2x"
-                 alt="{{ get_bloginfo('name', 'display') }}"
-                 width="{{ $logo[1] }}" height="{{ $logo[2] }}" />
-          @else
-            {{ get_bloginfo('name', 'display') }}
-          @endif
-        </a>
-      </div>
+      @if ($logo_align !== 'no-logo')
+        <div class="{{ $logo_align }}">
+          @php
+            if (!empty($logo_width)) {
+              $custom_logo_width = 'style=width:' . $logo_width . 'px;';
+            } else {
+              $custom_logo_width = '';
+            }
+          @endphp
+          <a class="logo" href="{{ home_url('/') }}" rel="home" {{ $custom_logo_width }}>
+            @if (has_custom_logo())
+              @php
+                $custom_logo_id = get_theme_mod( 'custom_logo' );
+                $logo = wp_get_attachment_image_src( $custom_logo_id , 'simple-logo' );
+                $logo_2x = wp_get_attachment_image_src( $custom_logo_id, 'simple-logo-2x' );
+              @endphp
+              <img src="{{ $logo[0] }}"
+                   srcset="{{ $logo[0] }} 1x, {{ $logo_2x[0] }} 2x"
+                   alt="{{ get_bloginfo('name', 'display') }}"
+                   width="{{ $logo[1] }}" height="{{ $logo[2] }}" />
+            @else
+              {{ get_bloginfo('name', 'display') }}
+            @endif
+          </a>
+        </div>
+      @endif
       @if (!empty($cta_text) && !empty($cta_link))
         <div class="cta-link relative-right">
           @if (!empty($cta_headline))

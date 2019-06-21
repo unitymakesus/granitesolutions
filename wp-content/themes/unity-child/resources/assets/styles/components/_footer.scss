@@ -1,21 +1,52 @@
 .page-footer {
-  background: $color-light-green;
+  background-image: image('footer.png');
+  background-color: $color-black;
+  background-position: bottom center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  position: relative;
 
-  .footer-center {
-    width: 100% !important;
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    opacity: 0.8;
 
-    .menu {
-      display: flex;
-      justify-content: center;
-      margin-top: 3em;
+    @include green-blue-gradient-right;
+  }
 
-      li {
-        margin: 0 15px;
+  .footer-content {
+    position: relative;
+    z-index: 2;
+
+    @media #{$medium-and-up} {
+      .menu {
+        display: flex;
+        justify-content: center;
+        margin-top: 3em;
+
+        li {
+          margin: 0 15px;
+        }
       }
     }
   }
 
   .footer-copyright {
+    position: relative;
+    z-index: 2;
     background: $color-green;
+  }
+
+  a {
+    text-decoration: none;
+    display: block;
+
+    &:hover, &:focus, &:active {
+      text-decoration: underline;
+    }
   }
 }
