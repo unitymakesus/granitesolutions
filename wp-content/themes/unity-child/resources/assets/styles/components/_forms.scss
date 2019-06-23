@@ -1,0 +1,7 @@
+.cli-switch input + .cli-slider {
+  background-color: transparent !important;
+
+  &::before {
+    background-color: transparent !important;
+  }
+}

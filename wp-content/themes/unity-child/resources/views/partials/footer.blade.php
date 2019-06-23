@@ -3,8 +3,16 @@
   $text_color = get_theme_mod( 'footer_text_color' );
 @endphp
 <footer class="content-info page-footer" role="contentinfo">
-  <div class="footer-content row center align-center">
+  <div class="footer-content row flex space-between align-center">
+    <div class="footer-left col m3 s12">
+      @php dynamic_sidebar('footer-left') @endphp
+    </div>
+    <div class="footer-center col m3 s12">
       @php dynamic_sidebar('footer-center') @endphp
+    </div>
+    <div class="footer-right col m6 s12">
+      @php dynamic_sidebar('footer-right') @endphp
+    </div>
   </div>
 
   <div class="footer-copyright row flex space-between">

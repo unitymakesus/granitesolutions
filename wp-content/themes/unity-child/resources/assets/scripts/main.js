@@ -1,5 +1,6 @@
 // Import parent JS
 import '../../../../unity-core/dist/scripts/main.js';
+import 'materialize-css';
 
 /** Import local dependencies */
 // import Router from './util/Router';

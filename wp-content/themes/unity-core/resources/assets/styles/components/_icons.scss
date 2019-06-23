@@ -17,6 +17,7 @@
       overflow: hidden;
       text-align: left;
       text-indent: -100em;
+      border-radius: 100%;
       // background: $color-teal;
       // border: 2px solid $color-teal;
 
@@ -41,52 +42,52 @@
       }
     }
 
-    &.icon-behance a::before {
+    &.icon-behance a::before, a[href*="behance.com"]::before {
       background-image: image('socialicons/behance.svg');
     }
 
-    &.icon-dribbble a::before {
+    &.icon-dribbble a::before, a[href*="dribbble.com"]::before {
       background-image: image('socialicons/dribbble.svg');
     }
 
-    &.icon-facebook a::before {
+    &.icon-facebook a::before, a[href*="facebook.com"]::before {
       background-image: image('socialicons/facebook.svg');
     }
 
-    &.icon-google a::before {
+    &.icon-google a::before, a[href*="google.com"]::before {
       background-image: image('socialicons/google.svg');
     }
 
-    &.icon-instagram a::before {
+    &.icon-instagram a::before, a[href*="instagram.com"]::before {
       background-image: image('socialicons/instagram.svg');
     }
 
-    &.icon-linkedin a::before {
+    &.icon-linkedin a::before, a[href*="linkedin.com"]::before {
       background-image: image('socialicons/linkedin.svg');
     }
 
-    &.icon-tumblr a::before {
+    &.icon-tumblr a::before, a[href*="tumblr.com"]::before {
       background-image: image('socialicons/tumblr.svg');
     }
 
-    &.icon-twitter a::before {
+    &.icon-twitter a::before, a[href*="twitter.com"]::before {
       background-image: image('socialicons/twitter.svg');
     }
 
-    &.icon-youtube a::before {
+    &.icon-youtube a::before, a[href*="youtube.com"]::before {
       background-image: image('socialicons/youtube.svg');
     }
 
-    &.icon-yelp a::before {
+    &.icon-yelp a::before, a[href*="yelp.com"]::before {
       background-image: image('socialicons/yelp.svg');
     }
 
-    &.icon-linkedin-team a::before {
-      background-image: image('socialicons/linkedin-team.svg');
-    }
-
-    &.icon-twitter-team a::before {
-      background-image: image('socialicons/twitter-team.svg');
-    }
+    // &.icon-linkedin-team a::before, a[href*="linkedin.com"]::before {
+    //   background-image: image('socialicons/linkedin-team.svg');
+    // }
+    //
+    // &.icon-twitter-team a::before, a[href*="twitter.com"]::before {
+    //   background-image: image('socialicons/twitter-team.svg');
+    // }
   }
 }

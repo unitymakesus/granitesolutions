@@ -73,3 +73,20 @@
     color: $color-white;
   }
 }
+
+.main .button, .page-footer .button {
+  @extend .bb_boot_card_link_button;
+
+  color: $color-white;
+  font-family: $font-roboto;
+  font-size: 17px;
+  transition: all 0.3s;
+  cursor: pointer;
+  background: rgba($color-white, 0.2);
+  border: 1px solid $color-white;
+
+  &:hover, &:active, &:focus {
+    background: rgba($color-purple, 0.9);
+    color: $color-white;
+  }
+}

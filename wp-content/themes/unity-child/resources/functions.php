@@ -110,38 +110,30 @@ add_filter( 'image_size_names_choose', function( $sizes ) {
 /**
  * Register sidebars
  */
-add_action('widgets_init', function () {
-  $config = [
-    'before_widget' => '<section class="widget %1$s %2$s">',
-    'after_widget'  => '</section>',
-    'before_title'  => '<h3>',
-    'after_title'   => '</h3>'
-  ];
-  register_sidebar([
-    'name'          => __('Footer-Social-Left', 'sage'),
-    'id'            => 'footer-social-left'
-  ] + $config);
-  register_sidebar([
-    'name'          => __('Footer-Social-Right', 'sage'),
-    'id'            => 'footer-social-right'
-  ] + $config);
-  register_sidebar([
-    'name'          => __('Footer-Utility-Left', 'sage'),
-    'id'            => 'footer-utility-left'
-  ] + $config);
-  register_sidebar([
-    'name'          => __('Footer-Utility-Right', 'sage'),
-    'id'            => 'footer-utility-right'
-  ] + $config);
-});
-
-
-/**
- * Add Google Fonts
- */
- add_action('wp_enqueue_scripts', function () {
-   wp_enqueue_style( 'wpb-google-fonts', 'https://fonts.googleapis.com/css?family=Poppins:200,300|Roboto:300,400,500', false);
- });
+// add_action('widgets_init', function () {
+//   $config = [
+//     'before_widget' => '<section class="widget %1$s %2$s">',
+//     'after_widget'  => '</section>',
+//     'before_title'  => '<h3>',
+//     'after_title'   => '</h3>'
+//   ];
+//   register_sidebar([
+//     'name'          => __('Footer-Social-Left', 'sage'),
+//     'id'            => 'footer-social-left'
+//   ] + $config);
+//   register_sidebar([
+//     'name'          => __('Footer-Social-Right', 'sage'),
+//     'id'            => 'footer-social-right'
+//   ] + $config);
+//   register_sidebar([
+//     'name'          => __('Footer-Utility-Left', 'sage'),
+//     'id'            => 'footer-utility-left'
+//   ] + $config);
+//   register_sidebar([
+//     'name'          => __('Footer-Utility-Right', 'sage'),
+//     'id'            => 'footer-utility-right'
+//   ] + $config);
+// });
 
 
  /**

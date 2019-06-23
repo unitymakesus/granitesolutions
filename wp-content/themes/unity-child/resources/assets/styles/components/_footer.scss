@@ -10,28 +10,20 @@
     content: '';
     position: absolute;
     top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
     z-index: 1;
     opacity: 0.8;
-
-    @include green-blue-gradient-right;
+    background: rgba($color-green, 0.5);
   }
 
-  .footer-content {
-    position: relative;
-    z-index: 2;
+  a {
+    // text-decoration: none;
+    // display: block;
 
-    @media #{$medium-and-up} {
-      .menu {
-        display: flex;
-        justify-content: center;
-        margin-top: 3em;
-
-        li {
-          margin: 0 15px;
-        }
-      }
+    &:hover, &:focus, &:active {
+      text-decoration: underline;
     }
   }
 
@@ -40,13 +32,107 @@
     z-index: 2;
     background: $color-green;
   }
+}
 
-  a {
-    text-decoration: none;
-    display: block;
+.footer-content {
+  position: relative;
+  z-index: 2;
 
-    &:hover, &:focus, &:active {
-      text-decoration: underline;
+  .footer-center {
+    @media #{$medium-and-up} {
+      text-align: left;
     }
   }
+
+  .footer-right {
+    text-align: left;
+  }
+
+  .widget_custom_html h3 {
+    margin-bottom: 0;
+  }
+
+  #mc_embed_signup {
+    font-size: 0.9em;
+
+    .row {
+      margin-bottom: 0;
+    }
+
+    label {
+      color: $color-grey;
+    }
+
+    .input-field {
+      margin-bottom: 0;
+
+      input {
+        color: $color-white;
+        height: 2rem;
+
+        &:focus {
+          border-bottom-color: $color-white;
+        }
+      }
+
+      & > label {
+        transform: translateY(7px);
+      }
+
+      &.col label {
+        left: calc(0.75em + 5px);
+      }
+
+      input:focus + label, label.active {
+        transform: translateY(-1em) scale(0.8);
+      }
+    }
+
+    fieldset {
+      border: 0;
+      padding-left: 0;
+    }
+
+    [type="checkbox"] + span:not(.lever)::before, [type="checkbox"]:not(.filled-in) + span:not(.lever)::after {
+      border: 2px solid $color-grey;
+    }
+
+    [type="checkbox"]:checked + span:not(.lever) {
+      color: $color-white;
+
+      &::before {
+        border-top: 2px solid transparent;
+        border-left: 2px solid transparent;
+        border-right: 2px solid $color-white;
+        border-bottom: 2px solid $color-white;
+      }
+    }
+
+    p {
+      font-size: 0.8em;
+      color: $color-grey;
+      margin-top: 0;
+
+      a {
+        text-decoration: underline;
+        color: $color-grey;
+
+        &:hover, &:active, &:focus {
+          color: $color-white;
+        }
+      }
+    }
+  }
+  //
+  // @media #{$medium-and-up} {
+  //   .menu {
+  //     display: flex;
+  //     justify-content: center;
+  //     margin-top: 3em;
+  //
+  //     li {
+  //       margin: 0 15px;
+  //     }
+  //   }
+  // }
 }

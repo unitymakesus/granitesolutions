@@ -1,7 +1,7 @@
 // Web Font Loader
 var WebFont = require('webfontloader');
 
-var fontFamilies = ['Bitter:700', 'Source Sans Pro:400,400i,700,700i', 'Material Icons'];
+var fontFamilies = ['Poppins:200,300', 'Roboto:300,400,500', 'Material Icons'];
 
 WebFont.load({
  google: {

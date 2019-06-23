@@ -1,3 +1,32 @@
+.page-header {
+  background-image: image('footer.png');
+  background-color: $color-black;
+  background-position: bottom center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    opacity: 0.8;
+    background: rgba($color-green, 0.5);
+  }
+
+  h1 {
+    margin: 0;
+    padding: 1.5em 0;
+    color: $color-white;
+    position: relative;
+    z-index: 1;
+  }
+}
+
 .contact {
   h3 {
     margin-bottom: 0;
