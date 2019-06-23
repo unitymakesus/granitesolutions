@@ -15866,7 +15866,7 @@ p {
   top: 0;
   width: 100%;
   z-index: 100;
-  background: #6CC1BF;
+  background: #A7A9AC;
 }
 
 /* line 9, resources/assets/styles/components/_nav.scss */
@@ -15875,7 +15875,13 @@ p {
   margin-top: 100px;
 }
 
-/* line 14, resources/assets/styles/components/_nav.scss */
+/* line 12, resources/assets/styles/components/_nav.scss */
+
+.admin-bar .banner + .content {
+  margin-top: 132px;
+}
+
+/* line 18, resources/assets/styles/components/_nav.scss */
 
 nav ul a {
   font-size: 0.9em;
@@ -15886,13 +15892,13 @@ nav ul a {
   cursor: pointer;
 }
 
-/* line 27, resources/assets/styles/components/_nav.scss */
+/* line 31, resources/assets/styles/components/_nav.scss */
 
 .header-inline nav ul a {
   padding: 1rem 15px;
 }
 
-/* line 31, resources/assets/styles/components/_nav.scss */
+/* line 35, resources/assets/styles/components/_nav.scss */
 
 .navbar-menu li.menu-item-has-children:hover .sub-menu {
   -webkit-box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
@@ -15900,13 +15906,13 @@ nav ul a {
   min-width: 200px;
 }
 
-/* line 36, resources/assets/styles/components/_nav.scss */
+/* line 40, resources/assets/styles/components/_nav.scss */
 
 .navbar-menu li:hover > a {
   text-decoration: none;
 }
 
-/* line 40, resources/assets/styles/components/_nav.scss */
+/* line 44, resources/assets/styles/components/_nav.scss */
 
 .navbar-menu li.menu-item-has-children .sub-menu a {
   color: #0F8F44;
