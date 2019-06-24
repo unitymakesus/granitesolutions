@@ -1,6 +1,14 @@
 // Import parent JS
 import '../../../../unity-core/dist/scripts/main.js';
-import 'materialize-css';
+
+// Core Materialize JS
+import 'materialize-css/js/cash.js';
+import 'materialize-css/js/component.js';
+import 'materialize-css/js/global.js';
+import 'materialize-css/js/anime.min.js';
+
+// Materialize form interactions
+import 'materialize-css/js/forms.js';
 
 /** Import local dependencies */
 // import Router from './util/Router';
