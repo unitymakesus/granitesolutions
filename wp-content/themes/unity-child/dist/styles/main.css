@@ -15877,13 +15877,13 @@ p {
 
 /* line 13, resources/assets/styles/components/_nav.scss */
 
-.banner + .content {
-  margin-top: 100px;
+.fl-builder-edit .banner {
+  top: 45px;
 }
 
-/* line 16, resources/assets/styles/components/_nav.scss */
+/* line 17, resources/assets/styles/components/_nav.scss */
 
-.admin-bar .banner + .content {
+.banner + .content {
   margin-top: 100px;
 }
 

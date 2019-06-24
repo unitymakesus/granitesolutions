@@ -10,12 +10,12 @@
     top: 32px;
   }
 
+  .fl-builder-edit & {
+    top: 45px;
+  }
+
   & + .content {
     margin-top: 100px;
-
-    .admin-bar & {
-      margin-top: 100px;
-    }
   }
 }
 
