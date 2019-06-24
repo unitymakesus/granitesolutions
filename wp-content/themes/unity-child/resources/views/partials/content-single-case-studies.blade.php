@@ -1,10 +1,10 @@
 <article class="container-full" {!! post_class() !!}>
   <header class="page-header">
     <h1 class="entry-title">{!! get_the_title() !!}</h1>
-    @include('partials/entry-meta')
+    <!-- @include('partials/entry-meta') -->
   </header>
   <div class="entry-content container">
-     @if (has_post_thumbnail())
+     <!-- @if (has_post_thumbnail())
       @php
         $thumbnail_id = get_post_thumbnail_id( get_the_ID() );
         $alt = get_post_meta($thumbnail_id, '_wp_attachment_image_alt', true);
@@ -16,7 +16,7 @@
           <figcaption class="thumb-caption">{!! $thumb_caption !!}</figcaption>
         @endif
       </figure>
-    @endif
+    @endif -->
 
     <div class="post-content">
       @php the_content() @endphp
