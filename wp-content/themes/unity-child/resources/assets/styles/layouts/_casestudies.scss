@@ -1,8 +1,13 @@
 .case-study {
   border: none;
   box-shadow: $box-shadow;
-  // height: 325px;
+  min-height: 325px;
   display: flex;
+
+  @media #{$medium-and-down} {
+    display: block;
+    max-width: 100% !important;
+  }
 
   &:nth-of-type(even) {
     flex-direction: row-reverse;
@@ -10,6 +15,10 @@
 
   .fl-post-feed-image {
     width: 50%;
+
+    @media #{$medium-and-down} {
+      width: 100%;
+    }
 
     img {
       height: 100% !important;
@@ -21,5 +30,22 @@
     width: 50%;
     padding: 20px;
     margin-left: 0 !important;
+
+    @media #{$medium-and-down} {
+      width: 100%;
+    }
+  }
+}
+
+.two-cols {
+  column-count: 2;
+  margin-top: 1em;
+
+  @media #{$medium-and-down} {
+    column-count: 1;
+  }
+
+  p {
+    margin-top: 0;
   }
 }
