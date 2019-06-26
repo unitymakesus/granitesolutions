@@ -1,0 +1,42 @@
+.markets-card {
+  .uabb-flip-box-wrap {
+    .uabb-front {
+      // padding: 0 1em;
+      background: $color-white !important;
+      box-shadow: $box-shadow !important;
+
+      .uabb-face-text-title, .uabb-flip-box-section-content {
+        color: $color-black;
+      }
+
+      hr {
+        width: 40%;
+        background: #951F4D;
+        height: 3px;
+        box-shadow: none;
+        border: 2px solid #951F4D;
+        text-align: center;
+        margin: 0 auto 10px;
+      }
+    }
+
+    .uabb-back {
+      background: $color-green !important;
+      box-shadow: $box-shadow !important;
+
+      .uabb-button {
+        background: transparent;
+        border: 1px solid $color-white;
+        text-decoration: none;
+
+        &:hover {
+          background: $color-white;
+
+          .uabb-button-text {
+            color: $color-green;
+          }
+        }
+      }
+    }
+  }
+}
