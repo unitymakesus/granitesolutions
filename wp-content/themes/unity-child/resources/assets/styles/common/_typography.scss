@@ -2,18 +2,21 @@ h1 {
   font-family: $font-poppins;
   font-weight: $weight-light;
   text-transform: uppercase;
+  font-size: 2.5rem;
 }
 
 h2 {
   font-family: $font-poppins;
   font-weight: $weight-light;
   line-height: 1.3em;
+  font-size: 1.9rem;
 }
 
 h3 {
   font-family: $font-poppins;
   font-weight: $weight-light;
   line-height: 1.5em;
+  font-size: 1.4rem;
 }
 
 h4 {
@@ -24,6 +27,7 @@ h4 {
 p {
   font-family: $font-roboto;
   font-weight: $weight-thin;
+  font-size: 1rem;
 }
 
 li {
@@ -31,13 +35,13 @@ li {
 }
 
 .main a {
-  color: $color-purple;
+  color: $color-green;
   transition: all 0.2s;
   font-weight: $weight-thin;
   text-decoration: underline;
 
   &:hover {
-    background: $color-purple;
+    background: $color-green;
     color: $color-white;
     text-decoration: none !important;
   }

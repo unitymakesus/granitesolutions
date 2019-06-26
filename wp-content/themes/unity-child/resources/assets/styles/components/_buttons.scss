@@ -3,11 +3,12 @@
     color: $color-white;
     background: transparent;
     border: 1px solid $color-white;
-    padding: 1em 2em;
+    padding: 5px 20px;
     text-transform: uppercase;
-    font-size: 17px;
+    font-weight: $weight-thin;
+    font-size: 14px;
     letter-spacing: 1px;
-    box-shadow: $box-shadow;
+    box-shadow: none;
 
     &:hover, &:active, &:focus {
       background: rgba($color-purple, 0.9);
@@ -19,41 +20,41 @@
   }
 
   .btn-bb a.fl-button {
-    background: $color-purple;
+    background: transparent;
     border: 1px solid $color-purple;
 
     .fl-button-text {
-      color: $color-white;
+      color: $color-purple;
     }
 
     &:hover, &:active, &:focus {
-      background: $color-white;
+      background: $color-purple;
 
       .fl-button-text {
-        color: $color-purple;
+        color: $color-white;
       }
     }
   }
 
   .bb_boot_card_link_button {
-    padding: 10px 20px 12px;
+    padding: 5px 20px;
     border-radius: 4px;
     font-weight: $weight-light;
     letter-spacing: 1px;
     border: 1px solid $color-purple;
-    background: $color-purple;
+    background: $color-white;
 
     .bb_boot_button {
-      color: $color-white;
+      color: $color-purple;
       font-family: $font-roboto;
-      font-size: 17px;
+      font-size: 14px;
     }
 
     &:hover, &:active, &:focus {
-      background: $color-white;
+      background: $color-purple;
 
       .bb_boot_button {
-        color: $color-purple;
+        color: $color-white;
       }
     }
   }
@@ -64,7 +65,7 @@
 
   color: $color-purple;
   font-family: $font-roboto;
-  font-size: 17px;
+  font-size: 14px;
   transition: all 0.3s;
   cursor: pointer;
 
@@ -79,7 +80,7 @@
 
   color: $color-white;
   font-family: $font-roboto;
-  font-size: 17px;
+  font-size: 14px;
   transition: all 0.3s;
   cursor: pointer;
   background: rgba($color-white, 0.2);
@@ -94,11 +95,11 @@
 .btn-secondary {
   @extend .bb_boot_card_link_button;
 
-  color: $color-white;
+  color: $color-purple;
   transition: all 0.3s;
 
   &:hover, &:active, &:focus {
-    background: $color-white;
-    color: $color-purple;
+    background: $color-purple;
+    color: $color-white;
   }
 }
