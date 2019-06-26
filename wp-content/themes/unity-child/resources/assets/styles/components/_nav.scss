@@ -41,7 +41,7 @@ nav ul a {
 .navbar-menu li.menu-item-has-children:hover .sub-menu {
   box-shadow: $box-shadow;
   min-width: 200px;
-  background: rgba($color-white, 0.9);
+  background: $color-white;
 }
 
 .navbar-menu li:hover > a {
@@ -49,5 +49,5 @@ nav ul a {
 }
 
 .navbar-menu li.menu-item-has-children .sub-menu a {
-  color: $color-purple;
+  color: $color-black;
 }
