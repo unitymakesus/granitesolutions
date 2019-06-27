@@ -1,9 +1,15 @@
 .banner {
-  position: absolute;
+  position: fixed;
   left: 0;
   top: 0;
   width: 100%;
   z-index: 100;
+  padding: 0 1em;
+
+  .logo {
+    width: 175px !important;
+    transition: all 0.4s;
+  }
 
   .admin-bar & {
     top: 32px;
@@ -22,11 +28,27 @@
   }
 }
 
+.banner.scrolled {
+  background: $color-black !important;
+  transition: background-color 200ms linear;
+
+  .logo {
+    padding: 5px 15px;
+    width: 140px !important;
+  }
+
+  nav ul a {
+    font-size: 0.8em;
+  }
+}
+
 nav ul a {
   // color: $color-white;
   font-size: 0.9em;
   transition: all 0.4s;
   cursor: pointer;
+  text-transform: uppercase;
+  font-weight: $weight-thin;
 
   &:hover {
     // color: $color-white;
