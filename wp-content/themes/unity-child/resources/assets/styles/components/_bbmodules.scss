@@ -42,7 +42,11 @@
 }
 
 .cards-equalheight {
-  .fl-col-group {
-    display: flex;
+  .bb_boot_card_text {
+    min-height: 205px;
+
+    @media #{$small-and-down} {
+      min-height: auto;
+    }
   }
 }

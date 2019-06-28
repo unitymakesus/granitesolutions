@@ -36,3 +36,11 @@
     }
   }
 }
+
+.social-icons, #menu-social-links, #menu-social {
+  li {
+    &.icon-medium a::before, a[href*="medium.com"]::before {
+      background-image: image('socialicons/medium.svg');
+    }
+  }
+}
