@@ -50,9 +50,9 @@ nav ul a {
   text-transform: uppercase;
   font-weight: $weight-thin;
 
-  &:hover {
+  &:hover, &:active, &:focus {
     // color: $color-white;
-    // background-color: rgba(0, 0, 0, 0.2);
+    background-color: rgba($color-purple, 0.8);
   }
 }
 
@@ -60,10 +60,16 @@ nav ul a {
   padding: 0.5rem 15px;
 }
 
-.navbar-menu li.menu-item-has-children:hover .sub-menu {
-  box-shadow: $box-shadow;
-  min-width: 200px;
-  background: $color-white;
+.navbar-menu li.menu-item-has-children:hover {
+  > a {
+    background-color: rgba($color-purple, 0.8);
+  }
+
+  .sub-menu {
+    box-shadow: $box-shadow;
+    min-width: 200px;
+    background: $color-white;
+  }
 }
 
 .navbar-menu li:hover > a {
@@ -72,4 +78,8 @@ nav ul a {
 
 .navbar-menu li.menu-item-has-children .sub-menu a {
   color: $color-black;
+
+  &:hover {
+    background: rgba($color-grey, 0.4);
+  }
 }
