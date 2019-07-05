@@ -6,6 +6,10 @@
   z-index: 100;
   padding: 0 1em;
 
+  @media #{$small-and-down} {
+    background: $color-black !important;
+  }
+
   .logo {
     width: 175px !important;
     transition: all 0.4s;
@@ -81,5 +85,11 @@ nav ul a {
 
   &:hover {
     background: rgba($color-grey, 0.4);
+  }
+}
+
+@media #{$medium-and-down} {
+  .page-header h1 {
+    padding: 4em 0 1.5em;
   }
 }
