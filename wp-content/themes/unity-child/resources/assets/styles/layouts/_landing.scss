@@ -1,13 +1,13 @@
-.page-landing-page-data header, .page-landing-page-data footer  {
-	display: none;
+.page-landing-page-data header, .page-landing-page-data footer {
+  display: none;
 }
 
 .page-landing-page-data .main {
-	margin: 0;
-	padding: 0;
-	overflow: hidden;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
 }
 
 .page-landing-page-data input, .page-landing-page-data textarea {
-	color: white;
+  color: $color-white;
 }

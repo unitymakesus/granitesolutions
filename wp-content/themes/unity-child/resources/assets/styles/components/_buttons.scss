@@ -105,22 +105,20 @@
 }
 
 // Filled button
-
-
 .fl-builder-content.fl-builder-content .btn-filled a.fl-button {
-	background: #951f4d;
+  background: $color-purple;
 }
 
 .fl-builder-content.fl-builder-content .btn-filled a.fl-button .fl-button-text {
-	color: white;
+  color: white;
 }
 
 .fl-builder-content.fl-builder-content .btn-filled a.fl-button:hover {
-	border-color: #951f4d;
-	background: transparent;
-	color: #951f4d;
+  border-color: $color-purple;
+  background: transparent;
+  color: $color-purple;
 }
 
 .fl-builder-content.fl-builder-content .btn-filled a.fl-button:hover .fl-button-text {
-	color: #951f4d;
+  color: $color-purple;
 }
