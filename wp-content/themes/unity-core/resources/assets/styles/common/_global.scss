@@ -25,7 +25,7 @@ body {
 .flex {
   display: flex;
 
-  @media #{$small-and-down} {
+  @media #{$medium-and-down} {
     flex-wrap: wrap;
   }
 }
