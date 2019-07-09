@@ -11,6 +11,10 @@
   @media #{$medium-and-down} {
     display: block;
   }
+  @media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
+    display: flex;
+    flex-wrap: wrap;
+  }
 }
 
 .excerpt {
@@ -19,6 +23,10 @@
 
   @media #{$medium-and-down} {
     margin: 2em 0;
+  }
+  @media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
+    width: 29.5%;
+    margin: 20px;
   }
 
   .entry-summary {
