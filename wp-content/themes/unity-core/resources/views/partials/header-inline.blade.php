@@ -39,7 +39,7 @@
       @if (has_nav_menu('primary_navigation'))
         <div class="menu-trigger-wrapper hide-on-large-only">
           <input type="checkbox" name="menu-trigger" id="menu-trigger" value="true" />
-          <label for="menu-trigger"><i class="material-icons" aria-label="Show navigation menu">menu</i></label>
+          <label for="menu-trigger"><em class="material-icons" aria-label="Show navigation menu">menu</em></label>
         </div>
         <div class="navbar-menu flex flex-center space-between">
           {!! wp_nav_menu(['theme_location' => 'primary_navigation', 'container' => FALSE, 'menu_class' => 'flex flex-center space-between']) !!}
