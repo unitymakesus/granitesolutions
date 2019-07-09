@@ -174,7 +174,8 @@ add_filter( 'image_size_names_choose', function( $sizes ) {
     ),
     'has_archive' => false,
     'rewrite' => array(
-      'slug' => 'case-studies'
+      'slug' => 'case-studies',
+      'with_front' => false
     )
   );
   register_post_type( 'case-studies', $argsCase );
@@ -240,7 +241,8 @@ add_action( 'init', __NAMESPACE__.'\\case_studies_tax' );
    ),
    'has_archive' => false,
    'rewrite' => array(
-     'slug' => 'resources'
+     'slug' => 'resources',
+     'with_front' => false
    )
  );
  register_post_type( 'resources', $argsResources );
