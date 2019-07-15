@@ -15589,62 +15589,63 @@ body#tinymce {
 
 h1 {
   font-family: "Poppins", sans-serif;
-  font-weight: 300;
-  text-transform: uppercase;
+  font-weight: 400;
   font-size: 2.5rem;
 }
 
-/* line 8, resources/assets/styles/common/_typography.scss */
+/* line 7, resources/assets/styles/common/_typography.scss */
 
 h2 {
   font-family: "Poppins", sans-serif;
-  font-weight: 300;
+  font-weight: 400;
   line-height: 1.3em;
-  font-size: 1.9rem;
+  font-size: 1.7rem;
 }
 
-/* line 15, resources/assets/styles/common/_typography.scss */
+/* line 14, resources/assets/styles/common/_typography.scss */
 
 h3 {
   font-family: "Poppins", sans-serif;
-  font-weight: 300;
+  font-weight: 400;
   line-height: 1.5em;
-  font-size: 1.4rem;
+  font-size: 1.3rem;
 }
 
-/* line 22, resources/assets/styles/common/_typography.scss */
+/* line 21, resources/assets/styles/common/_typography.scss */
 
 h4 {
   font-family: "Poppins", sans-serif;
-  font-weight: 300;
+  font-weight: 400;
 }
 
-/* line 27, resources/assets/styles/common/_typography.scss */
+/* line 26, resources/assets/styles/common/_typography.scss */
 
 p {
   font-family: "Roboto", sans-serif;
-  font-weight: 200;
-  font-size: 1rem;
+  font-weight: 400;
+  font-size: 0.9rem;
 }
 
-/* line 33, resources/assets/styles/common/_typography.scss */
+/* line 32, resources/assets/styles/common/_typography.scss */
 
-li {
-  font-weight: 200;
+.post-content li {
+  font-weight: 400;
+  font-size: 0.9rem;
+  font-family: "Roboto", sans-serif;
 }
 
-/* line 37, resources/assets/styles/common/_typography.scss */
+/* line 38, resources/assets/styles/common/_typography.scss */
 
 .main a {
   color: #0F8F44;
   -webkit-transition: all 0.2s;
   -o-transition: all 0.2s;
   transition: all 0.2s;
-  font-weight: 200;
+  font-weight: 400;
   text-decoration: underline;
 }
 
-/* line 43, resources/assets/styles/common/_typography.scss */
+/* line 44, resources/assets/styles/common/_typography.scss */
 
 .main a:hover {
   background: #0F8F44;
@@ -15652,10 +15653,10 @@ li {
   text-decoration: none !important;
 }
 
-/* line 51, resources/assets/styles/common/_typography.scss */
+/* line 52, resources/assets/styles/common/_typography.scss */
 
 .uabb-module-content .uabb-text-editor *:not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(strong):not(b) {
-  font-weight: 200;
+  font-weight: 400;
 }
 
 /* line 2, resources/assets/styles/components/_buttons.scss */
@@ -15964,7 +15965,7 @@ textarea {
 /* line 16, resources/assets/styles/components/_nav.scss */
 
 .banner .logo {
-  width: 175px !important;
+  width: 200px !important;
   -webkit-transition: all 0.4s;
   -o-transition: all 0.4s;
   transition: all 0.4s;
@@ -16002,7 +16003,7 @@ textarea {
 
 .banner.scrolled .logo {
   padding: 5px 15px;
-  width: 140px !important;
+  width: 175px !important;
 }
 
 /* line 47, resources/assets/styles/components/_nav.scss */
@@ -16364,6 +16365,30 @@ nav ul a:focus {
 
 /* line 1, resources/assets/styles/layouts/_insights.scss */
 
+.single-post header {
+  text-align: left;
+}
+
+/* line 4, resources/assets/styles/layouts/_insights.scss */
+
+.single-post header .entry-title {
+  text-align: center;
+}
+
+/* line 8, resources/assets/styles/layouts/_insights.scss */
+
+.single-post header .meta {
+  text-align: center;
+}
+
+/* line 11, resources/assets/styles/layouts/_insights.scss */
+
+.single-post header .meta .label:nth-of-type(2) {
+  display: none;
+}
+
+/* line 17, resources/assets/styles/layouts/_insights.scss */
+
 .grid-container {
   margin: 4em auto;
   display: grid;
@@ -16376,7 +16401,7 @@ nav ul a:focus {
 }
 
 @media only screen and (max-width: 992px) {
-  /* line 1, resources/assets/styles/layouts/_insights.scss */
+  /* line 17, resources/assets/styles/layouts/_insights.scss */
 
   .grid-container {
     display: block;
@@ -16384,7 +16409,7 @@ nav ul a:focus {
 }
 
 @media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
-  /* line 1, resources/assets/styles/layouts/_insights.scss */
+  /* line 17, resources/assets/styles/layouts/_insights.scss */
 
   .grid-container {
     display: -webkit-box;
@@ -16395,7 +16420,7 @@ nav ul a:focus {
   }
 }
 
-/* line 20, resources/assets/styles/layouts/_insights.scss */
+/* line 36, resources/assets/styles/layouts/_insights.scss */
 
 .excerpt {
   border-radius: 0;
@@ -16404,7 +16429,7 @@ nav ul a:focus {
 }
 
 @media only screen and (max-width: 992px) {
-  /* line 20, resources/assets/styles/layouts/_insights.scss */
+  /* line 36, resources/assets/styles/layouts/_insights.scss */
 
   .excerpt {
     margin: 2em 0;
@@ -16412,7 +16437,7 @@ nav ul a:focus {
 }
 
 @media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
-  /* line 20, resources/assets/styles/layouts/_insights.scss */
+  /* line 36, resources/assets/styles/layouts/_insights.scss */
 
   .excerpt {
     width: 29.5%;
@@ -16420,13 +16445,13 @@ nav ul a:focus {
   }
 }
 
-/* line 32, resources/assets/styles/layouts/_insights.scss */
+/* line 48, resources/assets/styles/layouts/_insights.scss */
 
 .excerpt .entry-summary {
   padding: 0 20px 20px;
 }
 
-/* line 36, resources/assets/styles/layouts/_insights.scss */
+/* line 52, resources/assets/styles/layouts/_insights.scss */
 
 .excerpt img {
   border-radius: 0;
@@ -16436,20 +16461,20 @@ nav ul a:focus {
 }
 
 @media only screen and (max-width: 992px) {
-  /* line 36, resources/assets/styles/layouts/_insights.scss */
+  /* line 52, resources/assets/styles/layouts/_insights.scss */
 
   .excerpt img {
     height: 250px;
   }
 }
 
-/* line 46, resources/assets/styles/layouts/_insights.scss */
+/* line 62, resources/assets/styles/layouts/_insights.scss */
 
 .excerpt .entry-title {
   margin: 10px 0;
 }
 
-/* line 50, resources/assets/styles/layouts/_insights.scss */
+/* line 66, resources/assets/styles/layouts/_insights.scss */
 
 .excerpt .meta {
   margin: 10px 0;
@@ -16511,6 +16536,19 @@ nav ul a:focus {
 #menu-social li.icon-medium a::before,
 #menu-social li a[href*="medium.com"]::before {
   background-image: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPCEtLSBHZW5lcmF0b3I6IEFkb2JlIElsbHVzdHJhdG9yIDIzLjAuMSwgU1ZHIEV4cG9ydCBQbHVnLUluIC4gU1ZHIFZlcnNpb246IDYuMDAgQnVpbGQgMCkgIC0tPgo8c3ZnIHZlcnNpb249IjEuMSIgaWQ9IkxheWVyXzEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHg9IjBweCIgeT0iMHB4IgoJIHZpZXdCb3g9IjAgMCAyNCAyNCIgc3R5bGU9ImVuYWJsZS1iYWNrZ3JvdW5kOm5ldyAwIDAgMjQgMjQ7IiB4bWw6c3BhY2U9InByZXNlcnZlIj4KPHN0eWxlIHR5cGU9InRleHQvY3NzIj4KCS5zdDB7ZmlsbC1ydWxlOmV2ZW5vZGQ7Y2xpcC1ydWxlOmV2ZW5vZGQ7ZmlsbDojRkZGRkZGO30KCS5zdDF7ZmlsbC1ydWxlOmV2ZW5vZGQ7Y2xpcC1ydWxlOmV2ZW5vZGQ7fQo8L3N0eWxlPgo8Y2lyY2xlIGNsYXNzPSJzdDAiIGN4PSIxMiIgY3k9IjEyIiByPSIxMiIvPgo8Y2lyY2xlIGNsYXNzPSJzdDAiIGN4PSIxMiIgY3k9IjEyIiByPSIxMCIvPgo8cGF0aCBjbGFzcz0ic3QxIiBkPSJNOS42LDE2LjdINnYtMC4yTDcuMywxNWMwLjEtMC4xLDAuMi0wLjMsMC4yLTAuNVY5LjJjMC0wLjEsMC0wLjMtMC4yLTAuNEw2LjIsNy40VjcuMmgzLjVsMi43LDUuOWwyLjQtNS45SDE4Cgl2MC4ybC0xLDAuOWMtMC4xLDAuMS0wLjEsMC4yLTAuMSwwLjN2Ni43YzAsMC4xLDAsMC4yLDAuMSwwLjNsMC45LDAuOXYwLjJoLTQuN3YtMC4ybDEtMC45YzAuMS0wLjEsMC4xLTAuMSwwLjEtMC4zVjkuOWwtMi43LDYuOAoJaC0wLjRMOC4xLDkuOXY0LjZjMCwwLjIsMCwwLjQsMC4yLDAuNWwxLjMsMS41QzkuNiwxNi41LDkuNiwxNi43LDkuNiwxNi43eiIvPgo8L3N2Zz4K);
+}
+
+@media only screen and (max-width: 768px) {
+  /* line 49, resources/assets/styles/layouts/_pages.scss */
+
+  .wpcf7 .col,
+  .wpcf7 .sidebar-primary .wrap .main,
+  .sidebar-primary .wrap .wpcf7 .main,
+  .wpcf7 .sidebar-primary .wrap .sidebar,
+  .sidebar-primary .wrap .wpcf7 .sidebar {
+    width: 100%;
+    padding: 0;
+  }
 }
 
 /* line 1, resources/assets/styles/layouts/_casestudies.scss */

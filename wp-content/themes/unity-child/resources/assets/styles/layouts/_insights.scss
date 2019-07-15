@@ -1,3 +1,19 @@
+.single-post header {
+  text-align: left;
+
+  .entry-title {
+    text-align: center;
+  }
+
+  .meta {
+    text-align: center;
+
+    .label:nth-of-type(2) {
+      display: none;
+    }
+  }
+}
+
 .grid-container {
   @extend .container;
 
