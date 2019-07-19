@@ -4,7 +4,19 @@
   top: 0;
   width: 100%;
   z-index: 100;
-  background: $color-grey;
+  padding: 0 1em;
+
+  @media #{$small-and-down} {
+    background: $color-black !important;
+  }
+  @media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
+    background: $color-black !important;
+  }
+
+  .logo {
+    width: 200px !important;
+    transition: all 0.4s;
+  }
 
   .admin-bar & {
     top: 32px;
@@ -15,7 +27,25 @@
   }
 
   & + .content {
-    margin-top: 100px;
+    // margin-top: 100px;
+  }
+
+  nav {
+    box-shadow: none;
+  }
+}
+
+.banner.scrolled {
+  background: $color-black !important;
+  transition: background-color 200ms linear;
+
+  .logo {
+    padding: 5px 15px;
+    width: 175px !important;
+  }
+
+  nav ul a {
+    font-size: 0.8em;
   }
 }
 
@@ -24,21 +54,29 @@ nav ul a {
   font-size: 0.9em;
   transition: all 0.4s;
   cursor: pointer;
+  text-transform: uppercase;
+  font-weight: $weight-thin;
 
-
-  &:hover {
+  &:hover, &:active, &:focus {
     // color: $color-white;
-    // background-color: rgba(0, 0, 0, 0.2);
+    background-color: rgba($color-purple, 0.8);
   }
 }
 
 .header-inline nav ul a {
-  padding: 1rem 15px;
+  padding: 0.5rem 15px;
 }
 
-.navbar-menu li.menu-item-has-children:hover .sub-menu {
-  box-shadow: $box-shadow;
-  min-width: 200px;
+.navbar-menu li.menu-item-has-children:hover {
+  > a {
+    background-color: rgba($color-purple, 0.8);
+  }
+
+  .sub-menu {
+    box-shadow: $box-shadow;
+    min-width: 200px;
+    background: $color-white;
+  }
 }
 
 .navbar-menu li:hover > a {
@@ -46,5 +84,15 @@ nav ul a {
 }
 
 .navbar-menu li.menu-item-has-children .sub-menu a {
-  color: $color-purple;
+  color: $color-black;
+
+  &:hover {
+    background: rgba($color-grey, 0.4);
+  }
+}
+
+@media #{$medium-and-down} {
+  .page-header h1 {
+    padding: 4em 0 1.5em;
+  }
 }

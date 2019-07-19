@@ -1,0 +1,19 @@
+.pagination {
+  margin-bottom: 4em;
+
+  a {
+    background: $color-green;
+    text-decoration: none;
+    border: 2px solid $color-green;
+
+    &:hover {
+      color: $color-green !important;
+      background: $color-white;
+    }
+  }
+
+  .current {
+    border: 2px solid $color-light-green;
+    background: $color-light-green;
+  }
+}

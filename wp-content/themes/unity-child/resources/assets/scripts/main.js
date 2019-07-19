@@ -11,19 +11,16 @@ import 'materialize-css/js/anime.min.js';
 import 'materialize-css/js/forms.js';
 
 /** Import local dependencies */
-// import Router from './util/Router';
-// import common from './routes/common';
+import Router from './util/Router';
+import common from './routes/common';
 // import home from './routes/home';
 // import aboutUs from './routes/about';
 // import archive from './routes/archive';
 
 /** Populate Router instance with DOM routes */
-// const routes = new Router({
-//   common,
-//   home,
-//   aboutUs,
-//   archive,
-// });
+const routes = new Router({
+  common,
+});
 
 /** Load Events */
-// jQuery(document).ready(() => routes.loadEvents());
+jQuery(document).ready(() => routes.loadEvents());

@@ -1,3 +1,19 @@
+.single-post header {
+  text-align: left;
+
+  .entry-title {
+    text-align: center;
+  }
+
+  .meta {
+    text-align: center;
+
+    .label:nth-of-type(2) {
+      display: none;
+    }
+  }
+}
+
 .grid-container {
   @extend .container;
 
@@ -11,6 +27,10 @@
   @media #{$medium-and-down} {
     display: block;
   }
+  @media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
+    display: flex;
+    flex-wrap: wrap;
+  }
 }
 
 .excerpt {
@@ -19,6 +39,10 @@
 
   @media #{$medium-and-down} {
     margin: 2em 0;
+  }
+  @media all and (-ms-high-contrast: none), (-ms-high-contrast: active) {
+    width: 29.5%;
+    margin: 20px;
   }
 
   .entry-summary {

@@ -174,7 +174,8 @@ add_filter( 'image_size_names_choose', function( $sizes ) {
     ),
     'has_archive' => false,
     'rewrite' => array(
-      'slug' => 'case-studies'
+      'slug' => 'case-studies',
+      'with_front' => false
     )
   );
   register_post_type( 'case-studies', $argsCase );
@@ -199,3 +200,70 @@ function case_studies_tax() {
 
 }
 add_action( 'init', __NAMESPACE__.'\\case_studies_tax' );
+
+
+
+/**
+ * Resources Post Type
+ */
+ function resources_post() {
+ $argsResources = array(
+   'labels' => array(
+       'name' => 'Resources',
+       'singular_name' => 'Resource',
+       'add_new' => 'Add New',
+       'add_new_item' => 'Add New Resource',
+       'edit' => 'Edit',
+       'edit_item' => 'Edit Resource',
+       'new_item' => 'New Resource',
+       'view_item' => 'View Resource',
+       'search_items' => 'Search Resources',
+       'not_found' =>  'Nothing found in the Database.',
+       'not_found_in_trash' => 'Nothing found in Trash',
+       'parent_item_colon' => ''
+   ),
+   'public' => true,
+   'exclude_from_search' => false,
+   'publicly_queryable' => true,
+   'show_ui' => true,
+   'show_in_nav_menus' => false,
+   'menu_position' => 20,
+   'menu_icon' => 'dashicons-category',
+   'capability_type' => 'page',
+   'hierarchical' => false,
+   'show_in_rest' => true,
+   'supports' => array(
+     'title',
+     'editor',
+     'revisions',
+     'page-attributes',
+     'thumbnail'
+   ),
+   'has_archive' => false,
+   'rewrite' => array(
+     'slug' => 'resources',
+     'with_front' => false
+   )
+ );
+ register_post_type( 'resources', $argsResources );
+}
+add_action( 'init', __NAMESPACE__.'\\resources_post' );
+
+function resources_tax() {
+
+ $argsResources = array(
+   'labels' => array(
+     'name' => __( 'Types' ),
+     'singular_name' => __( 'Type' )
+   ),
+   'publicly_queryable' => true,
+   'show_ui' => true,
+   'show_admin_column' => true,
+   'show_in_nav_menus' => false,
+   'hierarchical' => true,
+   'rewrite' => false
+ );
+ register_taxonomy('resources-category', 'resources', $argsResources);
+
+}
+add_action( 'init', __NAMESPACE__.'\\resources_tax' );
