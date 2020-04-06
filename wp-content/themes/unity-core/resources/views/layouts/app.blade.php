@@ -11,7 +11,7 @@
   <body {!! body_class() !!} data-font="{{ $simple_fonts }}" data-color="{{ $simple_color }}" data-buttons="{{ $button_font }}">
     @if (!is_user_logged_in())
       <!-- Google Tag Manager (noscript) -->
-      <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PZPJJVP"
+      <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-NWRZS3T"
       height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
       <!-- End Google Tag Manager (noscript) -->
     @endif
