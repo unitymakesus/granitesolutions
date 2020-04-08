@@ -9,7 +9,8 @@
  */
 
 FLBuilder::register_module(
-	'UABBImageCarouselModule', array(
+	'UABBImageCarouselModule',
+	array(
 		'general'         => array(
 			'title'    => __( 'General', 'uabb' ),
 			'sections' => array(
@@ -26,7 +27,8 @@ FLBuilder::register_module(
 							'label'   => __( 'Photo Size', 'uabb' ),
 							'default' => 'medium',
 							'options' => apply_filters(
-								'uabb_image_carousel_sizes', array(
+								'uabb_image_carousel_sizes',
+								array(
 									'thumbnail' => __( 'Thumbnail', 'uabb' ),
 									'medium'    => __( 'Medium', 'uabb' ),
 									'full'      => __( 'Full', 'uabb' ),
@@ -554,7 +556,7 @@ FLBuilder::register_module(
 					'fields' => array(
 						'uabb_helpful_information' => array(
 							'type'    => 'raw',
-							'content' => '<ul class="uabb-docs-list" data-branding=' . $branding . '>
+							'content' => '<ul class="uabb-docs-list" data-branding=' . BB_Ultimate_Addon_Helper::$is_branding_enabled . '>
 
 								<li class="uabb-docs-list-item"> <i class="ua-icon ua-icon-chevron-right2"> </i> <a href="https://www.ultimatebeaver.com/docs/uabb-filter-reference/?utm_source=Uabb-Pro-Backend&utm_medium=Module-Editor-Screen&utm_campaign=Image-Carousel-module#module:-image-carousel" target="_blank" rel="noopener"> Filters Reference for Image Carousel module </a> </li>
 

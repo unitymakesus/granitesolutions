@@ -8,6 +8,8 @@
  * @link      http://wordpress.org/plugins/quick-featured-images/
  * @copyright 2014 
  */
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
  * @package Quick_Featured_Images_Settings
@@ -324,8 +326,9 @@ class Quick_Featured_Images_Settings {
 			add_option( 
 				'quick-featured-images-settings', 
 				array(
-					'column_thumb_post' => '1',
-					'column_thumb_page' => '1',
+					'column_thumb_post'	=> '1',
+					'column_thumb_page'	=> '1',
+					'column_post_list'	=> '1',
 					'minimum_role_all_pages' => 'editor',
 				)
 			);
@@ -390,9 +393,45 @@ class Quick_Featured_Images_Settings {
 			// form field name for use in the 'id' attribute of tags
 			'column_toggles',
 			// title of the form field
-			$title . sprintf( '<br />&nbsp;<br /><img src="%s" alt="%s" width="200" height="104" />', plugins_url( 'assets/images/posts_list_w_image_column.gif' , __FILE__ ), esc_attr__( 'Posts list with image column', 'quick-featured-images' ) ),
+			$title . sprintf( '<br />&nbsp;<br /><img src="%s" alt="%s" width="200" height="104" />', plugins_url( 'assets/images/posts_list_w_image_column.gif' , __FILE__ ), __( 'Posts list with image column', 'quick-featured-images' ) ),
 			// callback function to print the form field
 			array( $this, 'print_columns_options' ),
+			// menu page on which to display this field for do_settings_section()
+			$this->main_options_page_slug,
+			// section where the form field appears
+			$section_key,
+			// arguments passed to the callback function 
+			array( $title )
+		); // end add_settings_field()
+
+		/*
+		 *
+		 * 4th section: post lists column
+		 *
+		 */
+		 
+		$section_key = '4th_section';
+		// register the section
+		add_settings_section(
+			// 'id' attribute of tags
+			$section_key, 
+			// title of the section.
+			__( 'Column in the library for posts with assigned featured image', 'quick-featured-images' ),
+			// callback function that fills the section with the desired content
+			array( $this, 'print_section_' . $section_key ),
+			// menu page on which to display this section
+			$this->main_options_page_slug
+		); // end add_settings_section()
+
+		// register the options for the section
+		$title = __( 'Show additional column in the library for posts with featured images', 'quick-featured-images' );
+		add_settings_field(
+			// form field name for use in the 'id' attribute of tags
+			'column_post_list',
+			// title of the form field
+			$title . sprintf( '<br />&nbsp;<br /><img src="%s" alt="%s" width="200" height="124" />', plugins_url( 'assets/images/post_list_in_library_column.gif' , __FILE__ ), __( 'Post list column in the library', 'quick-featured-images' ) ),
+			// callback function to print the form field
+			array( $this, 'print_column_post_list_option' ),
 			// menu page on which to display this field for do_settings_section()
 			$this->main_options_page_slug,
 			// section where the form field appears
@@ -467,13 +506,14 @@ class Quick_Featured_Images_Settings {
 			return array(
 				'column_thumb_post' => '1',
 				'column_thumb_page' => '1',
+				'column_post_list' => '1',
 				'minimum_role_all_pages' => 'editor',
 			);
 		}
 		$sanitized_input = array();
 		foreach ( $input as $key => $value ) {
 			// checkboxes
-			if ( preg_match( '/^column_thumb_[a-z0-9_\-]+$/', $key ) ) {
+			if ( $key == 'column_post_list' || preg_match( '/^column_thumb_[a-z0-9_\-]+$/', $key ) ) {
 				$sanitized_input[ $key ] = isset( $input[ $key ] ) ? '1' : '0' ;
 			}
 			// selections
@@ -558,6 +598,28 @@ class Quick_Featured_Images_Settings {
 	}
 
 	/**
+	* Print the column for image-posts assignments
+	*
+	* @since   13.4.0
+	*
+	*/
+	public function print_column_post_list_option ( $args ) {
+		$html = sprintf( '<fieldset><legend class="screen-reader-text"><span>%s</span></legend>', $args[ 0 ] );
+		$stored_value = isset( $this->stored_settings[ 'column_post_list' ] ) ? esc_attr( $this->stored_settings[ 'column_post_list' ] ) : '0';
+		$checked = $stored_value ? checked( '1', $stored_value, false ) : '0';
+		$html .= sprintf( 
+			'<label><input name="%s[%s]" type="checkbox" value="1"%s /> %s</label><br />',
+			$this->settings_db_slug,
+			esc_attr( 'column_post_list' ),
+			$checked,
+			esc_html__( 'Display a new column in the media library with the titles of the posts for which the corresponding image is set as featured image', 'quick-featured-images' )
+		);
+		$html .= '</fieldset>';
+		$html .= sprintf( '<p class="description">%s</p>', esc_html__( 'Activate the checkbox to show the extra column in the media library. If you would not see the new column in the library switch the appereance of the library to List mode. The post titles are links to the respective post edit page.', 'quick-featured-images' ) );
+		echo $html;
+	}
+
+	/**
 	* Print the option to set allowed roles displaying the menu items
 	*
 	* @since   12.0
@@ -565,7 +627,7 @@ class Quick_Featured_Images_Settings {
 	*/
 	public function print_role_control ( $args ) {
 		// get translations
-		$label = __( 'Minimum user role to see the plugin in the backend', 'quick-featured-images' );
+		$label = esc_html__( 'Minimum user role to see the plugin in the backend', 'quick-featured-images');
 		
 		// get WP core translations; little hack: put strings into variables to avoid PO editors to find them
 		$label_administrator = 'Administrator';
@@ -583,18 +645,18 @@ class Quick_Featured_Images_Settings {
 		foreach ( $role_names as $role_slug => $role_label ) {
 			$options .= sprintf(
 				'<option value="%s"%s>%s</option>',
-				$role_slug,
+				esc_attr( $role_slug ),
 				selected( $stored_value, $role_slug, false ),
 				esc_html( $role_label )
 			);
 		}
 		
 		// define the form sections, order by appereance, with headlines, and options
-		$html = sprintf( '<fieldset><legend class="screen-reader-text"><span>%s</span></legend>', $args[ 0 ] );
+		$html = sprintf( '<fieldset><legend class="screen-reader-text"><span>%s</span></legend>', esc_html( $args[ 0 ] ) );
 		$html .= sprintf( '<div>' );
 		$html .= sprintf( 
 			'<label>%s<br /><select name="%s[%s]">%s</select></label>',
-			esc_html( $label ),
+			$label,
 			$this->settings_db_slug,
 			'minimum_role_all_pages',
 			$options
@@ -606,10 +668,10 @@ class Quick_Featured_Images_Settings {
 		$html .= sprintf( 
 			'<p class="description">%s</p>', 
 			sprintf( 
-				esc_html__( 'The rules as set in &#8220;%s&#8221; work on posts independently of this setting.', 'quick-featured-images' ),
+				esc_html__( 'The rules as set in &#8220;%s&#8221; work on posts independently of this setting.', 'quick-featured-images' ), 
 				//esc_html__( 'Preset Featured Images', 'quick-featured-images' ) 
 				esc_html__( $text )
-			)
+			) 
 		);
 		$html .= sprintf( '<p class="description">%s</p>', esc_html__( 'This setting controls as well whether a user will see in an image column the thumbnails with action links or the thumbnails only. To switch image columns on and off use the section above.', 'quick-featured-images' ) );
 		$html .= sprintf( '<p class="description">%s</p>', esc_html__( 'This page is accessible for administrators only.', 'quick-featured-images' ) );
@@ -634,4 +696,12 @@ class Quick_Featured_Images_Settings {
 		printf( "<div class=\"qfi_page_description\"><p>%s</p></div>\n", esc_html__( 'Controls which minimum user role can see the plugin.', 'quick-featured-images' ) );
 	}
 
+	/**
+	* Print the explanation for section 4
+	*
+	* @since   13.4.0
+	*/
+	public function print_section_4th_section () {
+		printf( "<div class=\"qfi_page_description\"><p>%s</p></div>\n", esc_html__( 'The additional column in the media library lists all posts for which the image is set as featured.', 'quick-featured-images' ) );
+	}
 }

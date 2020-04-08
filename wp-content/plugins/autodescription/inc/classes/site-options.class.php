@@ -1,14 +1,16 @@
 <?php
 /**
- * @package The_SEO_Framework\Classes
+ * @package The_SEO_Framework\Classes\Facade\Site_Options
+ * @subpackage The_SEO_Framework\Data
  */
+
 namespace The_SEO_Framework;
 
 defined( 'THE_SEO_FRAMEWORK_PRESENT' ) or die;
 
 /**
  * The SEO Framework plugin
- * Copyright (C) 2015 - 2019 Sybre Waaijer, CyberWire (https://cyberwire.nl/)
+ * Copyright (C) 2015 - 2020 Sybre Waaijer, CyberWire (https://cyberwire.nl/)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as published
@@ -33,15 +35,6 @@ defined( 'THE_SEO_FRAMEWORK_PRESENT' ) or die;
 class Site_Options extends Sanitize {
 
 	/**
-	 * Site Settings field.
-	 *
-	 * @since 2.2.2
-	 *
-	 * @var string Settings field.
-	 */
-	protected $settings_field = THE_SEO_FRAMEWORK_SITE_OPTIONS;
-
-	/**
 	 * Hold the SEO Settings Page ID for this plugin.
 	 *
 	 * @since 2.2.2
@@ -56,28 +49,25 @@ class Site_Options extends Sanitize {
 	 *
 	 * @since 2.6.0
 	 * @since 3.1.0 Now applies filters 'the_seo_framework_default_site_options'
+	 * @since 4.0.0 `home_title_location` is now switched from right to left, or vice-versa.
 	 *
 	 * @return array Default site options.
 	 */
 	public function get_default_site_options() {
 
-		/**
-		 * Switch when RTL is active;
-		 * @since 2.5.0
-		 */
 		if ( \is_rtl() ) {
 			$titleloc   = 'left';
-			$h_titleloc = 'right';
+			$h_titleloc = 'left';
 		} else {
 			$titleloc   = 'right';
-			$h_titleloc = 'left';
+			$h_titleloc = 'right';
 		}
 
+		// phpcs:disable, WordPress.Arrays.MultipleStatementAlignment -- precision alignment OK.
 		/**
 		 * @since 2.2.7
 		 * @param array $options The default site options.
 		 */
-		// phpcs:disable WordPress.Arrays.MultipleStatementAlignment.DoubleArrowNotAligned -- precision alignment OK.
 		return (array) \apply_filters(
 			'the_seo_framework_default_site_options',
 			[
@@ -88,13 +78,13 @@ class Site_Options extends Sanitize {
 				'alter_archive_query_type' => 'in_query', // Archive query type.
 				'alter_search_query_type'  => 'in_query', // Search query type.
 
-				'cache_meta_schema'      => 0, // Schema.org transient cache.
 				'cache_sitemap'          => 1, // Sitemap transient cache.
 				'cache_object'           => 1, // Object caching.
 
 				// General. Layout.
 				'display_seo_bar_tables'  => 1, // SEO Bar post-list tables.
 				'display_seo_bar_metabox' => 0, // SEO Bar post SEO Settings.
+				'seo_bar_symbols'         => 0, // SEO Bar symbolic display settings.
 
 				'display_pixel_counter'     => 1, // Pixel counter.
 				'display_character_counter' => 1, // Character counter.
@@ -109,7 +99,7 @@ class Site_Options extends Sanitize {
 				'disabled_post_types' => [], // Post Type support.
 
 				// Title.
-				'title_separator'     => 'pipe',    // Title separator, dropdown
+				'title_separator'     => 'hyphen',  // Title separator, dropdown
 				'title_location'      => $titleloc, // Title separation location
 				'title_rem_additions' => 0,         // Remove title additions
 				'title_rem_prefixes'  => 0,         // Remove title prefixes from archives.
@@ -124,7 +114,6 @@ class Site_Options extends Sanitize {
 				'author_noindex'     => 0, // Author Archive robots noindex
 				'date_noindex'       => 1, // Date Archive robots noindex
 				'search_noindex'     => 1, // Search Page robots noindex
-				'attachment_noindex' => 1, // Attachment Pages robots noindex. NOTE BACKWARD COMPAT.
 				'site_noindex'       => 0, // Site Page robots noindex
 
 				$this->get_robots_post_type_option_id( 'noindex' ) => [
@@ -137,7 +126,6 @@ class Site_Options extends Sanitize {
 				'author_nofollow'     => 0, // Author Archive robots nofollow
 				'date_nofollow'       => 0, // Date Archive robots nofollow
 				'search_nofollow'     => 0, // Search Page robots nofollow
-				'attachment_nofollow' => 0, // Attachment Pages robots noindex. NOTE BACKWARD COMPAT.
 				'site_nofollow'       => 0, // Site Page robots nofollow
 
 				$this->get_robots_post_type_option_id( 'nofollow' ) => [], // Post Type support.
@@ -148,14 +136,22 @@ class Site_Options extends Sanitize {
 				'author_noarchive'     => 0, // Author Archive robots noarchive
 				'date_noarchive'       => 0, // Date Archive robots noarchive
 				'search_noarchive'     => 0, // Search Page robots noarchive
-				'attachment_noarchive' => 0, // Attachment Page robots noarchive. NOTE BACKWARD COMPAT.
 				'site_noarchive'       => 0, // Site Page robots noarchive
 
 				$this->get_robots_post_type_option_id( 'noarchive' ) => [], // Post Type support.
 
+				// Robots query protection
+				'advanced_query_protection' => 1,
+
 				// Robots pagination index.
 				'paged_noindex'      => 1, // Every second or later page noindex
 				'home_paged_noindex' => 0, // Every second or later homepage noindex
+
+				// Robots copyright.
+				'set_copyright_directives' => 1,          // Allow copyright directive settings.
+				'max_snippet_length'       => -1,         // Max text-snippet length. -1 = unlimited, 0 = disabled, R>0 = characters.
+				'max_image_preview'        => 'standard', // Max image-preview size. 'none', 'standard', 'large'.
+				'max_video_preview'        => -1,         // Max video-preview size. -1 = unlimited, 0 = disabled, R>0 = seconds.
 
 				// Robots home.
 				'homepage_noindex'   => 0, // Homepage robots noindex
@@ -198,19 +194,30 @@ class Site_Options extends Sanitize {
 				'twitter_site'    => '', // Twitter business @username
 				'twitter_creator' => '', // Twitter user @username
 
+				// oEmbed.
+				'oembed_remove_author' => 0, // Remove author from oEmbeds
+
 				// Social on/off.
 				'og_tags'         => 1, // Output of Open Graph meta tags
 				'facebook_tags'   => 1, // Output the Facebook meta tags
 				'twitter_tags'    => 1, // Output the Twitter meta tags
+				'oembed_scripts'  => 1, // Enable WordPress's oEmbed scripts
+
+				// Social image settings.
+				'multi_og_image' => 1, // Allow multiple images to be generated
+
+				// Theme color settings
+				'theme_color' => '', // Theme color metatag, default none
 
 				// Social FallBack images (fb = fallback)
-				'social_image_fb_url'   => '', // Fallback image URL
-				'social_image_fb_id'    => 0, // Fallback image ID
+				'social_image_fb_url' => '', // Fallback image URL
+				'social_image_fb_id'  => 0,  // Fallback image ID
 
 				// Webmasters.
 				'google_verification' => '', // Google Verification Code
 				'bing_verification'   => '', // Bing Verification Code
 				'yandex_verification' => '', // Yandex Verification Code
+				'baidu_verification'  => '', // Baidu Verification Code
 				'pint_verification'   => '', // Pinterest Verification Code
 
 				// Knowledge general. https://developers.google.com/structured-data/customize/contact-points - This is extremely extended and valuable. Expect a premium version.
@@ -232,38 +239,39 @@ class Site_Options extends Sanitize {
 				'knowledge_instagram'  => '', // Instagram Account
 				'knowledge_youtube'    => '', // Youtube Account
 				'knowledge_linkedin'   => '', // Linkedin Account
-				//	'knowledge_myspace'    => '', // MySpace Account // meh.
 				'knowledge_pinterest'  => '', // Pinterest Account
 				'knowledge_soundcloud' => '', // SoundCloud Account
 				'knowledge_tumblr'     => '', // Tumblr Account
 
 				// Sitemaps.
 				'sitemaps_output'      => 1,    // Output of sitemap
-				'sitemap_query_limit'  => 1200, // Sitemap post limit.
+				'sitemap_query_limit'  => 3000, // Sitemap post limit.
 
 				'sitemaps_modified'    => 1, // Add sitemap modified time.
 				'sitemaps_priority'    => 0, // Add sitemap priorities.
 
 				'sitemaps_robots'      => 1, // Add sitemap location to robots.txt
 
+				'ping_use_cron'        => 1, // Ping using CRON.
 				'ping_google'          => 1, // Ping Google
 				'ping_bing'            => 1, // Ping Bing
 
 				'sitemap_styles'       => 1,        // Whether to style the sitemap
 				'sitemap_logo'         => 1,        // Whether to add logo to sitemap
-				'sitemap_color_main'   => '333',    // Sitemap main color
-				'sitemap_color_accent' => '00cd98', // Sitemap accent color
+				'sitemap_color_main'   => '222222', // Sitemap main color
+				'sitemap_color_accent' => '00a0d2', // Sitemap accent color
 
 				// Feed.
 				'excerpt_the_feed' => 1, // Generate feed Excerpts
 				'source_the_feed'  => 1, // Add backlink at the end of the feed
+				'index_the_feed'   => 0, // Add backlink at the end of the feed
 
 				// Schema
 				'ld_json_searchbox'   => 1, // LD+Json Sitelinks Searchbox
 				'ld_json_breadcrumbs' => 1, // LD+Json Breadcrumbs
 			]
 		);
-		// phpcs:enable WordPress.Arrays.MultipleStatementAlignment.DoubleArrowNotAligned
+		// phpcs:enable, WordPress.Arrays.MultipleStatementAlignment
 	}
 
 	/**
@@ -306,14 +314,14 @@ class Site_Options extends Sanitize {
 	 * @since 2.2.2
 	 *
 	 * @uses $this->the_seo_framework_get_option() Return option from the options table and cache result.
-	 * @uses $this->settings_field
+	 * @uses THE_SEO_FRAMEWORK_SITE_OPTIONS
 	 *
 	 * @param string  $key       Option name.
 	 * @param boolean $use_cache Optional. Whether to use the cache value or not. Defaults to true.
 	 * @return mixed The value of this $key in the database.
 	 */
 	public function get_option( $key, $use_cache = true ) {
-		return $this->the_seo_framework_get_option( $key, $this->settings_field, $use_cache );
+		return $this->the_seo_framework_get_option( $key, THE_SEO_FRAMEWORK_SITE_OPTIONS, $use_cache );
 	}
 
 	/**
@@ -324,8 +332,8 @@ class Site_Options extends Sanitize {
 	 * @staticvar array $cache The option cache.
 	 *
 	 * @param string $setting The setting key.
-	 * @param bool $use_current Whether to use WordPress' version and update the cache
-	 *             or use the locally cached version.
+	 * @param bool   $use_current Whether to use WordPress' version and update the cache
+	 *                            or use the locally cached version.
 	 * @return array Options.
 	 */
 	public function get_all_options( $setting = null, $use_current = false ) {
@@ -336,7 +344,7 @@ class Site_Options extends Sanitize {
 			return $cache[ $setting ];
 
 		if ( ! $setting )
-			$setting = $this->settings_field;
+			$setting = THE_SEO_FRAMEWORK_SITE_OPTIONS;
 
 		/**
 		 * @since 2.0.0
@@ -366,7 +374,7 @@ class Site_Options extends Sanitize {
 	 *
 	 * @param string  $key        Option name.
 	 * @param string  $setting    Optional. Settings field name. Eventually defaults to null if not passed as an argument.
-	 * @param boolean $use_cache  Optional. Whether to use the cache value or not. Default is true.
+	 * @param boolean $use_cache  Optional. Whether to use the cache value or not.
 	 * @return mixed The value of this $key in the database. Empty string on failure.
 	 */
 	public function the_seo_framework_get_option( $key, $setting = null, $use_cache = true ) {
@@ -395,8 +403,8 @@ class Site_Options extends Sanitize {
 	 *
 	 * @todo deprecate, unused.
 	 *
-	 * @param string  $key       Option name.
-	 * @param boolean $use_cache Optional. Whether to use the cache value or not. Defaults to true.
+	 * @param string  $key       Required. The option name.
+	 * @param boolean $use_cache Optional. Whether to use the cache value or not.
 	 * @return mixed The value of this $key in the database.
 	 */
 	public function get_site_option( $key, $use_cache = true ) {
@@ -408,10 +416,10 @@ class Site_Options extends Sanitize {
 	 *
 	 * @since 2.2.5
 	 * @uses $this->get_default_settings() Return option from the options table and cache result.
-	 * @uses $this->settings_field
+	 * @uses THE_SEO_FRAMEWORK_SITE_OPTIONS
 	 *
-	 * @param string  $key       Option name.
-	 * @param boolean $use_cache Optional. Whether to use the cache value or not. Defaults to true.
+	 * @param string  $key       Required. The option name.
+	 * @param boolean $use_cache Optional. Whether to use the cache value or not.
 	 * @return mixed The value of this $key in the database.
 	 */
 	public function get_default_option( $key, $use_cache = true ) {
@@ -424,17 +432,23 @@ class Site_Options extends Sanitize {
 	 * @since 2.2.2
 	 * @since 2.9.0 Removed reset options check, see check_options_reset().
 	 * @since 3.1.0 Removed settings field existence check.
+	 * @since 4.0.0 Now checks if the option exists before adding it. Shaves 20μs...
 	 * @thanks StudioPress (http://www.studiopress.com/) for some code.
 	 *
 	 * @return void Early if settings can't be registered.
 	 */
 	public function register_settings() {
 
-		\register_setting( $this->settings_field, $this->settings_field );
-		\add_option( $this->settings_field, $this->get_default_site_options() );
+		\register_setting( THE_SEO_FRAMEWORK_SITE_OPTIONS, THE_SEO_FRAMEWORK_SITE_OPTIONS );
+		\get_option( THE_SEO_FRAMEWORK_SITE_OPTIONS )
+			or \add_option( THE_SEO_FRAMEWORK_SITE_OPTIONS, $this->get_default_site_options() );
 
 		//* Check whether the Options Reset initialization has been added.
 		$this->check_options_reset();
+
+		//* Handle post-update actions. Must be initialized on admin_init and is initalized on options.php.
+		if ( 'options.php' === $GLOBALS['pagenow'] )
+			$this->handle_update_post();
 	}
 
 	/**
@@ -458,14 +472,14 @@ class Site_Options extends Sanitize {
 	 *
 	 * @since 3.1.0
 	 *
-	 * @param string $key The cache key. Required.
+	 * @param string $key   The cache key. Required.
 	 * @param string $value The cache value.
 	 * @return bool True on success, false on failure.
 	 */
 	public function update_static_cache( $key, $value = '' ) {
 
 		if ( ! $key ) {
-			$this->_doing_it_wrong( __METHOD__, 'No cache key has been specified.', '3.1.0' );
+			$this->_doing_it_wrong( __METHOD__, 'No valid cache key has been specified.', '3.1.0' );
 			return false;
 		}
 
@@ -481,34 +495,28 @@ class Site_Options extends Sanitize {
 	 */
 	protected function check_options_reset() {
 
-		/**
-		 * Security check:
-		 * Further checks are based on previously set options, via option 'tsf-settings-reset'.
-		 * These can only be set when one has access to the Settings Page or database.
-		 * Also checks for capabilities.
-		 */
-		if ( ! $this->can_access_settings() || ! $this->is_seo_settings_page( false ) )
+		if ( ! $this->is_seo_settings_page( false ) || ! $this->can_access_settings() )
 			return;
 
 		if ( $this->get_option( 'tsf-settings-reset', false ) ) {
-			if ( \update_option( $this->settings_field, $this->get_default_site_options() ) ) {
-				$this->admin_redirect( $this->seo_settings_page_slug, [ 'tsf-settings-reset' => 'true' ] );
-				exit;
+			if ( \update_option( THE_SEO_FRAMEWORK_SITE_OPTIONS, $this->get_default_site_options() ) ) {
+				$this->update_static_cache( 'settings_notice', 'reset' );
 			} else {
-				$this->admin_redirect( $this->seo_settings_page_slug, [ 'error' => 'true' ] );
-				exit;
+				$this->update_static_cache( 'settings_notice', 'error' );
 			}
+			$this->admin_redirect( $this->seo_settings_page_slug );
+			exit;
 		}
 	}
 
 	/**
-	 * Updates a single option.
+	 * Updates a single SEO option.
 	 *
 	 * Can return false if option is unchanged.
 	 *
 	 * @since 2.9.0
 	 *
-	 * @param string $key The option key.
+	 * @param string $key   The option key.
 	 * @param string $value The option value.
 	 * @return bool True on success, false on failure.
 	 */
@@ -523,11 +531,11 @@ class Site_Options extends Sanitize {
 	}
 
 	/**
-	 * Allows updating of settings.
+	 * Allows bulk-updating of the SEO settings.
 	 *
 	 * @since 2.7.0
 	 *
-	 * @param string|array $new_option {
+	 * @param string|array $new_option : {
 	 *      if string: The string will act as a key for a new empty string option, e.g. : {
 	 *           'sitemap_index' becomes ['sitemap_index' => '']
 	 *      }
@@ -535,18 +543,18 @@ class Site_Options extends Sanitize {
 	 *            ['sitemap_index' => 1]
 	 *      }
 	 * }
-	 * @param string $settings_field The Settings Field to update. Defaults
-	 *               to The SEO Framework settings field.
+	 * @param string       $settings_field The Settings Field to update. Defaults
+	 *                                     to The SEO Framework settings field.
 	 * @return bool True on success. False on failure.
 	 */
-	public function update_settings( $new = '', $settings_field = '' ) {
+	public function update_settings( $new_option = '', $settings_field = '' ) {
 
 		if ( ! $settings_field ) {
-			$settings_field = $this->settings_field;
+			$settings_field = THE_SEO_FRAMEWORK_SITE_OPTIONS;
 			$this->init_sanitizer_filters();
 		}
 
-		$settings = \wp_parse_args( $new, \get_option( $settings_field ) );
+		$settings = \wp_parse_args( $new_option, \get_option( $settings_field ) );
 
 		return \update_option( $settings_field, $settings );
 	}
@@ -563,9 +571,9 @@ class Site_Options extends Sanitize {
 	 * @staticvar array $defaults_cache
 	 * @uses $this->get_default_site_options()
 	 *
-	 * @param string $key required The option name
-	 * @param string $depr Deprecated. Leave empty.
-	 * @param bool $use_cache optional Use the options cache or not. For debugging purposes.
+	 * @param string $key       Required. The option name.
+	 * @param string $depr      Deprecated. Leave empty.
+	 * @param bool   $use_cache Optional. Whether to use the options cache or not.
 	 * @return mixed default option
 	 *         null If option doesn't exist.
 	 */
@@ -596,12 +604,12 @@ class Site_Options extends Sanitize {
 	 * @since 2.3.4
 	 * @since 3.1.0 : Now returns 0 if the option doesn't exist, instead of -1.
 	 * @staticvar array $warned_cache
-	 * @uses $this->settings_field
+	 * @uses THE_SEO_FRAMEWORK_SITE_OPTIONS
 	 * @uses $this->get_warned_site_options()
 	 *
-	 * @param string $key required The option name
-	 * @param string $depr Deprecated. Leave empty.
-	 * @param bool $use_cache optional Use the options cache or not. For debugging purposes.
+	 * @param string $key       Required. The option name.
+	 * @param string $depr      Deprecated. Leave empty.
+	 * @param bool   $use_cache Optional. Whether to use the options cache or not.
 	 * @return int 0|1 Whether the option is flagged as dangerous for SEO.
 	 */
 	public function get_warned_settings( $key, $depr = '', $use_cache = true ) {
@@ -635,14 +643,16 @@ class Site_Options extends Sanitize {
 	 * @return string
 	 */
 	public function get_robots_post_type_option_id( $type ) {
-		return $this->sanitize_field_id( $type . '_post_types' );
+		return $this->s_field_id( $type . '_post_types' );
 	}
 
 	/**
 	 * Returns Facebook locales array values.
 	 *
 	 * @since 2.5.2
-	 * @see https://www.facebook.com/translations/FacebookLocales.xml
+	 * @see https://www.facebook.com/translations/FacebookLocales.xml (deprecated)
+	 * @see https://wordpress.org/support/topic/oglocale-problem/#post-11456346
+	 * mirror: http://web.archive.org/web/20190601043836/https://wordpress.org/support/topic/oglocale-problem/
 	 * @see $this->language_keys() for the associative array keys.
 	 *
 	 * @return array Valid Facebook locales
@@ -799,7 +809,9 @@ class Site_Options extends Sanitize {
 	 * Use this to compare the numeric key position.
 	 *
 	 * @since 2.5.2
-	 * @see https://www.facebook.com/translations/FacebookLocales.xml
+	 * @see https://www.facebook.com/translations/FacebookLocales.xml (deprecated)
+	 * @see https://wordpress.org/support/topic/oglocale-problem/#post-11456346
+	 * mirror: http://web.archive.org/web/20190601043836/https://wordpress.org/support/topic/oglocale-problem/
 	 *
 	 * @return array Valid Facebook locale keys
 	 */

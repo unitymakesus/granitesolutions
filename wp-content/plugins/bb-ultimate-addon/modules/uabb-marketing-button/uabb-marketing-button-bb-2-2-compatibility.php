@@ -8,14 +8,6 @@
  * @package UABB Button Module
  */
 
-$branding_name       = BB_Ultimate_Addon_Helper::get_builder_uabb_branding( 'uabb-plugin-name' );
-$branding_short_name = BB_Ultimate_Addon_Helper::get_builder_uabb_branding( 'uabb-plugin-short-name' );
-$branding            = '';
-if ( empty( $branding_name ) && empty( $branding_short_name ) ) {
-	$branding = 'no';
-} else {
-	$branding = 'yes';
-}
 FLBuilder::register_module(
 	'UABBMarketingButtonModule',
 	array(
@@ -201,13 +193,17 @@ FLBuilder::register_module(
 						'style'           => array(
 							'type'    => 'select',
 							'label'   => __( ' Style', 'uabb' ),
-							'default' => 'flat',
+							'default' => 'default',
 							'options' => array(
+								'default'     => __( 'Default', 'uabb' ),
 								'flat'        => __( 'Flat', 'uabb' ),
 								'gradient'    => __( 'Gradient', 'uabb' ),
 								'transparent' => __( 'Transparent', 'uabb' ),
 							),
 							'toggle'  => array(
+								'default'     => array(
+									'fields' => array( 'bg_color', 'bg_hover_color' ),
+								),
 								'flat'        => array(
 									'fields' => array( 'bg_color', 'bg_hover_color' ),
 								),
@@ -231,7 +227,6 @@ FLBuilder::register_module(
 						'bg_color'        => array(
 							'type'        => 'color',
 							'label'       => __( 'Background Color', 'uabb' ),
-							'default'     => 'fafafa',
 							'show_reset'  => true,
 							'connections' => array( 'color' ),
 							'show_alpha'  => true,
@@ -301,7 +296,7 @@ FLBuilder::register_module(
 						'icon'                => array(
 							'type'        => 'icon',
 							'label'       => __( 'Icon', 'uabb' ),
-							'default'     => 'fa fa fa-external-link',
+							'default'     => 'fas fa-external-link-alt',
 							'show_remove' => true,
 						),
 						'icon_width'          => array(
@@ -466,7 +461,7 @@ FLBuilder::register_module(
 					'fields' => array(
 						'uabb_helpful_information' => array(
 							'type'    => 'raw',
-							'content' => '<ul class="uabb-docs-list" data-branding=' . $branding . '>
+							'content' => '<ul class="uabb-docs-list" data-branding=' . BB_Ultimate_Addon_Helper::$is_branding_enabled . '>
 
 								<li class="uabb-docs-list-item"> <i class="ua-icon ua-icon-chevron-right2"> </i> <a href="https://www.ultimatebeaver.com/docs/marketing-button/?utm_source=uabb-pro-backend&utm_medium=module-editor-screen&utm_campaign=marketing-button-module" target="_blank" rel="noopener"> Getting started article </a> </li>
 							 </ul>',

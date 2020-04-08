@@ -1,6 +1,6 @@
 (function($) {
 	UABBVideoGallery = function( settings ) {
-		
+
 		this.settings       = settings;
 		this.node           = settings.id;
 		this.layout         = settings.layout;
@@ -20,6 +20,8 @@
 		this.slidesToScroll_small = settings.slidesToScroll_small,
 		this.dots = settings.dots,
 		this.nodeClass      = '.fl-node-' + settings.id;
+		this.next_arrow = settings.next_arrow;
+    this.prev_arrow = settings.prev_arrow;
 
 		this._init();
 		this._initIframe();
@@ -32,10 +34,10 @@
 
 		_init:function() {
 			var nodeClass  		= jQuery(this.nodeClass);
-				
+
 			$( this.nodeClass + ' .uabb-video-gallery-wrap' ).each( function() {
 				var selector 	= $(this);
-				
+
 				if ( ! selector.hasClass( 'uabb-video-gallery-filter' ) ) {
 						return;
 				}
@@ -54,7 +56,7 @@
 						def_cat_sel = filters.find( '[data-filter="' + def_filter + '"]' );
 
 						if ( def_cat_sel.length > 0 ) {
-							
+
 							def_cat_sel.siblings().removeClass( 'uabb-filter__current' );
 
 							def_cat_sel.addClass( 'uabb-filter__current' );
@@ -91,11 +93,12 @@
 				if ( selector.length < 1 ) {
 					return;
 				}
-				
-				
-				nodeClass.find( '.uabb-vg__play_full' ).on( 'click', function( e ) {
 
-					if ( 'inline' === action ) {
+
+				if ( 'inline' === action ) {
+
+					nodeClass.find( '.uabb-vg__play_full' ).on( 'click', function( e ) {
+
 
 						e.preventDefault();
 						var iframe 		= $( "<iframe/>" );
@@ -111,10 +114,11 @@
 							wrap_outer.html( iframe );
 							wrap_outer.attr( 'style', 'background:#000;' );
 							overlay.hide();
-					}
-				});
+					});
 
-				if('lightbox' === action ){
+				}
+
+				if('lightbox' === action ) {
 					nodeClass.find('.uabb-video-gallery-fancybox').magnificPopup({
 						type: 'iframe',
 						mainClass: 'mfp-fade',
@@ -145,8 +149,8 @@
 			                	autoplaySpeed: self.autoplaySpeed,
 			                	pauseOnHover:self.pauseOnHover,
 			                	speed:self.speed,
-								prevArrow: '<button type="button" data-role="none" class="slick-prev" aria-label="Previous" tabindex="0" role="button"><i class="fas fa-angle-left"></i></button>',
-								nextArrow: '<button type="button" data-role="none" class="slick-next" aria-label="Next" tabindex="0" role="button"><i class="fas fa-angle-right"></i></button>',
+												prevArrow: '<button type="button" data-role="none" class="slick-prev" aria-label="Previous" tabindex="0" role="button"><i class=" '+ self.prev_arrow +' "></i></button>',
+				                nextArrow: '<button type="button" data-role="none" class="slick-next" aria-label="Next" tabindex="0" role="button"><i class="'+ self.next_arrow +' "></i></button>',
 			                	responsive: [
 			                    {
 			                        breakpoint:self.medium_breakpoint,
@@ -170,7 +174,7 @@
 			if( selector.hasClass( 'uabb-video-gallery-filter' ) ) {
 
 				var filters = nodeClass.find( '.uabb-video__gallery-filters' );
-				
+
 				var def_cat = '*';
 
 				if(filters.length > 0){
@@ -208,7 +212,7 @@
 					});
 				});
 				nodeClass.find( '.uabb-video__gallery-filter' ).on( 'click', function() {
-				
+
 					$( this ).siblings().removeClass( 'uabb-filter__current' );
 					$( this ).addClass( 'uabb-filter__current' );
 					var value = $( this ).data( 'filter' );
@@ -218,54 +222,56 @@
 		},
 		_openOnLink : function() {
 			var nodeClass  		= jQuery(this.nodeClass);
-			var hashval = window.location.hash,
-				id = hashval.split( '#' ).pop();
-
-			if( ! id ) {
-				return;
-			}
-
-			$( this.nodeClass + ' .uabb-video-gallery-wrap' ).each( function() {
-				var selector 	= $(this);
 			
-				if ( ! selector.hasClass( 'uabb-video-gallery-filter' ) ) {
-						return;
-				}
+			// Regexp for validating user input as ID : https://regex101.com/r/KGj6I6/1
+			var pattern = new RegExp('^[\\w\\-]+$');
 
-				var filters = nodeClass.find( '.uabb-video__gallery-filters' );
+				var id = window.location.hash.substring(1);
 
-				if ( filters.length > 0 ) {
+			if ( pattern.test( id ) ) {
 
-					if ( '' !== id ) {
+				$( this.nodeClass + ' .uabb-video-gallery-wrap' ).each( function() {
+				var selector 	= $(this);
 
-						id = '.' + id.toLowerCase();
-						def_cat = id;
-						
-						def_cat_sel = filters.find( '[data-filter="' + id + '"]' );
+					if ( ! selector.hasClass( 'uabb-video-gallery-filter' ) ) {
+							return;
+					}
 
-						if ( def_cat_sel.length > 0 ) {
-							
-							def_cat_sel.siblings().removeClass( 'uabb-filter__current' );
+					var filters = nodeClass.find( '.uabb-video__gallery-filters' );
 
-							def_cat_sel.addClass( 'uabb-filter__current' );
+					if ( filters.length > 0 ) {
+
+						if ( '' !== id ) {
+
+							id = '.' + id.toLowerCase();
+							def_cat = id;
+
+							def_cat_sel = filters.find( '[data-filter="' + id + '"]' );
+
+							if ( def_cat_sel.length > 0 ) {
+
+								def_cat_sel.siblings().removeClass( 'uabb-filter__current' );
+
+								def_cat_sel.addClass( 'uabb-filter__current' );
+							}
 						}
 					}
-				}
-				var $obj = {};
+					var $obj = {};
 
-				selector.imagesLoaded( function( e ) {
+					selector.imagesLoaded( function( e ) {
 
-					$obj = selector.isotope({
-						filter: def_cat,
-						layoutMode: 'masonry',
-						itemSelector: '.uabb-video__gallery-item',
-					});
+						$obj = selector.isotope({
+							filter: def_cat,
+							layoutMode: 'masonry',
+							itemSelector: '.uabb-video__gallery-item',
+						});
 
-					selector.find( '.uabb-video__gallery-item' ).resize( function() {
-						$obj.isotope( 'layout' );
+						selector.find( '.uabb-video__gallery-item' ).resize( function() {
+							$obj.isotope( 'layout' );
+						});
 					});
 				});
-			});
+			}
 		}
 	};
 })(jQuery);

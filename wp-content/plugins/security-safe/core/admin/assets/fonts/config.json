@@ -105,6 +105,12 @@
       "css": "up-open",
       "code": 59402,
       "src": "entypo"
+    },
+    {
+      "uid": "95c84da411a955a12baff8b0859c9276",
+      "css": "lock",
+      "code": 59403,
+      "src": "websymbols"
     }
   ]
 }

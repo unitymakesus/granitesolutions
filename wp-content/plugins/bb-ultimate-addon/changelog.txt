@@ -1,3 +1,164 @@
+Version 1.26.1 - Thursday, 26th March 2020
+- Improvement: Button - Added focus style effect to the background color, text color, and border-color
+- Improvement: FAQ - Added equal height setting for the grid style
+- Fixed: Advanced Posts - Post content border settings not working
+- Fixed: Contact Form - Message required field setting not working
+- Fixed: Retina Image - Issue with Beaver Themer when header set to sticky
+- Fixed: Slide box - Drop down icon doesn't change in style 2 settings
+- Fixed: Woo Products - Quick View add to cart button not working
+
+Version 1.26.0 - Wednesday, 11th March 2020
+- New: Introduced Caldera Form Styler
+- Improvement: Business Reviews - Added a filter to change the review date format
+- Improvement: Video - Added structured data support
+- Fixed: Dual Button - Button border-radius setting not working when button style set as default
+- Fixed: Dual Button - Button text-color setting not working when button-type setting set as vertical in case of the default style
+- Fixed: Dual Button - Button icon spacing not working when join button setting set as no in case of the default style
+- Fixed: HTML rendering issue in settings field in some modules
+- Fixed: Woo - Add To Cart - Resolved CSS rendering issue when button style is transparent
+- Fixed: WPForms Styler - Fixed font size not working for input fields
+
+Version 1.25.2 - Wednesday, 19th February 2020
+- Improvement: Testimonials - Added photo connection to photo field setting
+- Improvement: Simple Separator - Added responsive support for alignment setting option
+- Fixed: Advanced Posts - Scroll pagination conflict with multiple Advanced Posts on the Single page
+- Fixed: Button padding settings not working when button style set as default in some specific module
+- Fixed: Countdown - Added missing overall alignment setting field
+- Fixed: FAQ -  Resolved parsing error in the schema markup
+- Fixed: HTML rendering issue in settings field in some modules
+- Fixed: Info List - Division by zero PHP warning for image size
+- Fixed: User Registration Form - Register button typography setting not working
+- Fixed: Woo Products -  Resolved PHP notice error in Woo Products module
+
+Version 1.25.1 - Monday, 10th February 2020
+- Improvement: Hardened the security of plugin
+- Improvement: Compatibility with latest WordPress PHP_CodeSniffer rules
+
+Version 1.25.0 - Wednesday, 22th January 2020
+- Security Fix: Cross-site scripting (XSS) vulnerability.
+- New: Introduced FAQ with Schema Support
+- Improvement: Advanced Testimonials - Added position support for Star Rating
+- Improvement: Contact Form - Added Color setting option for Button Icon
+- Improvement: Improve Background Process Notice dismissing logic
+- Improvement: Re-structured and optimized the codebase to improve the security
+- Fixed: Advanced posts - Added New Message section in General Tab and shifted the No Result Message field in that section
+- Fixed: Contact Form - Resolved JavaScript undefined error when Message field is set to Hide but Required setting is set to the Yes
+- Fixed: Off-Canvas - Display On Image Alignment Settings option not working
+- Fixed: Resolved PHP error when copying the style from some specific module
+- Fixed: Table of Contents -  Contents not working with the unique special characters
+
+Version 1.24.3 - Thursday, 9th January 2020
+- Improvement: Advanced Post - Added dots support for carousel layout
+- Improvement: Advanced Posts - Added Border settings option for Post Content
+- Improvement: Testimonials - Added filter for custom Next & Previous Arrows
+- Improvement: User Registration Form - Applied translation to Client side error messages
+- Improvement: Woo-Categories - Added new option 'Menu Order' for Order By Filter Setting
+- Fixed: Info Box: Fixed image layout with custom background for images
+- Fixed: Modal Popup - Overlay scroll not working when closed with Overlay option or ESC key
+- Fixed: Marketing-button: Background Hover color setting is not working when an external link is set
+- Fixed: Off-Canvas - Double Scroll in Firefox browser when Off-Canvas is triggered
+- Fixed: Photo - Resolve PHP notice when Photo Source is set to URL
+- Fixed: Retina Image - Added URL connections to Link URL Setting
+- Fixed: Render plugin shortname prefix when the Beaver Builder editor is enabled
+- Fixed: User Registration Form - Resolved PHP warning error in User Registration Form Module
+- Fixed: Woo-Categories - Order By Description option in Filter Settings is not working
+
+Version 1.24.2 - Thursday, 26th December 2019
+- Improvement: Added Astra Theme Button compatibility from v2.2.0 for Button module
+- Improvement: Added new style type Default for Button
+- Improvement: Advanced posts - Added New Filter option "Match all related except" for Categories and Tags
+- Improvement: Business Reviews - Added a Filter to display reviews in a language other than English
+- Improvement: Login Form - Improved authentication functionality.
+- Improvement: Modal Popup - Added alt tag for images
+- Fixed: Info Box - Minimum Height Setting not working correctly for Responsive Devices
+- Fixed: Modal Popup - Title Padding Setting not working correctly for Responsive Devices
+- Fixed: Off-Canvas - Off-Canvas is getting triggered in preview mode when it is saved as global and triggered using custom Class/Id
+- Fixed: Particle Backgrounds - Resolved z-index overlapping issue with all module content
+- Fixed: Particle Backgrounds - Resolved JavaScript undefined error for Wordpress 5.3
+- Fixed: Row Separator - Resolved z-index overlapping issue with all module content
+- Fixed: Table of Contents - Smooth Scroll not working on iOS devices having version less than 13
+
+Version 1.24.1 - Wednesday, 11th December 2019
+- Security Fix: Login Form - Improved user data validation from Google and Facebook APIs before login.
+
+Version 1.24.0 - Tuesday, 19th November 2019
+- New: Introduced How-to Schema
+- New: Introduced Login Form
+- Improvement: Added filter to change the default Admin Email in Contact Form module.
+- Improvement: Testimonials - Added Alignment setting option for Rating with Responsive support
+- Fixed: Heading - Resolved Yoast SEO readability issue
+
+Version 1.23.1 - Thursday, 24th October 2019
+- Fixed: Off Canvas - Resolved PHP notice error in Off Canvas Module
+- Fixed: Forms can't be selected in CF7 Styler, Gravity Form Styler & WPForms Styler Modules if Beaver Builder version is less than 2.2
+- Fixed: Table of Contents - Resolved unable to get headings while using Beaver Builder theme.
+
+Version 1.23.0 - Tuesday, 22th October 2019
+- New: Introduced Table of Contents
+- Improvement: Optimized database calls while fetching CF7 Styler, Gravity Form Styler, WPForms Styler Forms
+- Improvement: Added opacity support to the UABB Global Settings
+- Fixed: Background Process Notice appears after sometime even after dismissing
+- Fixed: User Registration Form - Calls to Password Strength Meter Script even if Module is not enabled on the page
+
+Version 1.22.0 - Monday, 7th October 2019
+- New: Introduced User Registration Form
+- Improvement: Price Box - Added WPML support
+- Improvement: Slide Box - Added WPML support
+- Improvement: Business Reviews - Deprecated Reviews schema support
+- Fixed: Video Gallery - Resolved PHP error when video module is disabled from UABB settings
+
+Version 1.21.0 - Tuesday, 24th September 2019
+- New: Introduced Retina Image
+- Improvement: Video - Added Wistia  hosted videos support
+- Improvement: Video Gallery - Added Wistia  hosted videos support
+- Improvement: Heading: Added opacity support to the separator color field
+- Fixed: Branding is not applying correctly to the Background process notice
+
+Version 1.20.2 - Thursday, 12th September 2019
+- Improvement: Introduced background process to change all the HotLink Image URLs.This process will download images from the UABB Template Cloud and upload it to your media library.Earlier all the Image URLs used to come from our server. With this update all of them will be uploaded to your media library.
+- Fixed: Heading - Resolved font issue of text being enlarged
+
+Version 1.20.1 - Monday, 19th August 2019
+- Improvement: Advanced Menu - Added Responsive support for Navigation Alignment settings options
+- Improvement: Heading - Added Background color and Padding setting options for Heading
+- Improvement: Heading - Added Filter for removing default space between Description Paragraph
+- Improvement: Price Box - Added Padding settings option for Price Box
+- Improvement: Added filter for Carousel Next & Previous Arrows
+- Fixed: Woo - Add To Cart - Resolved fatal error when WooCommerce plugin is deactivated and Add to Cart module is used
+- Fixed: Line breaks in paragraphs not working while editing certain modules in the editor
+- Fixed: Resolved JavaScript error when Photo field is empty in some cases
+
+Version 1.20.0 - Monday, 5th August 2019
+- New: Introduced WPForms Styler
+- Improvement: Business Hours - Added WPML support
+- Fixed: Heading - Heading Font size not overriding Theme's Font size in some cases
+
+Version 1.19.0 - Wednesday, 17th July 2019
+- New: Introduced Off Canvas
+- Improvement: Image / Icon - Added Responsive field support to the Alignment
+- Improvement: Heading - Added opacity support to the color field
+- Fixed: Advanced Menu - Link Padding settings not reflecting in preview mode
+- Fixed: Fancy Text - Fancy Text color overriding Row Text color
+- Fixed: Fancy Text - Text color overriding Column Text color
+- Fixed: Particle Backgrounds - Resolved JavaScript error when Column Group is used
+
+Version 1.18.2 - Monday, 1st July 2019
+- Improvement: Business Reviews - Improved Schema Rating.
+
+Version 1.18.1 - Thursday, 27th June 2019
+- Fixed: Business Reviews - Missing required field value for all schema types in case of Google reviews
+
+Version 1.18.0 - Wednesday, 26th June 2019
+- New: Introduced Business Reviews
+- Improvement: Price Box - Add field connection support to the module
+- Fixed: Advanced Menu - Resolved menu's Link padding issue on mobile devices for OffCanavs layout
+- Fixed: Contact Form - Submit Button Text overriding Beaver Builder Theme Button Text color
+- Fixed: Fixed Font Awesome-5 icon not visible in some cases
+- Fixed: Gravity Form Styler - Resolved CheckBox Background color issue when the Background color set to RGB
+- Fixed: Row Separator - Resolved overlapping issue with all module content
+- Fixed: Resolved Font awesome icon conflict with Shortcode for Font Awesome plugin
+- Fixed: Video Gallery - Hover Animation settings not working correctly
+
 Version 1.17.1 - Tuesday, 28th May 2019
 - Fixed: Gravity Form Styler - Resolved Checkbox Background color issue when the Background color is set to RGB
 - Fixed: Particle Backgrounds - Resolved JavaScript error on IE browser
@@ -72,17 +233,17 @@ Version 1.15.0 - Thursday, February 14, 2019
 Version 1.14.4 - Thursday, 31st January 2019
 - Fixed: Advanced Menu - Fixed Show Border settings not working correctly
 - Fixed: Advanced Menu - Resolved default Sub Menu Border Width issue
-- Fixed: Advanced Icon - Resolved Background Color Opacity issue 
+- Fixed: Advanced Icon - Resolved Background Color Opacity issue
 - Fixed: Button - Fixed Link nofollow option not working correctly
-- Fixed: CF7 Styler - Resolved default Border Width issue 
-- Fixed: Gravity Form Styler - Resolved default Border Width issue 
-- Fixed: Heading - Fixed Mobile alignment not working correctly 
+- Fixed: CF7 Styler - Resolved default Border Width issue
+- Fixed: Gravity Form Styler - Resolved default Border Width issue
+- Fixed: Heading - Fixed Mobile alignment not working correctly
 - Fixed: Info Box - Fixed Background Color Opacity settings
 - Fixed: Info Box - Resolved Text  nofollow option not working
 - Fixed: Modal Popup - Fixed Mobile alignment not working correctly
 - Fixed: Table - Typography settings not reflecting for preview mode
 - Fixed: Video Gallery - Resolved default Border Width issue
-- Fixed: Woo Products - Resolved console error of Invalid or Unexpected Token 
+- Fixed: Woo Products - Resolved console error of Invalid or Unexpected Token
 
 Version 1.14.3 - Tuesday, 15th January 2019
 - Fixed: Advanced Menu - Sub menu Typography settings not working in case of Beaver Builder 2.2
@@ -93,9 +254,9 @@ Version 1.14.3 - Tuesday, 15th January 2019
 - Fixed: Info Box - Link option not working in case of Beaver Builder 2.2
 - Fixed: Info List - Description Typography settings not working in case of Beaver Builder 2.2
 
-Version 1.14.2 - Friday, 11th January 2019 
+Version 1.14.2 - Friday, 11th January 2019
 - Fixed: Info Box - Fixed Icon and Image alignment issue
-- Fixed: Advanced Separator - Fixed Text Content width issue 
+- Fixed: Advanced Separator - Fixed Text Content width issue
 - Fixed: Non Numeric value notice for line height in rare cases
 
 Version 1.14.1 - Thursday, 10th January 2019

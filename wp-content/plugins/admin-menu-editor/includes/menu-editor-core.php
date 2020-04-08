@@ -113,6 +113,11 @@ class WPMenuEditor extends MenuEd_ShadowPluginFramework {
 	 */
 	private $access_test_runner = null;
 
+	/**
+	 * @var Exception|null
+	 */
+	private $last_menu_exception = null;
+
 	function init(){
 		$this->sitewide_options = true;
 
@@ -240,6 +245,50 @@ class WPMenuEditor extends MenuEd_ShadowPluginFramework {
 			'admin.php?page=WPCW_showPage_UserCourseAccess'        => true,
 			'admin.php?page=WPCW_showPage_UserProgess'             => true,
 			'admin.php?page=WPCW_showPage_UserProgess_quizAnswers' => true,
+			//Extended Widget Options
+			'index.php?page=extended-widget-opts-getting-started'  => true,
+			//Snax
+			'options-general.php?page=snax-pages-settings'            => true,
+			'options-general.php?page=snax-lists-settings'            => true,
+			'options-general.php?page=snax-quizzes-settings'          => true,
+			'options-general.php?page=snax-polls-settings'            => true,
+			'options-general.php?page=snax-stories-settings'          => true,
+			'options-general.php?page=snax-memes-settings'            => true,
+			'options-general.php?page=snax-audios-settings'           => true,
+			'options-general.php?page=snax-videos-settings'           => true,
+			'options-general.php?page=snax-images-settings'           => true,
+			'options-general.php?page=snax-galleries-settings'        => true,
+			'options-general.php?page=snax-embeds-settings'           => true,
+			'options-general.php?page=snax-voting-settings'           => true,
+			'options-general.php?page=snax-limits-settings'           => true,
+			'options-general.php?page=snax-auth-settings'             => true,
+			'options-general.php?page=snax-moderation-settings'       => true,
+			'options-general.php?page=snax-embedly-settings'          => true,
+			'options-general.php?page=snax-demo-settings'             => true,
+			'index.php?page=snax-about'                               => true,
+			'options-general.php?page=snax-collections-settings'      => true,
+			'options-general.php?page=snax-links-settings'            => true,
+			'options-general.php?page=snax-extproduct-settings'       => true,
+			'options-general.php?page=snax-slog-settings'             => true,
+			'options-general.php?page=snax-slog-networks-settings'    => true,
+			'options-general.php?page=snax-slog-locations-settings'   => true,
+			'options-general.php?page=snax-slog-log-settings'         => true,
+			'options-general.php?page=snax-slog-gdpr-settings'        => true,
+			'options-general.php?page=snax-shares-settings'           => true,
+			'options-general.php?page=snax-shares-positions-settings' => true,
+            //Media Ace
+			'options-general.php?page=mace-image-bulk-settings'          => true,
+			'options-general.php?page=mace-lazy_load-settings'           => true,
+			'options-general.php?page=mace-watermarks-settings'          => true,
+			'options-general.php?page=mace-hotlink-settings'             => true,
+			'options-general.php?page=mace-gif-settings'                 => true,
+			'options-general.php?page=mace-auto-featured-image-settings' => true,
+			'options-general.php?page=mace-expiry-settings'              => true,
+			'options-general.php?page=mace-video-settings'               => true,
+			'options-general.php?page=mace-gallery-settings'             => true,
+			'options-general.php?page=mace-general-settings'             => true,
+			//"What's Your Reaction"
+			'options-general.php?page=wyr-fakes-settings' => true,
 		);
 
 		//AJAXify screen options
@@ -317,6 +366,7 @@ class WPMenuEditor extends MenuEd_ShadowPluginFramework {
 			$this->import_settings();
 			$should_save_options = true;
 		}
+		$this->zlib_compression = $this->options['compress_custom_menu'];
 
 		//Track first install time.
         if ( !isset($this->options['first_install_time']) ) {
@@ -347,6 +397,9 @@ class WPMenuEditor extends MenuEd_ShadowPluginFramework {
 		if ( $this->options['security_logging_enabled'] ) {
 			add_action('admin_notices', array($this, 'display_security_log'));
 		}
+
+		//Compatibility fix for MailPoet 3.
+		$this->apply_mailpoet_compat_fix();
 
 		if ( did_action('plugins_loaded') ) {
 			$this->load_modules();
@@ -835,7 +888,7 @@ class WPMenuEditor extends MenuEd_ShadowPluginFramework {
 		}
 
 		//Any capability that's assigned to a role probably isn't a meta capability.
-		$allRealCaps = ameRoleUtils::get_all_capabilities();
+		$allRealCaps = ameRoleUtils::get_all_capabilities(true);
 		//Similarly, capabilities that are directly assigned to users are probably real.
 		foreach($users as $user) {
 			$allRealCaps = array_merge($allRealCaps, $user['capabilities']);
@@ -1276,24 +1329,46 @@ class WPMenuEditor extends MenuEd_ShadowPluginFramework {
 			return $this->test_menu;
 		}
 
-		if ( $config_id === 'network-admin' ) {
-			if ( empty($this->options['custom_network_menu']) ) {
-				return null;
+		try {
+			if ( $config_id === 'network-admin' ) {
+				if ( empty($this->options['custom_network_menu']) ) {
+					return null;
+				}
+				$this->cached_custom_menu = ameMenu::load_array($this->options['custom_network_menu']);
+			} else if ( $config_id === 'site' ) {
+				$site_specific_options = get_option($this->option_name, null);
+				if ( is_array($site_specific_options) && isset($site_specific_options['custom_menu']) ) {
+					$this->cached_custom_menu = ameMenu::load_array($site_specific_options['custom_menu']);
+				}
+			} else {
+				if ( empty($this->options['custom_menu']) ) {
+					return null;
+				}
+				$this->cached_custom_menu = ameMenu::load_array($this->options['custom_menu']);
 			}
-			$this->cached_custom_menu = ameMenu::load_array($this->options['custom_network_menu']);
-		} else if ( $config_id === 'site' ) {
-			$site_specific_options = get_option($this->option_name, null);
-			if ( is_array($site_specific_options) && isset($site_specific_options['custom_menu']) ) {
-				$this->cached_custom_menu = ameMenu::load_array($site_specific_options['custom_menu']);
+		} catch (InvalidMenuException $exception) {
+			if ( is_admin() && is_user_logged_in() && !did_action('all_admin_notices') ) {
+				add_action('all_admin_notices', array($this, 'show_config_corruption_error'));
+				$this->last_menu_exception = $exception;
 			}
-		} else {
-			if ( empty($this->options['custom_menu']) ) {
-				return null;
-			}
-			$this->cached_custom_menu = ameMenu::load_array($this->options['custom_menu']);
+			return null;
 		}
 
 		return $this->cached_custom_menu;
+	}
+
+	/**
+	 * Display a notice about the exception that was thrown when loading the menu configuration.
+	 */
+	public function show_config_corruption_error() {
+		if ( !$this->current_user_can_edit_menu() || is_null($this->last_menu_exception) ) {
+			return;
+		}
+		printf(
+			'<div class="notice notice-error"><p>%s</p></div>',
+			'<strong>Admin Menu Editor encountered an error while trying to load the menu configuration!</strong><br> '
+			. esc_html($this->last_menu_exception->getMessage())
+		);
 	}
 
 	private function guess_menu_config_id() {
@@ -1662,6 +1737,7 @@ class WPMenuEditor extends MenuEd_ShadowPluginFramework {
 		//Move orphaned items back to their original parents.
 		foreach($orphans as $item) {
 			$defaultParent = $item['defaults']['parent'];
+			//TODO: Apparently 'parent' might not exist in some configurations. Unknown bug.
 			if ( isset($defaultParent) && isset($tree[$defaultParent]) ) {
 				$tree[$defaultParent]['items'][] = $item;
 			} else {
@@ -1817,11 +1893,16 @@ class WPMenuEditor extends MenuEd_ShadowPluginFramework {
 			$trueAccess = isset($this->page_access_lookup[$topmenu['url']]) ? $this->page_access_lookup[$topmenu['url']] : null;
 			if ( ($trueAccess === 'do_not_allow') && ($topmenu['access_level'] !== $trueAccess) ) {
 				$topmenu['access_level'] = $trueAccess;
+				$reason = sprintf(
+					'There is a hidden menu item with the same URL (%1$s) but a higher priority.',
+					$topmenu['url']
+				);
+				$item['access_decision_reason'] = $reason;
+
 				if ( isset($topmenu['access_check_log']) ) {
 					$topmenu['access_check_log'][] = sprintf(
-						'+ Override: There is a hidden menu item with the same URL (%1$s) but a higher priority.' .
-						' Setting the capability to "%2$s".',
-						$topmenu['url'],
+						'+ Override: %1$s Setting the capability to "%2$s".',
+						$reason,
 						$trueAccess
 					);
 					$topmenu['access_check_log'][] = str_repeat('=', 79);
@@ -1837,11 +1918,16 @@ class WPMenuEditor extends MenuEd_ShadowPluginFramework {
 				$trueAccess = isset($this->page_access_lookup[$item['url']]) ? $this->page_access_lookup[$item['url']] : null;
 				if ( ($trueAccess === 'do_not_allow') && ($item['access_level'] !== $trueAccess) ) {
 					$item['access_level'] = $trueAccess;
+					$reason = sprintf(
+						'There is a hidden menu item with the same URL (%1$s) but a higher priority.',
+						$item['url']
+					);
+					$item['access_decision_reason'] = $reason;
+
 					if ( isset($item['access_check_log']) ) {
 						$item['access_check_log'][] = sprintf(
-							'+ Override: There is a hidden menu item with the same URL (%1$s) but a higher priority.' .
-							' Setting the capability to "%2$s".',
-							$item['url'],
+							'+ Override: %1$s Setting the capability to "%2$s".',
+							$reason,
 							$trueAccess
 						);
 						$item['access_check_log'][] = str_repeat('=', 79);
@@ -2273,6 +2359,7 @@ class WPMenuEditor extends MenuEd_ShadowPluginFramework {
 			}
 
 			echo "Fetch option {$option}<br>";
+			/** @noinspection SqlResolve */
 			$row = $wpdb->get_row($wpdb->prepare(
 				"SELECT * FROM {$wpdb->sitemeta} WHERE meta_key = %s LIMIT 1",
 				$option
@@ -2530,7 +2617,7 @@ class WPMenuEditor extends MenuEd_ShadowPluginFramework {
 		$editor_data['custom_menu_js'] = ameMenu::to_json($custom_menu);
 
 		//Create a list of all known capabilities and roles. Used for the drop-down list on the access field.
-		$all_capabilities = ameRoleUtils::get_all_capabilities();
+		$all_capabilities = ameRoleUtils::get_all_capabilities(is_multisite());
 		//"level_X" capabilities are deprecated so we don't want people using them.
 		//This would look better with array_filter() and an anonymous function as a callback.
 		for($level = 0; $level <= 10; $level++){
@@ -2566,7 +2653,14 @@ class WPMenuEditor extends MenuEd_ShadowPluginFramework {
 	 */
 	private function get_default_menu() {
 		$default_tree = ameMenu::wp2tree($this->default_wp_menu, $this->default_wp_submenu, $this->menu_url_blacklist);
-		$default_menu = ameMenu::load_array($default_tree);
+		try {
+			$default_menu = ameMenu::load_array($default_tree);
+		} catch (InvalidMenuException $e) {
+			throw new LogicException(
+				'An unexpected exception was thrown while loading the default admin menu. '
+				. 'This is most likely a bug. The default menu should always be valid.'
+			);
+		}
 		return $default_menu;
 	}
 
@@ -2597,6 +2691,9 @@ class WPMenuEditor extends MenuEd_ShadowPluginFramework {
 			$wrap_classes[] = 'ame-is-pro-version';
 		} else {
 			$wrap_classes[] = 'ame-is-free-version';
+		}
+		if ( isset($GLOBALS['wp_version']) && version_compare($GLOBALS['wp_version'], '5.3-RC1', '>=') ) {
+			$wrap_classes[] = 'ame-is-wp53-plus';
 		}
 
 		echo '<div class="', implode(' ', $wrap_classes), '">';
@@ -2723,7 +2820,11 @@ class WPMenuEditor extends MenuEd_ShadowPluginFramework {
 			return $this->cached_virtual_caps[$mode];
 		}
 
-		$custom_menu = $this->load_custom_menu();
+		try {
+			$custom_menu = $this->load_custom_menu();
+		} catch (InvalidMenuException $e) {
+			return array();
+		}
 		if ( $custom_menu === null ){
 			return array();
 		}
@@ -3398,8 +3499,11 @@ class WPMenuEditor extends MenuEd_ShadowPluginFramework {
 		$this->post = $this->originalPost = $_POST;
 		$this->get = $_GET;
 
-		/** @noinspection PhpDeprecationInspection */
-		if ( function_exists('get_magic_quotes_gpc') && get_magic_quotes_gpc() ) {
+		if (
+			version_compare(phpversion(), '7.4.0alpha1', '<')
+			&& function_exists('get_magic_quotes_gpc')
+			&& get_magic_quotes_gpc()
+		) {
 			$this->post = stripslashes_deep($this->post);
 			$this->get = stripslashes_deep($this->get);
 		}
@@ -3462,7 +3566,7 @@ class WPMenuEditor extends MenuEd_ShadowPluginFramework {
 					'ame-force-dashicons',
 					plugins_url('css/force-dashicons.css', $this->plugin_file),
 					array(),
-					'20170607'
+					'20190810'
 				);
 			}
 		}
@@ -3793,6 +3897,29 @@ class WPMenuEditor extends MenuEd_ShadowPluginFramework {
 				unset($this->default_wp_submenu['index.php'][$index]);
 			}
 		}
+	}
+
+	/**
+	 * Compatibility fix for MailPoet 3. Last tested with MailPoet 3.44.0.
+	 *
+	 * MailPoet deliberately removes all third-party stylesheets from its admin pages.
+	 * As a result, some AME features that use stylesheets - like custom menu icons and admin
+	 * menu colors - don't work on those pages. Let's fix that by whitelisting our styles.
+	 */
+	private function apply_mailpoet_compat_fix() {
+		add_filter('mailpoet_conflict_resolver_whitelist_style', array($this, '_whitelist_ame_styles_for_mailpoet'));
+	}
+
+	/**
+	 * @internal
+	 * @param array $styles
+	 * @return array
+	 */
+	public function _whitelist_ame_styles_for_mailpoet($styles) {
+		$styles[] = 'ame_output_menu_color_css';
+		$styles[] = 'font-awesome\.css';
+		$styles[] = 'force-dashicons\.css';
+		return $styles;
 	}
 
 	/**
@@ -4155,11 +4282,6 @@ class WPMenuEditor extends MenuEd_ShadowPluginFramework {
 				'relativePath' => 'modules/admin-css/admin-css.php',
 				'className' => 'ameAdminCss',
 				'title' => 'Admin CSS',
-			),*/
-			/*'tweaks' => array(
-				'relativePath' => 'modules/tweaks/tweaks.php',
-				'className' => 'ameTweakManager',
-				'title' => 'Tweaks',
 			),*/
 			'hide-admin-menu' => array(
 				'relativePath' => 'extras/modules/hide-admin-menu/hide-admin-menu.php',

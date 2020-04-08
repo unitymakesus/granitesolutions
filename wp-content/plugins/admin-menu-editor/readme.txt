@@ -3,8 +3,8 @@ Contributors: whiteshadow
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=A6P9S6CE3SRSW
 Tags: admin, dashboard, menu, security, wpmu
 Requires at least: 4.1
-Tested up to: 5.2
-Stable tag: 1.9
+Tested up to: 5.4
+Stable tag: 1.9.5
 
 Lets you edit the WordPress admin menu. You can re-order, hide or rename menus, add custom menus and more. 
 
@@ -62,6 +62,39 @@ Plugins installed in the `mu-plugins` directory are treated as "always on", so y
 3. Re-ordering menu items via drag and drop
 
 == Changelog ==
+
+= 1.9.5 =
+* Fixed a conflict with Media Ace, Snax and "What's Your Reaction?" plugins where activating Admin Menu Editor would cause a number of previously hidden menu items become visible.
+* Tested up to WP 5.4.
+
+= 1.9.4 =
+* Fixed another warning about get_magic_quotes_gpc() being deprecated in PHP 7.4. This instance was missed in the previous patch.
+* Added a workaround for an issue with MailPoet 3 where some menu settings didn't work on MailPoet's admin pages.
+* Added a workaround for an issue with Extended Widget Options where the "getting started" page that's added by that plugin showed up in the menu editor even though it was supposed to be hidden.
+* Reduced the amount of space used by plugin visibility settings. This change will take effect the next time you save the settings.
+* Extended the "compress menu configuration data" feature to use ZLIB compression in addition to menu data restructuring. This greatly decreases the amount of data stored in the database, but increases decompression overhead.
+
+= 1.9.3 =
+* Fixed a warning about get_magic_quotes_gpc() being deprecated in PHP 7.4.
+* Fixed a conflict with plugins that use the "all_plugins" filter incorrectly.
+
+= 1.9.2 =
+* Updated the appearance of the settings page to match the admin CSS changes introduced in WordPress 5.3.
+* Fixed inconsistent dialog title bar colours that could occur when another plugin loaded the default WP dialog styles.
+* Fixed a bug where certain top level menus could stay permanently highlighted because some of their submenus were hidden via CSS/JS and unclickable. 
+* When there's an error loading the menu configuration (e.g. because it's in an incompatible format), the plugin will now display an admin notice instead of letting through an uncaught exception.
+* Removed the link to Visual Admin Customizer from the plugin settings page.
+* Tested up to WP 5.3.
+
+= 1.9.1 =
+* Fixed a minor conflict with Toolset Types.
+* Fixed a conflict with the MailPoet plugin where it was not possible to change the plugin's menu icon. 
+* Fixed a bug where the plugin could misidentify certain core menus that have different URLs for different roles.
+* Fixed a bug where the plugin could generate incorrect URLs for submenu items where the parent menu URL contained HTML entities like "&amp;".
+* Fixed an issue where certain vulnerability scanners showed a warning about one of the plugin files because it used the eval() function. This particular instance of eval() was not a security flaw, but it has been now been removed to prevent false positives.
+* Fixed a bug where the plugin could show an incorrect error message when a menu item was hidden due to there being another hidden menu item with the same URL.
+* Fixed a minor issue with field alignment in menu properties.
+* The "Site Health" menu will no longer be highlighted as new because it's part of WordPress core.
 
 = 1.9 =
 * Added an option to automatically hide new plugins. It was already possible, but previously this option was tied to the "show all plugins" checkbox. Now there is a separate "New plugins" checkbox.

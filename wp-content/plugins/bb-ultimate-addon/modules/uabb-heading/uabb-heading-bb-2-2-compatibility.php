@@ -165,6 +165,7 @@ FLBuilder::register_module(
 							'label'       => __( 'Icon Color', 'uabb' ),
 							'default'     => '',
 							'show_reset'  => true,
+							'show_alpha'  => true,
 							'preview'     => array(
 								'type'      => 'css',
 								'selector'  => '.uabb-icon-wrap .uabb-icon i, .uabb-icon-wrap .uabb-icon i:before',
@@ -290,6 +291,7 @@ FLBuilder::register_module(
 							'label'       => __( 'Color', 'uabb' ),
 							'default'     => '',
 							'show_reset'  => true,
+							'show_alpha'  => true,
 							'preview'     => array(
 								'type'      => 'css',
 								'selector'  => '.uabb-separator, .uabb-separator-line > span',
@@ -367,7 +369,7 @@ FLBuilder::register_module(
 							'responsive' => true,
 							'preview'    => array(
 								'type'      => 'css',
-								'selector'  => '.fl-module-content.fl-node-content .uabb-heading',
+								'selector'  => '.fl-module-content.fl-node-content .uabb-heading,.fl-module-content.fl-node-content .uabb-heading .uabb-heading-text',
 								'important' => true,
 							),
 						),
@@ -377,6 +379,7 @@ FLBuilder::register_module(
 							'label'       => __( 'Text Color', 'uabb' ),
 							'default'     => '',
 							'show_reset'  => true,
+							'show_alpha'  => true,
 							'preview'     => array(
 								'type'      => 'css',
 								'property'  => 'color',
@@ -424,6 +427,33 @@ FLBuilder::register_module(
 								'important' => true,
 							),
 						),
+						'bg_color'              => array(
+							'type'        => 'color',
+							'connections' => array( 'color' ),
+							'label'       => __( 'Heading Background Color', 'uabb' ),
+							'default'     => '',
+							'show_reset'  => true,
+							'show_alpha'  => true,
+							'preview'     => array(
+								'type'     => 'css',
+								'property' => 'background',
+								'selector' => '.fl-module-content.fl-node-content .uabb-heading  .uabb-heading-text',
+							),
+						),
+						'heading_padding'       => array(
+							'type'       => 'dimension',
+							'label'      => __( 'Padding', 'uabb' ),
+							'slider'     => true,
+							'responsive' => true,
+							'units'      => array( 'px' ),
+							'preview'    => array(
+								'type'      => 'css',
+								'selector'  => '.fl-module-content.fl-node-content .uabb-heading  .uabb-heading-text',
+								'property'  => 'padding',
+								'unit'      => 'px',
+								'important' => true,
+							),
+						),
 					),
 				),
 				'description_typo'          => array(
@@ -445,6 +475,7 @@ FLBuilder::register_module(
 							'label'       => __( 'Color', 'uabb' ),
 							'default'     => '',
 							'show_reset'  => true,
+							'show_alpha'  => true,
 							'preview'     => array(
 								'type'      => 'css',
 								'property'  => 'color',
@@ -528,6 +559,7 @@ FLBuilder::register_module(
 							'connections' => array( 'color' ),
 							'label'       => __( 'Text Color', 'uabb' ),
 							'default'     => '',
+							'show_alpha'  => true,
 							'show_reset'  => true,
 							'preview'     => array(
 								'type'      => 'css',

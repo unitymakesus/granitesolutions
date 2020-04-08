@@ -3,11 +3,11 @@ Contributors: arshidkv12
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_xclick&business=H5F3Z6S3MNTXA&lc=IN&item_name=wp%2dlogin%2dlimit&amount=5%2e00&currency_code=USD&button_subtype=services&bn=PP%2dBuyNowBF%3abtn_buynowCC_LG%2egif%3aNonHosted
 Tags: cf7, contact form 7, contact form 7 db, contact form db, contact form seven, contact form storage, export contact form, save contact form, wpcf7
 Requires at least: 4.8
-Tested up to: 5.2
-Stable tag: 1.2.4.6
+Tested up to: 5.3
+Stable tag: 1.2.4.8
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
-Requires PHP: 5.3
+Requires PHP: 5.6
 
 Save and manage Contact Form 7 messages. Never lose important data. It is lightweight contact form 7 database plugin.
 
@@ -25,7 +25,7 @@ By simply installing the plugin, it will automatically begin to capture form sub
 * Easy to use and lightweight plugin
 * Developer friendly & easy to customize
 * Display all created contact form 7 form list.
-* Export CF7 DB data in CSV file
+* Export CF7 DB (CF7 Database) data in CSV file
 
 = Pro Addons =
 * [CFDB7 DB Switcher](https://ciphercoin.com/downloads/cfdb7-database-switcher/)
@@ -56,37 +56,62 @@ Extensions : [Contact form 7 more Add-ons](https://ciphercoin.com/contact-form-7
 1. Admin
 
 == Changelog ==
-= 1.0.0 =
 
-First version of plugin.
-= 1.1.6 =
-Fixed minor bugs
-Add action hooks
-= 1.1.7 =
-Add filter hooks
-Multisite support
+= 1.2.4.8 =
+Removed unwanted data  
+Removed data with key underscore (_)
+add_filter cfdb7_remove_underscore_data
+
+= 1.2.4.7 =
+Action hook name changed to cfdb7_before_save 
+
+= 1.2.4.6 =
+Optimized csv export memory usage 
+
+= 1.2.4.3 =
+Responsive issue fixed 
+
+= 1.2.4 =
+Fixed admin notification bug
+
+= 1.2.3 =
+Fixed csv export issue 
+
+= 1.2.2 =
+Added cfdb7_access capability
+
+= 1.2.1 =
+Multisite network bug fixed 
+
+= 1.2 =
+Fixed csv export bug
 
 = 1.1.9 =
 Fixed Sorting bugs
 
-== 1.2 ==
-Fixed csv export bug
+= 1.1.7 =
+Add filter hooks
+Multisite support
 
-== 1.2.1 ==
-Multisite network bug fixed 
+= 1.1.6 =
+Fixed minor bugs
+Add action hooks
 
-== 1.2.2 ==
-Added cfdb7_access capability
+= 1.0.0 =
+First version of plugin.
 
-== 1.2.3 ==
-Fixed csv export issue 
 
-== 1.2.4 ==
-Fixed admin notification bug
 
-== 1.2.4.3 ==
-Responsive issue fixed 
 
-== 1.2.4.6 ==
-Optimized csv export memory usage 
+
+
+
+
+
+
+
+
+
+
+
 

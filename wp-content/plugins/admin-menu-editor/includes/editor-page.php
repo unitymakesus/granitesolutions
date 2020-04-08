@@ -27,35 +27,17 @@ $icons = array(
 foreach($icons as $name => $url) {
 	$icons[$name] = $images_url . $url;
 }
+$icons = apply_filters('admin_menu_editor-toolbar_icons', $icons, $images_url);
 
 $hide_button_extra_tooltip = 'When "All" is selected, this will hide the menu from everyone except the current user'
 	. ($is_multisite ? ' and Super Admin' : '') . '.';
 
 //Output the "Upgrade to Pro" message
 if ( !apply_filters('admin_menu_editor_is_pro', false) ){
-	//Pseudo-randomly decide whether to show the VAC link.
-	$is_vac_link_visible = (hexdec( substr(md5(get_site_url() . 'vc3'), -3) ) % 100) <= 20; //20% of sites will see it.
 	?>
 	<script type="text/javascript">
 	(function($){
-		var screenLinks = $('#screen-meta-links'),
-			showVacLink = (<?php echo $is_vac_link_visible ? 'true' : 'false' ?>);
-
-		if (showVacLink) {
-			screenLinks.append(
-				$('<div>', {
-					'class' : 'custom-screen-meta-link-wrap',
-					'id'    : 'ws-visual-admin-customizer-ad'
-				}).append($('<a>', {
-					'href'  : 'https://wordpress.org/plugins/visual-admin-customizer/',
-					'class' : 'show-settings custom-screen-meta-link',
-					'title' : 'A free plugin for customizing the WordPress admin interface',
-					'target': '_blank',
-					'text'  : 'Visual Admin Customizer'
-				}))
-			);
-		}
-
+		var screenLinks = $('#screen-meta-links');
 		screenLinks.append(
 			'<div id="ws-pro-version-notice" class="custom-screen-meta-link-wrap">' +
 				'<a href="http://adminmenueditor.com/upgrade-to-pro/?utm_source=Admin%2BMenu%2BEditor%2Bfree&utm_medium=text_link&utm_content=top_upgrade_link&utm_campaign=Plugins" id="ws-pro-version-notice-link" class="show-settings custom-screen-meta-link" target="_blank" title="View Pro version details">Upgrade to Pro</a>' +
@@ -163,18 +145,7 @@ function ame_output_sort_buttons($icons) {
 				}
 				?>
 
-				<?php  if ( $is_pro_version ): ?>
-					<div class="ws_separator">&nbsp;</div>
-
-					<a id='ws_toggle_all_menus' class='ws_button' href='javascript:void(0)'
-					   title='Toggle all menus for the selected role'><img src='<?php echo $icons['toggle-all']; ?>' alt="Toggle all" /></a>
-
-					<a id='ws_copy_role_permissions' class='ws_button' href='javascript:void(0)'
-					   title='Copy all menu permissions from one role to another'><img src='<?php echo $icons['copy-permissions']; ?>' alt="Copy permissions" /></a>
-
-					<div class="ws_separator">&nbsp;</div>
-				<?php endif; ?>
-
+				<?php do_action('admin_menu_editor-toolbar_row_2', $icons); ?>
 				<div class="clear"></div>
 			</div>
 		</div>

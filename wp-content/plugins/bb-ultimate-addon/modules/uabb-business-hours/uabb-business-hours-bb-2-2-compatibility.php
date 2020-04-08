@@ -8,17 +8,9 @@
  * @package UABB Business Hours Module
  */
 
-$branding_name       = BB_Ultimate_Addon_Helper::get_builder_uabb_branding( 'uabb-plugin-name' );
-$branding_short_name = BB_Ultimate_Addon_Helper::get_builder_uabb_branding( 'uabb-plugin-short-name' );
-$branding            = '';
-if ( empty( $branding_name ) && empty( $branding_short_name ) ) {
-	$branding = 'no';
-} else {
-	$branding = 'yes';
-}
-
 FLBuilder::register_module(
-	'UABBBusinessHours', array(
+	'UABBBusinessHours',
+	array(
 		'business-hours-info'       => array(
 			'title'    => __( 'Content', 'uabb' ),
 			'sections' => array(
@@ -299,7 +291,7 @@ FLBuilder::register_module(
 					'fields' => array(
 						'uabb_helpful_information' => array(
 							'type'    => 'raw',
-							'content' => '<ul class="uabb-docs-list" data-branding=' . $branding . '>
+							'content' => '<ul class="uabb-docs-list" data-branding=' . BB_Ultimate_Addon_Helper::$is_branding_enabled . '>
 
 								<li class="uabb-docs-list-item"> <i class="ua-icon ua-icon-chevron-right2"> </i> <a href="https://www.ultimatebeaver.com/docs/business-hours-module-in-uabb/?utm_source=uabb-pro-backend&utm_medium=module-editor-screen&utm_campaign=business-hours-module" target="_blank" rel="noopener"> Getting started article </a> </li>
 							 </ul>',
@@ -315,7 +307,8 @@ FLBuilder::register_module(
  * Register a settings form to use in the "form" field type above.
  */
 FLBuilder::register_settings_form(
-	'uabb_business_hours_form', array(
+	'uabb_business_hours_form',
+	array(
 		'title' => __( 'Add Hours Data', 'uabb' ),
 		'tabs'  => array(
 			'general' => array(

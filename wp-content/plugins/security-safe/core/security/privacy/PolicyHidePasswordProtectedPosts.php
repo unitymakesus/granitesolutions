@@ -19,7 +19,7 @@ class PolicyHidePasswordProtectedPosts {
      */
 	function __construct() {
 
-        add_action('pre_get_posts', array( $this, 'exclude' ) );
+        add_action('pre_get_posts', [ $this, 'exclude' ] );
 
 	} // __construct()
 
@@ -43,7 +43,7 @@ class PolicyHidePasswordProtectedPosts {
         
         if ( ! is_single() && ! is_page() && ! is_admin() ) {
 
-            add_filter( 'posts_where', array( $this, 'query' ) );
+            add_filter( 'posts_where', [ $this, 'query' ] );
 
         }
 

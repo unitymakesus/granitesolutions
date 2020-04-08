@@ -74,9 +74,9 @@ class Cookie_Law_Info {
 		{
 			$this->version = CLI_VERSION;
 		} 
-		else 
+		else 	
 		{
-			$this->version = '1.7.7';
+			$this->version = '1.8.7';
 		}
 		$this->plugin_name = 'cookie-law-info';
 
@@ -205,7 +205,7 @@ class Cookie_Law_Info {
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
 		$this->loader->add_action( 'init', $plugin_public,'register_custom_post_type');
-
+		$this->loader->add_action( 'template_redirect', $plugin_public,'cli_set_category_cookies');
 
 		$plugin_public->common_modules();
 
@@ -551,6 +551,8 @@ class Cookie_Law_Info {
 			case 'is_GMT_on':
 			case 'as_popup':
 			case 'popup_overlay':
+			case 'thirdparty_on_field':
+			case 'third_party_default_state':
 
 				if ( $value == 'true' || $value === true ) 
 				{
@@ -706,11 +708,10 @@ class Cookie_Law_Info {
 	      //trigger_error( "Invalid hex color length", E_USER_ERROR );
 	      return $supplied_hex;
 	  }
-
 	  // Start shifting
-	  $RGB_values['R'] = hexdec( $supplied_hex{0} . $supplied_hex{1} );
-	  $RGB_values['G'] = hexdec( $supplied_hex{2} . $supplied_hex{3} );
-	  $RGB_values['B'] = hexdec( $supplied_hex{4} . $supplied_hex{5} );
+	  $RGB_values['R'] = hexdec( $supplied_hex[0] . $supplied_hex[1] );
+	  $RGB_values['G'] = hexdec( $supplied_hex[2] . $supplied_hex[3] );
+	  $RGB_values['B'] = hexdec( $supplied_hex[4] . $supplied_hex[5] );
 
 	  foreach ( $RGB_values as $c => $v ) {
 	    switch ( $shift_method ) {

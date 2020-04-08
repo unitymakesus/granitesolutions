@@ -2,7 +2,11 @@
 // If this file is called directly, abort.
 if ( ! defined( 'WPINC' ) ) {
     die;
-} 
+}  
+if (!current_user_can('manage_options')) 
+{
+    wp_die(__('You do not have sufficient permission to perform this operation', 'cookie-law-info'));
+}
 $options = array(
     'privacy_overview_title',
     'privacy_overview_content',
@@ -17,14 +21,8 @@ if (isset($_POST['update_privacy_overview_content_settings_form'])) {
     // Check nonce:
     check_admin_referer('cookielawinfo-update-privacy-overview-content');
 
-    foreach ($options as $key) {
-
-        if (isset($_POST[$key])) {
-
-            //Todo -  Store sanitised values only: wp_unslash failed on some site - need to do proper sanitize
-            $stored_options[$key] = $_POST[$key];
-        }
-    }
+    $stored_options['privacy_overview_title'] = sanitize_text_field( isset( $_POST['privacy_overview_title'] )  ? $_POST['privacy_overview_title'] : $stored_options['privacy_overview_title'] );
+    $stored_options['privacy_overview_content'] = wp_kses_post( isset( $_POST['privacy_overview_content'] ) && $_POST['privacy_overview_content'] !== '' ? $_POST['privacy_overview_content'] : $stored_options['privacy_overview_content'] );
     update_option('cookielawinfo_privacy_overview_content_settings', $stored_options);
     echo '<div class="updated"><p><strong>' . __('Settings Updated.', 'cookie-law-info') . '</strong></p></div>';
 }
@@ -32,9 +30,8 @@ if (isset($_POST['update_privacy_overview_content_settings_form'])) {
 $stored_options = get_option('cookielawinfo_privacy_overview_content_settings', array(
    'privacy_overview_content' => '','privacy_overview_title' => '',
 ));
-$privacy_title = $stored_options['privacy_overview_title'];
-$privacy_content = $stored_options['privacy_overview_content'];
-
+$privacy_title = isset($stored_options['privacy_overview_title']) ? $stored_options['privacy_overview_title'] : '';
+$privacy_content = isset($stored_options['privacy_overview_content']) ? $stored_options['privacy_overview_content'] : '';
 ?>
 <style>
     .vvv_textbox{
@@ -59,7 +56,7 @@ $privacy_content = $stored_options['privacy_overview_content'];
                 <tr valign="top">
                     <td>
                         <label for="privacy_overview_title"><?php _e('Privacy Overview Title', 'cookie-law-info'); ?></label>
-                        <input type="text" name="privacy_overview_title" value="<?php echo $privacy_title; ?>" class="cli-textbox" />
+                        <input type="text" name="privacy_overview_title" value="<?php echo sanitize_text_field( stripslashes( $privacy_title ) ); ?>" class="cli-textbox" />
                     </td>
                  </tr>
                 <tr valign="top">
@@ -69,12 +66,12 @@ $privacy_content = $stored_options['privacy_overview_content'];
                         $cli_use_editor= apply_filters('cli_use_editor_in_po',true);
                         if($cli_use_editor)
                         {
-                            wp_editor(stripslashes($privacy_content) , 'cli_privacy_overview_content', $wpe_settings = array('textarea_name'=>'privacy_overview_content'));
+                            wp_editor( stripslashes($privacy_content) , 'cli_privacy_overview_content', $wpe_settings = array('textarea_name'=>'privacy_overview_content'));
                         }
                         else
                         {
                             ?>
-                            <textarea style="width:100%; height:250px;" name="privacy_overview_content"><?php echo stripslashes($privacy_content) ;?></textarea>
+                            <textarea style="width:100%; height:250px;" name="privacy_overview_content"><?php echo wp_kses_post( stripslashes($privacy_content) ) ;?></textarea>
                             <?php
                         }
                         ?>     

@@ -9,7 +9,8 @@
  */
 
 FLBuilder::register_module(
-	'UABBFancyTextModule', array(
+	'UABBFancyTextModule',
+	array(
 		'general'    => array(
 			'title'    => __( 'General', 'uabb' ),
 			'sections' => array(
@@ -315,7 +316,7 @@ FLBuilder::register_module(
 							'connections' => array( 'color' ),
 							'preview'     => array(
 								'type'     => 'css',
-								'selector' => '.uabb-fancy-text-prefix, .uabb-fancy-text-suffix',
+								'selector' => '.uabb-module-content .uabb-fancy-text-wrap .uabb-fancy-text-prefix, .uabb-module-content .uabb-fancy-text-wrap .uabb-fancy-text-suffix',
 								'property' => 'color',
 							),
 						),
@@ -343,7 +344,7 @@ FLBuilder::register_module(
 							'connections' => array( 'color' ),
 							'preview'     => array(
 								'type'     => 'css',
-								'selector' => '.uabb-fancy-text-main',
+								'selector' => '.uabb-module-content .uabb-fancy-text-wrap .uabb-fancy-text-main',
 								'property' => 'color',
 							),
 						),

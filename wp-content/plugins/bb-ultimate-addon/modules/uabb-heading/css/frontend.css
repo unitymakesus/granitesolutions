@@ -6,11 +6,6 @@
 .uabb-heading-wrapper .uabb-heading a {
 	text-decoration: none;
 }
-
-.uabb-heading-wrapper .uabb-subheading * {
-	margin: 0;
-}
-
 .uabb-heading-align-left .uabb-heading,
 .uabb-heading-align-left .uabb-subheading,
 .uabb-heading-align-left .uabb-subheading * {
@@ -40,7 +35,7 @@
     font-size: inherit;
     line-height: inherit;	
 }
-.uabb-module-content .uabb-text-editor *:not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(strong):not(b) {
+.uabb-module-content .uabb-text-editor *:not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(strong):not(b):not(i) {
 	font-weight: inherit;
 }
 

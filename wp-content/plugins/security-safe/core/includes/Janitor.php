@@ -39,51 +39,85 @@ class Janitor {
 	} // __construct()
 
 
-
     /**
      * Run functions after upgrade
      * @since  2.0.1
      */ 
-    function upgrade_complete( $upgrader_object, $options ) {
-        
-        $this_plugin = plugin_basename( SECSAFE_FILE );
+    public function upgrade_complete( $upgrader_object, $options ) {
 
-        if ( $options['action'] == 'update' && $options['type'] == 'plugin' ) {
+        if ( 
+            isset( $options['action'] ) && $options['action'] == 'update' && 
+            isset( $options['type'] ) && $options['type'] == 'plugin' 
+        ) {
 
-           foreach( $options['plugins'] as $plugin ) {
+            if ( isset( $options['plugins'] ) ) {
 
-              if ( $plugin == $this_plugin ) {
+                if ( is_array( $options['plugins'] ) ) {
 
-                // Ensure the database tables exist
+                    foreach( $options['plugins'] as $plugin ) {
 
-                // Create Logs Table
-                Self::create_table_logs();
+                      if ( $plugin == SECSAFE_SLUG ) {
 
-                // Create Stats Table
-                Self::create_table_stats();
+                        // Log Activity
+                        $args = [];
+                        $args['details'] = sprintf( __( '%s plugin updated.', SECSAFE_SLUG ), SECSAFE_NAME ) . '[2]';
+                        $this->enable_plugin( $args );
 
-              }
+                      }
 
-           } // foreach()
+                    } // foreach()
+
+                } else {
+
+                    /**
+                     * @todo  I am making an assumption here that needs to be verified.
+                     * I have noticed in the past the variable can be an array or a string depending 
+                     * on how the update was initiated by the user. I wish WP would make this 
+                     * functionality consistent. 
+                     */ 
+                    if ( $options['plugins'] == SECSAFE_SLUG ) {
+
+                        // Log Activity
+                        $args = [];
+                        $args['details'] = sprintf( __( '%s plugin updated.', SECSAFE_SLUG ), SECSAFE_NAME ) . '[1]';
+                        $this->enable_plugin( $args );
+
+                    }
+
+                }
+
+            }
 
         }
 
     } // upgrade_complete()
 
 
-
     /**
      * Creates database tables
      * @since  2.0.0
      */
-    public function enable_plugin() {
+    public function enable_plugin( $args = []) {
+
+        global $wp, $SecuritySafe;
 
         // Create Logs Table
-        Self::create_table_logs();
+        $this->create_table_logs();
 
         // Create Stats Table
         Self::create_table_stats();
 
+        $args['type'] = '404s';
+        $args['threats'] = 0;
+        $args['status'] = 'test';
+        $args['details'] = ( isset( $args['details'] ) ) ? $args['details'] : sprintf( __( '%s plugin enabled.', SECSAFE_SLUG ), SECSAFE_NAME );;
+        
+        // Log Test 404
+        Self::add_entry( $args );
+
+        // Log Actual Activity
+        Self::log_activity( $args );
+        
     } // enable_plugin()
 
 
@@ -108,9 +142,34 @@ class Janitor {
             $this->drop_table( SECSAFE_DB_FIREWALL );
             $this->drop_table( SECSAFE_DB_STATS );
 
+        } else {
+
+            // Log Activity
+            $args = [];
+            $args['details'] = sprintf( __( '%s plugin disabled.', SECSAFE_SLUG ), SECSAFE_NAME );
+            Self::log_activity( $args );
+
         } // isset()
 
     } // disable_plugin()
+
+
+    public static function log_activity( $args = [] ) {
+
+        $user = wp_get_current_user();
+
+        // Log Actual Activity
+        $args['type'] = 'activity';
+        $args['threats'] = '0';
+        $args['user_agent'] = Yoda::get_user_agent();
+        $args['username'] = ( isset( $user->user_login ) ) ? $user->user_login : 'unknown';
+        $args['ip'] = Yoda::get_ip();
+        $args['status'] = ( defined( 'DOING_CRON' ) ) ? 'automatic' : 'unknown';
+        $args['status'] = ( $args['status'] == 'unknown' && isset( $user->user_login ) ) ? 'manual' : $args['status'];
+        
+        Self::add_entry( $args );
+
+    } // log_activity()
 
 
     /**
@@ -136,8 +195,12 @@ class Janitor {
 
         global $wpdb;
 
-        // Cleanup Valid Types
-        if ( in_array( $type, Yoda::get_types() ) ) {
+        $types = Yoda::get_types();
+
+        // Require Valid Type
+        if ( isset( $types[ $type ] ) ) {
+
+            $args = [];
 
             $limit = Yoda::get_display_limits( $type, true );
 
@@ -148,9 +211,7 @@ class Janitor {
             // Count how many exist
             $exists = (int) $wpdb->get_var( $query );
 
-            $args['type'] = 'activity';
-            $args['status'] = 'cron';
-            $args['user_agent'] = 'WP Cron - secsafe_cleanup_tables_daily';
+            $args['details'] = '[';
 
             // If more than limit
             if ( $exists > $limit ) {
@@ -162,13 +223,18 @@ class Janitor {
 
                 $result = $wpdb->query( $query );
 
-                Self::add_entry( ['details' => '[' . (int)$result . '-' . $exists . '-' . $limit . '] ' . $type . ' database maintenance.' ] );
+                $args['details'] .= (int)$result . '-' . $exists . '-' . $limit;
 
             } else {
 
-                Self::add_entry( ['details' => '[0-' . $exists . '-' . $limit . '] ' . $type . ' database maintenance.' ] );
+                $args['details'] = '0-' . $exists . '-' . $limit;
 
             }
+
+            $args['details'] .= '] ' . $type . ' ' . __( 'database maintenance', SECSAFE_SLUG ) . '.';
+
+            // Log Activity
+            Self::log_activity( $args );
 
         }
 
@@ -183,12 +249,12 @@ class Janitor {
 
         global $wpdb;
 
-        $args['type'] = 'activity';
-        $args['status'] = 'cron';
-        $args['user_agent'] = 'WP Cron - secsafe_cleanup_tables_daily';
+        $args = [];
             
         // Cleanup Valid Types
-        if ( in_array( $type, Yoda::get_types() ) ) {
+        $types = Yoda::get_types();
+
+        if ( isset( $types[ $type ] ) ) {
 
             $table_main = Yoda::get_table_main();
 
@@ -198,13 +264,16 @@ class Janitor {
 
             $result = $wpdb->query( $query );
 
-            Self::add_entry( ['details' => '[' . (int)$result . '] ' . $type . ' database maintenance.' ] );
+            $args['details'] = '[' . (int)$result . '] ' . $type . ' ' . __( 'database maintenance', SECSAFE_SLUG ) . '.';
 
         } else {
 
-            Self::add_entry( ['details' => '[ ERROR ] ' . $type . ' is not a valid type.' ] );
+            $args['details'] = sprintf( __( 'Error: %s is not a valid type.', SECSAFE_SLUG ), $type );
 
         }
+
+        // Log Activity
+        Self::log_activity( $args );
 
     } // expire_type()
 
@@ -213,7 +282,7 @@ class Janitor {
      * Creates Firewall Table 
      * @since  2.0.0
      */
-    static function create_table_logs() {
+    private function create_table_logs() {
 
         global $wpdb;
 
@@ -245,7 +314,7 @@ class Janitor {
      * Creates Stats Table
      * @since  2.0.0
      */
-    static function create_table_stats() {
+    private static function create_table_stats() {
 
         global $wpdb;
 
@@ -304,10 +373,16 @@ class Janitor {
 
         global $wpdb;
 
-        $args = ( is_array( $args ) ) ? $args : [];
+        // Prevent Caching
+        Self::prevent_caching();
 
-        // Require Type
-        if ( isset( $args['type'] ) && in_array( $args['type'], Yoda::get_types() ) ) {
+        $args = ( isset( $args['type'] ) ) ? $args : [];
+        $type = ( isset( $args['type'] ) ) ? $args['type'] : false;
+        $types = Yoda::get_types();
+        $result = false; // Default
+
+        // Require Valid Type
+        if ( isset( $types[ $type ] ) ) {
 
             /**
              * Statically set for now
@@ -315,11 +390,14 @@ class Janitor {
              */
             $args['date'] = current_time('mysql');
             
-            if ( $args['type'] != 'activty' ) {
+            if ( 
+                $args['type'] != 'activity' && 
+                $args['type'] != 'allow_deny' 
+            ) {
 
-                $args['uri'] = ( isset( $_SERVER['REQUEST_URI'] ) ) ? $_SERVER['REQUEST_URI'] : '';
-                $args['referer'] = ( isset( $_SERVER['HTTP_REFERER'] ) ) ? $_SERVER['HTTP_REFERER'] : '';
-                $args['user_agent'] = ( isset( $_SERVER['HTTP_USER_AGENT'] ) ) ? $_SERVER['HTTP_USER_AGENT'] : '';
+                $args['uri'] = ( isset( $_SERVER['REQUEST_URI'] ) ) ? filter_var( $_SERVER['REQUEST_URI'], FILTER_SANITIZE_URL ) : '';
+                $args['referer'] = ( isset( $_SERVER['HTTP_REFERER'] ) ) ? filter_var( $_SERVER['HTTP_REFERER'], FILTER_SANITIZE_URL ) : '';
+                $args['user_agent'] = Yoda::get_user_agent();
                 $args['ip'] = Yoda::get_ip();
 
                 $args['threats'] = ( isset( $args['threats'] ) && $args['threats'] ) ? 1 : 0;
@@ -346,10 +424,15 @@ class Janitor {
 
                 // Create Logs Table
                 Self::create_table_logs();
+
+                // Try Again now that a table exist
+                $result = $wpdb->insert( Yoda::get_table_main(), $targs );
                 
             }
-
+            
         }
+
+        return $result;
 
     } // add_entry()
 
@@ -411,11 +494,41 @@ class Janitor {
                 // Create Stats Table
                 Self::create_table_stats();
 
+                // Try Again now that a table exist
+                $result = $wpdb->insert( Yoda::get_table_stats(), $stats );
+
             }
 
         }
 
     } // add_stats()
+
+
+    /**
+     * Prevent plugins like WP Super Cache and W3TC from caching any data on this page.
+     * @since  2.2.3
+     */ 
+    static function prevent_caching() {
+
+        if ( ! defined( 'DONOTCACHEOBJECT' ) ) {
+
+            define( 'DONOTCACHEOBJECT', true );
+
+        }
+
+        if ( ! defined( 'DONOTCACHEDB' ) ) {
+
+            define( 'DONOTCACHEDB', true );
+            
+        }
+
+        if ( ! defined( 'DONOTCACHEPAGE' ) ) {
+
+            define( 'DONOTCACHEPAGE', true );
+            
+        }
+
+    } // prevent_caching()
 
 
     /**

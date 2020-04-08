@@ -8,7 +8,8 @@
  */
 
 FLBuilder::register_module(
-	'UABBContactFormModule', array(
+	'UABBContactFormModule',
+	array(
 		'general'    => array(
 			'title'    => __( 'General', 'uabb' ),
 			'sections' => array(
@@ -839,6 +840,19 @@ FLBuilder::register_module(
 							'label'       => __( 'Icon', 'uabb' ),
 							'show_remove' => true,
 						),
+						'btn_icon_color'      => array(
+							'type'        => 'color',
+							'label'       => __( 'Icon Color', 'uabb' ),
+							'default'     => '',
+							'show_reset'  => true,
+							'connections' => array( 'color' ),
+							'show_alpha'  => true,
+							'preview'     => array(
+								'type'     => 'css',
+								'selector' => '.uabb-contact-form-button .uabb-contact-form-submit .uabb-contact-form-submit-button-icon',
+								'property' => 'color',
+							),
+						),
 						'btn_icon_position'   => array(
 							'type'    => 'select',
 							'label'   => __( 'Icon Position', 'uabb' ),
@@ -897,7 +911,7 @@ FLBuilder::register_module(
 							'show_reset' => true,
 							'preview'    => array(
 								'type'     => 'css',
-								'selector' => '.uabb-contact-form .uabb-contact-form-submit',
+								'selector' => '.uabb-contact-form .uabb-contact-form-submit .uabb-contact-form-button-text',
 								'property' => 'color',
 							),
 						),

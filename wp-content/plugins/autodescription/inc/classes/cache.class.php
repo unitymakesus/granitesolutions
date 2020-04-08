@@ -1,14 +1,16 @@
 <?php
 /**
- * @package The_SEO_Framework\Classes
+ * @package The_SEO_Framework\Classes\Facade\Cache
+ * @subpackage The_SEO_Framework\Cache
  */
+
 namespace The_SEO_Framework;
 
 defined( 'THE_SEO_FRAMEWORK_PRESENT' ) or die;
 
 /**
  * The SEO Framework plugin
- * Copyright (C) 2015 - 2019 Sybre Waaijer, CyberWire (https://cyberwire.nl/)
+ * Copyright (C) 2015 - 2020 Sybre Waaijer, CyberWire (https://cyberwire.nl/)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as published
@@ -30,7 +32,7 @@ defined( 'THE_SEO_FRAMEWORK_PRESENT' ) or die;
  *
  * @since 2.8.0
  */
-class Cache extends Sitemaps {
+class Cache extends Site_Options {
 
 	/**
 	 * Determines whether object cache is being used.
@@ -129,8 +131,7 @@ class Cache extends Sitemaps {
 	 */
 	public function delete_post_cache( $post_id ) {
 
-		if ( ! $post_id )
-			return false;
+		if ( ! $post_id ) return false;
 
 		$success[] = $this->delete_cache( 'post', $post_id );
 
@@ -184,13 +185,12 @@ class Cache extends Sitemaps {
 	 * Deletes object cache.
 	 *
 	 * @since 2.9.0
-	 * @TODO make this work.
+	 * @since 4.0.0 Now does something.
 	 *
 	 * @return bool True on success, false on failure.
 	 */
 	public function delete_object_cache() {
-		return false;
-		// return $this->delete_cache( 'objectflush' );
+		return $this->delete_cache( 'object' );
 	}
 
 	/**
@@ -200,6 +200,7 @@ class Cache extends Sitemaps {
 	 * @since 2.8.0
 	 * @since 2.9.3 $type = 'front' now also returns true.
 	 * @since 3.1.0 Added action.
+	 * @since 4.0.5 Removed all JSON-LD transient clear calls.
 	 *
 	 * @param string $type The type
 	 * @param int    $id The post, page or TT ID. Defaults to $this->get_the_real_ID().
@@ -217,7 +218,6 @@ class Cache extends Sitemaps {
 				$front_id = $this->get_the_front_page_ID();
 
 				$this->object_cache_delete( $this->get_meta_output_cache_key_by_type( $front_id, '', 'frontpage' ) );
-				$this->delete_ld_json_transient( $front_id, '', 'frontpage' );
 				$success = true;
 				break;
 
@@ -238,7 +238,6 @@ class Cache extends Sitemaps {
 					}
 
 					$this->object_cache_delete( $this->get_meta_output_cache_key_by_type( $id, '', $post_type ) );
-					$this->delete_ld_json_transient( $id, '', $post_type );
 					$success = true;
 				}
 				break;
@@ -246,13 +245,11 @@ class Cache extends Sitemaps {
 			//* Careful, this can only run on archive pages. For now.
 			case 'term':
 				$this->object_cache_delete( $this->get_meta_output_cache_key_by_type( $id, $args['term'], 'term' ) );
-				$this->delete_ld_json_transient( $id, $args['term'], 'term' );
 				$success = true;
 				break;
 
 			case 'author':
 				$this->object_cache_delete( $this->get_meta_output_cache_key_by_type( $id, 'author', 'author' ) );
-				$this->delete_ld_json_transient( $id, 'author', 'author' );
 				$success = true;
 				break;
 
@@ -275,27 +272,6 @@ class Cache extends Sitemaps {
 			case 'detection':
 				break;
 
-			/**
-			 * Flush whole object cache group.
-			 * Set here for external functions to use. It works because of magic methods.
-			 *
-			 * @NOTE Other caching plugins can override these groups. Therefore this
-			 * does NOT work.
-			 * @TODO make this work.
-			 * @see 'object' switch-index.
-			 */
-			case 'objectflush':
-				//* @NOTE false can't pass.
-				if ( false && $this->use_object_cache ) {
-					if ( isset( $GLOBALS['wp_object_cache']->cache['the_seo_framework'] ) ) {
-						$_cache = $GLOBALS['wp_object_cache']->cache;
-						unset( $_cache['the_seo_framework'] );
-						$GLOBALS['wp_object_cache']->cache = $_cache;
-						$success = true;
-					}
-				}
-				break;
-
 			default:
 				break;
 		endswitch;
@@ -303,8 +279,8 @@ class Cache extends Sitemaps {
 		/**
 		 * @since 3.1.0
 		 *
-		 * @param string $type    The type. Comes in handy when you use a catch-all function.
-		 * @param int    $id      The post, page or TT ID. Defaults to $this->get_the_real_ID().
+		 * @param string $type    The flush type. Comes in handy when you use a catch-all function.
+		 * @param int    $id      The post, page or TT ID. Defaults to the_seo_framework()->get_the_real_ID().
 		 * @param array  $args    Additional arguments. They can overwrite $type and $id.
 		 * @param bool   $success Whether the action cleared.
 		 */
@@ -352,13 +328,13 @@ class Cache extends Sitemaps {
 	 * Set the value of the transient.
 	 *
 	 * Prevents setting of transients when they're disabled.
-	 * @see $this->the_seo_framework_use_transients
 	 *
 	 * @since 2.6.0
+	 * @uses $this->the_seo_framework_use_transients
 	 *
-	 * @param string $transient Transient name. Expected to not be SQL-escaped.
-	 * @param string $value Transient value. Expected to not be SQL-escaped.
-	 * @param int $expiration Optional Transient expiration date, optional. Expected to not be SQL-escaped.
+	 * @param string $transient  Transient name. Expected to not be SQL-escaped.
+	 * @param string $value      Transient value. Expected to not be SQL-escaped.
+	 * @param int    $expiration Transient expiration date, optional. Expected to not be SQL-escaped.
 	 */
 	public function set_transient( $transient, $value, $expiration = 0 ) {
 
@@ -372,9 +348,9 @@ class Cache extends Sitemaps {
 	 * If the transient does not exists, does not have a value or has expired,
 	 * or transients have been disabled through a constant, then the transient
 	 * will be false.
-	 * @see $this->the_seo_framework_use_transients
 	 *
 	 * @since 2.6.0
+	 * @uses $this->the_seo_framework_use_transients
 	 *
 	 * @param string $transient Transient name. Expected to not be SQL-escaped.
 	 * @return mixed|bool Value of the transient. False on failure or non existing transient.
@@ -433,7 +409,7 @@ class Cache extends Sitemaps {
 	 *
 	 * @param string $key   The Object cache key.
 	 * @param string $group The Object cache group.
-	 * @return mixed wp_cache_delete if object caching is allowed. False otherwise.
+	 * @return mixed `wp_cache_delete()` if object caching is allowed. False otherwise.
 	 */
 	public function object_cache_delete( $key, $group = 'the_seo_framework' ) {
 
@@ -467,35 +443,6 @@ class Cache extends Sitemaps {
 	public function get_sitemap_transient_name() {
 		$sitemap_revision = '5';
 		return $this->get_option( 'cache_sitemap' ) ? $this->add_cache_key_suffix( 'tsf_sitemap_' . $sitemap_revision ) : '';
-	}
-
-	/**
-	 * Returns ld_json transients for page ID.
-	 *
-	 * @since 3.1.0
-	 * @since 3.1.1 : The first parameter is now optional.
-	 *
-	 * @param int|string|bool $id       The Taxonomy or Post ID. If false it will generate for the blog page.
-	 * @param string          $taxonomy The taxonomy name.
-	 * @param string|null     $type     The post type.
-	 * @return string The ld_json cache key.
-	 */
-	public function get_ld_json_transient_name( $id = 0, $taxonomy = '', $type = null ) {
-
-		if ( ! $this->get_option( 'cache_meta_schema' ) )
-			return '';
-
-		$cache_key = $this->generate_cache_key( $id, $taxonomy, $type );
-
-		$revision = '7';
-
-		/**
-		 * Change key based on options.
-		 */
-		$options  = $this->enable_ld_json_breadcrumbs() ? '1' : '0';
-		$options .= $this->enable_ld_json_searchbox() ? '1' : '0';
-
-		return 'tsf_' . $revision . '_' . $options . '_ldjs_' . $cache_key;
 	}
 
 	/**
@@ -550,7 +497,7 @@ class Cache extends Sitemaps {
 
 		//* Placeholder ID.
 		$the_id = '';
-		$_t = $taxonomy;
+		$_t     = $taxonomy;
 
 		if ( $this->is_404() ) {
 			$the_id = '_404_';
@@ -598,7 +545,7 @@ class Cache extends Sitemaps {
 
 					//* Temporarily disable caches to prevent database spam.
 					$this->the_seo_framework_use_transients = false;
-					$this->use_object_cache = false;
+					$this->use_object_cache                 = false;
 
 					$the_id = 'unix_' . $unix;
 				}
@@ -626,7 +573,7 @@ class Cache extends Sitemaps {
 
 				$the_id = 'archives_' . $the_id;
 			}
-		} elseif ( ( $this->is_real_front_page() || $this->is_front_page_by_id( $page_id ) ) || ( $this->is_admin() && $this->is_seo_settings_page( true ) ) ) {
+		} elseif ( ( $this->is_real_front_page() || $this->is_front_page_by_id( $page_id ) ) || ( \is_admin() && $this->is_seo_settings_page( true ) ) ) {
 			//* Front/HomePage.
 			$the_id = $this->generate_front_page_cache_key();
 		} elseif ( $this->is_blog_page( $page_id ) ) {
@@ -653,26 +600,13 @@ class Cache extends Sitemaps {
 					break;
 			endswitch;
 		} elseif ( $this->is_search() ) {
-			$query = '';
-
-			//* TODO figure out why this check is here... admin compat maybe?
-			//! TODO convert the search query to a hash: search_(hash)... encode first!
-			if ( function_exists( 'get_search_query' ) ) {
-				$search_query = \get_search_query( $_escaped = true );
-
-				if ( $search_query )
-					$query = str_replace( ' ', '', $search_query );
-
-				//* Limit to 10 chars.
-				if ( mb_strlen( $query ) > 10 )
-					$query = mb_substr( $query, 0, 10 );
-
-				$query = \esc_sql( $query );
-			}
+			//* Remove spaces. Limit to 10 chars.
+			// TODO use metahpone?
+			$query = \esc_sql( substr( str_replace( ' ', '', \get_search_query( true ) ), 0, 10 ) );
 
 			//* Temporarily disable caches to prevent database spam.
 			$this->the_seo_framework_use_transients = false;
-			$this->use_object_cache = false;
+			$this->use_object_cache                 = false;
 
 			$the_id = $page_id . '_s_' . $query;
 		}
@@ -713,53 +647,40 @@ class Cache extends Sitemaps {
 		switch ( $type ) :
 			case 'author':
 				return $this->add_cache_key_suffix( 'author_' . $page_id );
-				break;
 			case 'frontpage':
 				return $this->add_cache_key_suffix( $this->generate_front_page_cache_key() );
-				break;
 			case 'page':
 				return $this->add_cache_key_suffix( 'page_' . $page_id );
-				break;
 			case 'post':
 				return $this->add_cache_key_suffix( 'post_' . $page_id );
-				break;
 			case 'attachment':
 				return $this->add_cache_key_suffix( 'attach_' . $page_id );
-				break;
 			case 'singular':
 				return $this->add_cache_key_suffix( 'singular_' . $page_id );
-				break;
 			case 'term':
 				return $this->add_cache_key_suffix( $this->generate_taxonomical_cache_key( $page_id, $taxonomy ) );
-				break;
+			case 'ping':
+				return $this->add_cache_key_suffix( 'tsf_throttle_ping' );
 			default:
 				$this->_doing_it_wrong( __METHOD__, 'Third parameter must be a known type.', '2.6.5' );
 				return $this->add_cache_key_suffix( \esc_sql( $type . '_' . $page_id . '_' . $taxonomy ) );
-				break;
 		endswitch;
-
-		return false;
 	}
 
 	/**
 	 * Adds cache key suffix based on blog id and locale.
 	 *
 	 * @since 2.7.0
-	 * @since 2.8.0 1: $locale is now static.
-	 *              2: $key may now be empty.
-	 * @staticvar string $locale
+	 * @since 2.8.0 1. $locale is now static.
+	 *              2. $key may now be empty.
+	 * @since 4.0.0 Removed caching, so to support translation plugin loops.
 	 * @global string $blog_id
 	 *
-	 * @return string the cache key.
+	 * @param string $key The cache key.
+	 * @return string
 	 */
 	protected function add_cache_key_suffix( $key = '' ) {
-
-		static $locale = null;
-
-		if ( is_null( $locale ) )
-			$locale = strtolower( \get_locale() );
-
-		return $key . '_' . $GLOBALS['blog_id'] . '_' . $locale;
+		return $key . '_' . $GLOBALS['blog_id'] . '_' . strtolower( \get_locale() );
 	}
 
 	/**
@@ -772,17 +693,15 @@ class Cache extends Sitemaps {
 	 */
 	public function generate_front_page_cache_key( $type = '' ) {
 
-		if ( empty( $type ) ) {
+		if ( ! $type ) {
 			if ( $this->has_page_on_front() ) {
 				$type = 'page';
 			} else {
 				$type = 'blog';
 			}
-		} else {
-			$type = \esc_sql( $type );
 		}
 
-		return $the_id = 'h' . $type . '_' . $this->get_the_front_page_ID();
+		return \esc_sql( 'h' . $type . '_' . $this->get_the_front_page_ID() );
 	}
 
 	/**
@@ -811,7 +730,7 @@ class Cache extends Sitemaps {
 			}
 		}
 
-		if ( empty( $the_id ) ) {
+		if ( ! $the_id ) {
 			if ( mb_strlen( $taxonomy ) >= 5 ) {
 				$the_id = mb_substr( $taxonomy, 0, 5 );
 			} else {
@@ -836,7 +755,7 @@ class Cache extends Sitemaps {
 
 		$revision = '1';
 
-		return $cache_key = 'robots_txt_output_' . $revision . $GLOBALS['blog_id'];
+		return 'robots_txt_output_' . $revision . $GLOBALS['blog_id'];
 	}
 
 	/**
@@ -857,7 +776,7 @@ class Cache extends Sitemaps {
 		$page  = (string) $this->page();
 		$paged = (string) $this->paged();
 
-		return $cache_key = 'seo_framework_output_' . $key . '_' . $paged . '_' . $page;
+		return 'seo_framework_output_' . $key . '_' . $paged . '_' . $page;
 	}
 
 	/**
@@ -883,7 +802,7 @@ class Cache extends Sitemaps {
 		//= Refers to the first page, always.
 		$_page = $_paged = '1';
 
-		return $cache_key = 'seo_framework_output_' . $key . '_' . $_paged . '_' . $_page;
+		return 'seo_framework_output_' . $key . '_' . $_paged . '_' . $_page;
 	}
 
 	/**
@@ -925,32 +844,14 @@ class Cache extends Sitemaps {
 
 		$transient = $this->get_sitemap_transient_name();
 		$transient and \delete_transient( $transient );
-		$this->ping_searchengines();
 
-		return $run = true;
-	}
-
-	/**
-	 * Deletes transient for the LD+Json scripts on requests.
-	 *
-	 * @since 2.4.2
-	 * @since 2.8.0 Now listens to option 'cache_meta_schema' before deleting transient.
-	 * @since 2.9.1 Now no longer sets object property $this->ld_json_transient.
-	 * @since 2.9.4 Removed cache.
-	 *
-	 * @param mixed       $page_id  The page ID or identifier.
-	 * @param string      $taxonomy The tt name.
-	 * @param string|null $type     The post type.
-	 * @return bool true
-	 */
-	public function delete_ld_json_transient( $page_id, $taxonomy = '', $type = null ) {
-
-		if ( $this->get_option( 'cache_meta_schema' ) ) {
-			$transient = $this->get_ld_json_transient_name( $page_id, $taxonomy, $type );
-			$transient and \delete_transient( $transient );
+		if ( $this->get_option( 'ping_use_cron' ) ) {
+			\The_SEO_Framework\Bridges\Ping::engage_pinging_cron();
+		} else {
+			\The_SEO_Framework\Bridges\Ping::ping_search_engines();
 		}
 
-		return true;
+		return $run = true;
 	}
 
 	/**
@@ -984,13 +885,16 @@ class Cache extends Sitemaps {
 			); // No cache OK, Set in autoloaded transient. DB call ok.
 
 			foreach ( [ 'archive', 'search' ] as $key ) {
-				array_walk( $cache[ $key ], function( &$v ) {
-					if ( isset( $v->meta_value, $v->post_id ) && $v->meta_value ) {
-						$v = (int) $v->post_id;
-					} else {
-						$v = false;
+				array_walk(
+					$cache[ $key ],
+					function( &$v ) {
+						if ( isset( $v->meta_value, $v->post_id ) && $v->meta_value ) {
+							$v = (int) $v->post_id;
+						} else {
+							$v = false;
+						}
 					}
-				} );
+				);
 				$cache[ $key ] = array_filter( $cache[ $key ] );
 			}
 

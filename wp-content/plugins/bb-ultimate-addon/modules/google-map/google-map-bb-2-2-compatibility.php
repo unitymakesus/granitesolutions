@@ -8,17 +8,9 @@
  * @package UABB Google Map Module
  */
 
-$branding_name       = BB_Ultimate_Addon_Helper::get_builder_uabb_branding( 'uabb-plugin-name' );
-$branding_short_name = BB_Ultimate_Addon_Helper::get_builder_uabb_branding( 'uabb-plugin-short-name' );
-$branding            = '';
-if ( empty( $branding_name ) && empty( $branding_short_name ) ) {
-	$branding = 'no';
-} else {
-	$branding = 'yes';
-}
-
 FLBuilder::register_module(
-	'GoogleMapModule', array(
+	'GoogleMapModule',
+	array(
 		'multiple_addresses' => array( // Tab.
 			'title'       => __( 'Addresses', 'uabb' ), // Tab title.
 			'description' => $notice,
@@ -265,11 +257,13 @@ FLBuilder::register_module(
 					'fields' => array(
 						'uabb_helpful_information' => array(
 							'type'    => 'raw',
-							'content' => '<ul class="uabb-docs-list" data-branding=' . $branding . '>
+							'content' => '<ul class="uabb-docs-list" data-branding=' . BB_Ultimate_Addon_Helper::$is_branding_enabled . '>
 
 								<li class="uabb-docs-list-item"> <i class="ua-icon ua-icon-chevron-right2"> </i> <a href="https://www.ultimatebeaver.com/docs/how-to-create-google-api-key-in-uabb-google-map-element/?utm_source=uabb-pro-backend&utm_medium=module-editor-screen&utm_campaign=google-map-module" target="_blank" rel="noopener"> How to create Google API key in Google Maps module? </a> </li>
 
-								<li class="uabb-docs-list-item"> <i class="ua-icon ua-icon-chevron-right2"> </i> <a href="https://www.ultimatebeaver.com/docs/how-to-hide-the-google-maps-info-window-on-page-load/?utm_source=Uabb-Pro-Backend&utm_medium=Module-Editor-Screen&utm_campaign=Google-Map-module" target="_blank" rel="noopener"> How to create Google API key in Google Maps module? </a> </li>
+								<li class="uabb-docs-list-item"> <i class="ua-icon ua-icon-chevron-right2"> </i> <a href="https://www.ultimatebeaver.com/docs/how-to-hide-the-google-maps-info-window-on-page-load/?utm_source=Uabb-Pro-Backend&utm_medium=Module-Editor-Screen&utm_campaign=Google-Map-module" target="_blank" rel="noopener"> How to hide the Google Map’s Info Window on Page Load? </a> </li>
+
+								<li class="uabb-docs-list-item"> <i class="ua-icon ua-icon-chevron-right2"> </i> <a href="https://www.ultimatebeaver.com/docs/unable-to-see-the-address-on-entering/?utm_source=Uabb-Pro-Backend&utm_medium=Module-Editor-Screen&utm_campaign=Google-Map-module" target="_blank" rel="noopener"> Unable to see the address on entering? </a> </li>
 								
 							 </ul>',
 						),
@@ -281,7 +275,8 @@ FLBuilder::register_module(
 );
 
 FLBuilder::register_settings_form(
-	'uabb_google_map_addresses', array(
+	'uabb_google_map_addresses',
+	array(
 		'title' => __( 'Add Address', 'uabb' ),
 		'tabs'  => array(
 			'general'     => array(

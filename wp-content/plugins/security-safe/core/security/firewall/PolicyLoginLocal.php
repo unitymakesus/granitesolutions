@@ -5,7 +5,6 @@ namespace SovereignStack\SecuritySafe;
 // Prevent Direct Access
 if ( ! defined( 'ABSPATH' ) ) { die; }
 
-
 /**
  * Class PolicyLoginLocal
  * @package SecuritySafe
@@ -13,6 +12,8 @@ if ( ! defined( 'ABSPATH' ) ) { die; }
 class PolicyLoginLocal extends Firewall {
 
     var $setting_on = false;
+
+    var $nonce = '_nonce_login_local';
 
     /**
      * PolicyLoginLocal constructor.
@@ -22,11 +23,11 @@ class PolicyLoginLocal extends Firewall {
         // Run parent class constructor first
         parent::__construct();
 
-        if ( $setting ) {
-            /**
-             * @todo  hook into something better than init to be more acurate
-             */ 
-            add_action( 'init', array( $this, 'force_local' ) );
+        if ( $setting && ! defined('XMLRPC_REQUEST') ) {
+
+            add_action( 'login_form', [ $this, 'add_nonce' ] ); // Main login
+            add_filter( 'login_form_top', [ $this, 'add_nonce_login_form_top' ], 10, 2 ); // Login using wp_login_form()
+            add_filter( 'authenticate', [ $this, 'verify_nonce' ], 30, 3 );
 
         }
         
@@ -34,52 +35,88 @@ class PolicyLoginLocal extends Firewall {
 	} // __construct()
 
 
+    /**
+     * This adds a nonce to the login form.
+     * @since  2.2.0
+     */ 
+    function add_nonce() {
+
+        // Prevent caching of this login page
+        Janitor::prevent_caching();
+
+        wp_nonce_field( SECSAFE_SLUG . '-login-local', $this->nonce );
+
+    } // add_nonce()
+
 
     /**
-     * This forces the user to actually be on the website when authenticating.
-     * @since  0.2.0
+     * This adds a nonce to the login form created by wp_login_form().
+     * @since  2.2.3
      */ 
-    function log_threats() {
+    function add_nonce_login_form_top( $content = '', $args = '' ) {
 
-        $this->setting_on = true;
-        $this->force_local();
+        // Prevent Caching
+        Janitor::prevent_caching();
 
-    } // log_threats()
+        ob_start();
+
+        $this->add_nonce();
+
+        $content .= ob_get_contents();
+
+        ob_end_clean();
+
+        return $content;
+
+    } // add_nonce_front_end()
 
 
     /**
-     * This forces the user to actually be on the website when authenticating.
-     * @since  0.2.0
+     * Verifies the nonce
+     * @since  2.2.0
      */ 
-    function force_local() {
+    function verify_nonce( $user, $username, $password ) {
 
-        // If Attempt to Login
-        if ( strpos( $_SERVER['REQUEST_URI'], 'wp-login.php' ) !== false && isset( $_POST['log'] ) && isset( $_POST['pwd'] ) ) {
+        if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
 
-            $args = [];
-            $args['type'] = 'logins';
+            $nonce = ( isset( $_POST[ $this->nonce ] ) ) ? $_POST[ $this->nonce ] : false;
 
-            // If Refferrer is not set or does not contain site's domain name
-            if ( ! isset( $_SERVER['HTTP_REFERER'] ) || ! $_SERVER['HTTP_REFERER'] ) {
+            if ( ! $nonce ) {
 
-                $args['details'] = 'Empty REFERER in server headers. [' . __LINE__ . ']';
-                $this->block( $args );
+                $error = __( 'Error: Local login required and Nonce missing.', SECSAFE_SLUG ) . '[' . __LINE__ . ']';
+            
+            } else if ( ! isset( $_POST['_wp_http_referer'] ) ) {
 
-            } else if ( ! isset( $_SERVER['HTTP_HOST'] ) || ! $_SERVER['HTTP_HOST'] ) {
+                $error = __( 'Error: Local login required and Referer missing.', SECSAFE_SLUG ) . '[' . __LINE__ . ']';
 
-                $args['details'] = 'Empty HOST in server headers. [' . __LINE__ . ']';
-                $this->block( $args );
+            } else {
+
+                // Check nonce les than 12 hours old
+                if ( ! wp_verify_nonce( $nonce, SECSAFE_SLUG . '-login-local' ) ) {
+
+                    $error = __( 'Error: Local login required and Nonce not valid.', SECSAFE_SLUG ) . '[' . __LINE__ . ']';
+
+                }
                 
-            } else if ( strpos( $_SERVER['HTTP_REFERER'], $_SERVER['SERVER_NAME'] ) === false ) {
+            }
+        
+            if ( isset( $error ) ) {
 
-                $args['details'] = 'REFERER is not from HOST. [' . __LINE__ . ']';
+                $args = [];
+                $args['type'] = 'logins';
+                $args['details'] = $error;
+                $args['username'] = filter_var( $username, FILTER_SANITIZE_STRING );
+
+                // Block the attempt
                 $this->block( $args );
 
             }
 
-        } // login
-
-    } // force_local()
+        }
+     
+        return $user;
+    
+    } // verify_nonce()
 
 
 } // PolicyLoginLocal()

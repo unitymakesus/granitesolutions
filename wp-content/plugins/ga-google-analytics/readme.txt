@@ -9,9 +9,9 @@ Author URI: https://plugin-planet.com/
 Donate link: https://monzillamedia.com/donate.html
 Contributors: specialk
 Requires at least: 4.1
-Tested up to: 5.2
-Stable tag: 20190501
-Version: 20190501
+Tested up to: 5.4
+Stable tag: 20200325
+Version: 20200325
 Requires PHP: 5.6.20
 Text Domain: ga-google-analytics
 Domain Path: /languages
@@ -60,10 +60,10 @@ This is a lightweight plugin that inserts the required GA tracking code. To view
 * Supports [IP Anonymization](https://developers.google.com/analytics/devguides/collection/analyticsjs/ip-anonymization)
 * Supports [Force SSL](https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#forceSSL)
 * Supports [Tracker Objects](https://developers.google.com/analytics/devguides/collection/analyticsjs/creating-trackers)
-* Supports [Google Optimize](https://support.google.com/360suite/optimize/)
+* Supports [Google Optimize](https://support.google.com/optimize/answer/6262084)
 * Supports [User Opt-Out](https://developers.google.com/analytics/devguides/collection/analyticsjs/user-opt-out)
 
-Also supports tracking links and conversions via the Custom Code setting. Learn more about [Google Analytics](http://www.google.com/analytics/)!
+Also supports tracking links and conversions via the Custom Code setting. Learn more about [Google Analytics](https://www.google.com/analytics/)!
 
 **Pro Version**
 
@@ -107,7 +107,7 @@ After configuring your settings, you can verify that GA tracking code is include
 
 __Note:__ this plugin adds the required GA code to your web pages. In order for the code to do anything, it must correspond to an active, properly configured Google Analytics account. Learn more at the [Google Analytics Help Center](https://support.google.com/analytics/?hl=en#topic=3544906).
 
-[More info on installing WP plugins](http://codex.wordpress.org/Managing_Plugins#Installing_Plugins)
+[More info on installing WP plugins](https://codex.wordpress.org/Managing_Plugins#Installing_Plugins)
 
 
 **Usage**
@@ -214,10 +214,24 @@ Here are the steps:
 
 Done! You can view the source code of your web pages to verify the results.
 
+More info about [Google Optimize](https://support.google.com/optimize/answer/6262084).
+
+
+**How to enable Opt-out of tracking?**
+
+Here are the steps:
+
+1. Add the following code to the plugin setting, "Custom Code": `<script>window['ga-disable-UA-XXXXX-Y'] = true;</script>`
+2. Check the box to enable the setting, "Custom Code Location".
+
+Done! You can view the source code of your web pages to verify the results.
+
+More info about [user opt-out](https://developers.google.com/analytics/devguides/collection/analyticsjs/user-opt-out).
+
 
 **Got a question?**
 
-To ask a question, suggest a feature, or provide feedback, [contact me directly](https://perishablepress.com/contact/). Learn more about [Google Analytics](http://www.google.com/analytics/) and [GA tracking methods](https://perishablepress.com/3-ways-track-google-analytics/).
+To ask a question, suggest a feature, or provide feedback, [contact me directly](https://perishablepress.com/contact/). Learn more about [Google Analytics](https://www.google.com/analytics/) and [GA tracking methods](https://perishablepress.com/3-ways-track-google-analytics/).
 
 
 
@@ -250,6 +264,35 @@ If you like GA Google Analytics, please take a moment to [give a 5-star rating](
 
 > New Pro version available! Check out [GA Pro &raquo;](https://plugin-planet.com/ga-google-analytics-pro/)
 
+
+**20200325**
+
+* Fixes bug with `auto` parameter
+* Tests on WordPress 5.4
+
+**20200319**
+
+* Adds filter hook `ga_google_analytics_options_array`
+* Adds filter hook `ga_google_analytics_enable_auto`
+* Tests on WordPress 5.4
+
+**20191109**
+
+* Tightens output/display of tracking code
+* Improves sanitization for plugin options
+* Updates styles for plugin settings page
+* Improves clarity of settings page infos
+* Generates new default translation template
+* Tests on WordPress 5.3
+
+**20190902**
+
+* Changes order of custom code output
+* Improves output of GA tracking markup
+* Improves clarity of settings information
+* Updates some links to https
+* Generates new default translation template
+* Tests on WordPress 5.3 (alpha)
 
 **20190501**
 
@@ -387,9 +430,9 @@ If you like GA Google Analytics, please take a moment to [give a 5-star rating](
 * Tested on WordPress 4.4 (beta)
 * Updated minimum version requirement
 * Updated heading hierarchy on settings page
-* Added option to disable GA for admin users (Thanks to [Daniele Raimondi](http://w3b.it/))
-* Added support for IP anonymization (Thanks to [Daniele Raimondi](http://w3b.it/))
-* Added support for Force SSL (Thanks to [Česlav Przywara](http://www.bluechip.at/))
+* Added option to disable GA for admin users (Thanks to [Daniele Raimondi](https://w3b.it/))
+* Added support for IP anonymization (Thanks to [Daniele Raimondi](https://w3b.it/))
+* Added support for Force SSL (Thanks to [Česlav Przywara](https://www.bluechip.at/))
 * Cleaned up some "Undefined index" Notices
 * Removed 404 link from Important Notice panel
 * Updated Google links in the Overview panel

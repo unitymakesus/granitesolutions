@@ -64,7 +64,7 @@ class AdminPageFiles extends AdminPage
         if ( security_safe()->is_not_paying() ) {
             $tab_plugins_intro .= '<br /><br /><b>' . __( 'Batch Plugin Permissions', SECSAFE_SLUG ) . '</b> (<a href="' . SECSAFE_URL_MORE_INFO_PRO . '">' . __( 'Pro Feature', SECSAFE_SLUG ) . '</a>) - ' . __( 'You can change all plugin permissions to Standard or Secure permissions with one click.', SECSAFE_SLUG );
             $tab_plugins_intro .= '<br /><br /><b>' . __( 'Prevent Plugin Version Snooping', SECSAFE_SLUG ) . '</b> (<a href="' . SECSAFE_URL_MORE_INFO_PRO . '">' . __( 'Pro Feature', SECSAFE_SLUG ) . '</a>) - ' . __( 'Prevent access to plugin version files.', SECSAFE_SLUG );
-            $tab_plugins_intro .= '<br /><br /><b>' . __( 'Maintain Secure Permissions', SECSAFE_SLUG ) . '</b> (<a href="' . SECSAFE_URL_MORE_INFO_PRO . '">' . __( 'Pro Feature', SECSAFE_SLUG ) . '</a>) - ' . __( 'WordPress will overwrite your file permissions changes when an update is performed. Security Safe Pro will automatically fix your permissions after an update.', SECSAFE_SLUG );
+            $tab_plugins_intro .= '<br /><br /><b>' . __( 'Maintain Secure Permissions', SECSAFE_SLUG ) . '</b> (<a href="' . SECSAFE_URL_MORE_INFO_PRO . '">' . __( 'Pro Feature', SECSAFE_SLUG ) . '</a>) - ' . __( 'Pro will automatically fix your file permissions after an core, plugin, and theme update.', SECSAFE_SLUG );
         }
         
         $this->tabs[] = [
@@ -80,7 +80,7 @@ class AdminPageFiles extends AdminPage
             'id'               => 'server',
             'label'            => __( 'Server', SECSAFE_SLUG ),
             'title'            => __( 'Server Information', SECSAFE_SLUG ),
-            'heading'          => __( 'It is your hosting provider\'s job to keep your server up-to-date.', SECSAFE_SLUG ),
+            'heading'          => __( "It is your hosting provider's job to keep your server up-to-date.", SECSAFE_SLUG ),
             'intro'            => __( 'This table below will help identify the software versions currently on your hosting server. <br>NOTE: System administrators often do server updates once per month. If something is a version behind, then you might be between update cycles or there may be compatibility issues due to version dependencies.', SECSAFE_SLUG ),
             'classes'          => [ 'full' ],
             'content_callback' => 'tab_server',
@@ -117,7 +117,7 @@ class AdminPageFiles extends AdminPage
         if ( version_compare( $wp_version, '3.7.0' ) >= 0 && !defined( 'AUTOMATIC_UPDATER_DISABLED' ) ) {
             $disabled = ( defined( 'WP_AUTO_UPDATE_CORE' ) ? true : false );
             $classes = '';
-            $rows .= ( $disabled ? $this->form_text( '<b>' . __( 'NOTICE:', SECSAFE_SLUG ) . '</b> ' . __( 'WordPress Automatic Core Updates are being controlled by the constant variable WP_AUTO_UPDATE_CORE in the wp-config.php file or by another plugin. As a result, Automatic Core Update feature settings for this plugin have been disabled.', SECSAFE_SLUG ), 'notice-info' ) : '' );
+            $rows .= ( $disabled ? $this->form_text( __( '<b>NOTICE:</b> WordPress Automatic Core Updates are being controlled by the constant variable WP_AUTO_UPDATE_CORE in the wp-config.php file or by another plugin. As a result, Automatic Core Update feature settings for this plugin have been disabled.', SECSAFE_SLUG ), 'notice-info' ) : '' );
             $rows .= $this->form_checkbox(
                 $this->settings,
                 __( 'Dev Core Updates', SECSAFE_SLUG ),
@@ -163,11 +163,11 @@ class AdminPageFiles extends AdminPage
             );
         } else {
             if ( defined( 'AUTOMATIC_UPDATER_DISABLED' ) ) {
-                $rows .= $this->form_text( '<b>' . __( 'NOTICE:', SECSAFE_SLUG ) . '</b> ' . __( 'WordPress Automatic Updates are disabled by the constant variable AUTOMATIC_UPDATER_DISABLED in the wp-config.php file or by another plugin. As a result, Automatic Update features for this plugin have been disabled.', SECSAFE_SLUG ), 'notice-info' );
+                $rows .= $this->form_text( __( '<b>NOTICE:</b> WordPress Automatic Updates are disabled by the constant variable AUTOMATIC_UPDATER_DISABLED in the wp-config.php file or by another plugin. As a result, Automatic Update features for this plugin have been disabled.', SECSAFE_SLUG ), 'notice-info' );
             }
             // AUTOMATIC_UPDATER_DISABLED
             if ( version_compare( $wp_version, '3.7.0' ) < 0 ) {
-                $rows .= $this->form_text( '<b>' . __( 'NOTICE:', SECSAFE_SLUG ) . '</b> ' . __( 'You are using WordPress Version', SECSAFE_SLUG ) . ' ' . $wp_version . '. ' . __( 'The WordPress Automatic Updates feature controls require version 3.7 or greater.', SECSAFE_SLUG ), 'notice-info' );
+                $rows .= $this->form_text( sprintf( __( '<b>NOTICE:</b> You are using WordPress Version %s. The WordPress Automatic Updates feature controls require version 3.7 or greater.', SECSAFE_SLUG ), $wp_version ), 'notice-info' );
             }
             // version_compare()
         }
@@ -191,7 +191,7 @@ class AdminPageFiles extends AdminPage
             __( 'WordPress Version Files', SECSAFE_SLUG ),
             'version_files_core',
             __( 'Prevent Access', SECSAFE_SLUG ),
-            __( 'Prevent access to files that disclose WordPress versions: readme.html and license.txt.', SECSAFE_SLUG ) . ' ' . '<a href="' . admin_url( 'admin.php?page=security-safe-privacy#software-privacy' ) . '">' . __( 'Also, see Software Privacy', SECSAFE_SLUG ) . '</a>.',
+            sprintf( __( 'Prevent access to files that disclose WordPress versions: readme.html and license.txt. <a href="%s">Also, see Software Privacy</a>', SECSAFE_SLUG ), admin_url( 'admin.php?page=security-safe-privacy#software-privacy' ) ),
             $classes,
             false
         );
@@ -201,7 +201,7 @@ class AdminPageFiles extends AdminPage
                 $this->settings,
                 __( 'Plugin Version Files', SECSAFE_SLUG ),
                 'version_files_plugins',
-                __( 'Prevent Access', SECSAFE_SLUG ) . ' (<a href="' . SECSAFE_URL_MORE_INFO_PRO . '">' . __( 'Pro Feature', SECSAFE_SLUG ) . '</a>)',
+                sprintf( __( 'Prevent Access (<a href="%1$s">Pro Feature</a>)', SECSAFE_SLUG ), SECSAFE_URL_MORE_INFO_PRO ),
                 __( 'Prevent access to files that disclose plugin versions.', SECSAFE_SLUG ),
                 $classes,
                 true
@@ -210,7 +210,7 @@ class AdminPageFiles extends AdminPage
                 $this->settings,
                 __( 'Theme Version Files', SECSAFE_SLUG ),
                 'version_files_themes',
-                __( 'Prevent Access', SECSAFE_SLUG ) . ' (<a href="' . SECSAFE_URL_MORE_INFO_PRO . '">' . __( 'Pro Feature', SECSAFE_SLUG ) . '</a>)',
+                sprintf( __( 'Prevent Access (<a href="%s">Pro Feature</a>)', SECSAFE_SLUG ), SECSAFE_URL_MORE_INFO_PRO ),
                 __( 'Prevent access to files that disclose plugin versions.', SECSAFE_SLUG ),
                 $classes,
                 true
@@ -307,14 +307,9 @@ class AdminPageFiles extends AdminPage
         $html = '';
         // Latest Versions
         $latest_versions = [];
-        // https://endoflife.software/programming-languages/server-side-scripting/php
-        // https://secure.php.net/ChangeLog-7.php
-        $latest_versions['PHP'] = [
-            '7.3.0' => '7.3.5',
-            '7.2.0' => '7.2.18',
-            '7.1.0' => '7.1.29',
-        ];
-        $php_min = '7.1.0';
+        $latest_versions['PHP'] = Yoda::get_php_versions();
+        $php_min = $latest_versions['PHP']['min'];
+        unset( $latest_versions['PHP']['min'] );
         $ok = [];
         $ok['php'] = false;
         $bad = [];
@@ -357,7 +352,7 @@ class AdminPageFiles extends AdminPage
                         
                         if ( version_compare( $PHP_VERSION, $minor, '>=' ) ) {
                             
-                            if ( $PHP_VERSION >= $patch ) {
+                            if ( version_compare( $PHP_VERSION, $patch, '>=' ) ) {
                                 // Prevent us from recommending a lower version
                                 $status = __( 'Secure', SECSAFE_SLUG );
                                 $recommend = $PHP_VERSION;
@@ -435,7 +430,7 @@ class AdminPageFiles extends AdminPage
         // foreach
         // If phpinfo is disabled, display notice
         if ( empty($phpinfo) ) {
-            $html .= '<tr><td colspan="4">' . __( 'It seems that the phpinfo() function is disabled. You may need to contact the hosting provider to enable this function for more advanced version details.', SECSAFE_SLUG ) . ' <a href="http://php.net/manual/en/function.phpinfo.php">' . __( 'See the documentation.', SECSAFE_SLUG ) . '</a></td></tr>';
+            $html .= '<tr><td colspan="4">' . sprintf( __( 'The phpinfo() function is disabled. You may need to contact the hosting provider to enable this function for more advanced version details. <a href="%s">See the documentation.</a>', SECSAFE_SLUG ), 'https://php.net/manual/en/function.phpinfo.php' ) . '</td></tr>';
         }
         // ! empty()
         $html .= '</table>';
@@ -659,9 +654,9 @@ class AdminPageFiles extends AdminPage
                     if ( $show_row ) {
                         $groups = '<tr class="' . esc_html( $notice_class ) . '">
                                         <td>' . esc_html( $rel_path ) . '</td>
-                                        <td style="text-align: center;">' . __( esc_html( $type ), SECSAFE_SLUG ) . '</td>
+                                        <td style="text-align: center;">' . esc_html( $type ) . '</td>
                                         <td style="text-align: center;">' . esc_html( $owner . $group . $world ) . '</td>
-                                        <td class="' . strtolower( esc_html( $status ) ) . '" style="text-align: center;">' . __( ucwords( esc_html( $status ) ), SECSAFE_SLUG ) . '</td>';
+                                        <td class="' . strtolower( esc_html( $status ) ) . '" style="text-align: center;">' . Self::display_status( $status ) . '</td>';
                         $groups .= ( $rel_path == '/' ? '<td style="text-align: center;"> - </td>' : '<td style="text-align: center;">' . $select . '</td>' );
                         $groups .= '</tr>';
                         // Separate types of problems into groups
@@ -878,17 +873,17 @@ class AdminPageFiles extends AdminPage
             
             // strlen()
         } else {
-            $this->messages[] = [ __( 'FILE DOES NOT EXIST:', SECSAFE_SLUG ) . ' ' . $path, 3, 0 ];
+            $this->messages[] = [ sprintf( __( 'Error: File does not exist - %s', SECSAFE_SLUG ), $path ), 3, 0 ];
         }
         
         // file_exists()
         
         if ( $result ) {
             if ( !$errors_only ) {
-                $this->messages[] = [ __( 'SUCCESS: File permissions were successfully updated to', SECSAFE_SLUG ) . ' ' . $perm . ' ' . __( 'for file:', SECSAFE_SLUG ) . ' ' . $rel_path, 0, 0 ];
+                $this->messages[] = [ sprintf( __( 'File permissions were successfully updated to %1$s for file: %2$s', SECSAFE_SLUG ), $perm, $rel_path ), 0, 0 ];
             }
         } else {
-            $this->messages[] = [ __( 'ERROR: File permissions could not be updated to', SECSAFE_SLUG ) . ' ' . $perm . ' ' . __( 'for file:', SECSAFE_SLUG ) . ' ' . $rel_path . '. ' . __( 'Please contact your hosting provider for assistance.', SECSAFE_SLUG ), 3, 0 ];
+            $this->messages[] = [ sprintf( __( 'Error: File permissions could not be updated to %1$s for file: %2$s. Please contact your hosting provider or a developer for assistance.', SECSAFE_SLUG ), $perm, $rel_path ), 3, 0 ];
         }
         
         // $result
@@ -948,100 +943,136 @@ class AdminPageFiles extends AdminPage
     private function display_notices_perms( $good, $ok, $bad )
     {
         global  $SecuritySafe ;
-        // Display Notices
+        // Good Directories
         
-        if ( isset( $good['dirs'] ) && $good['dirs'] > 0 || isset( $good['files'] ) && $good['files'] > 0 ) {
-            $message = __( 'You have ', SECSAFE_SLUG );
+        if ( isset( $good['dirs'] ) && $good['dirs'] > 0 ) {
             
-            if ( $good['dirs'] > 0 ) {
-                $plural = ( $good['dirs'] > 1 ? __( ' directories', SECSAFE_SLUG ) : __( ' directory', SECSAFE_SLUG ) );
-                // Add Notice To Look At Process Log
-                $message .= $good['dirs'] . $plural;
+            if ( $good['dirs'] > 1 ) {
+                // Plural
+                $message = sprintf( __( 'You have %d directories that could be more secure.', SECSAFE_SLUG ), $good['dirs'] );
+            } else {
+                // Singular
+                $message = sprintf( __( 'You have %d directory that could be more secure.', SECSAFE_SLUG ), $good['dirs'] );
             }
             
-            if ( $good['dirs'] > 0 && $good['files'] > 0 ) {
-                $message .= __( ' and ', SECSAFE_SLUG );
-            }
-            
-            if ( $good['files'] > 0 ) {
-                $plural = ( $good['files'] > 1 ? __( ' files', SECSAFE_SLUG ) : __( ' file', SECSAFE_SLUG ) );
-                // Add Notice To Look At Process Log
-                $message .= $good['files'] . $plural;
-            }
-            
-            $message .= __( ' that could be more secure.', SECSAFE_SLUG );
             $SecuritySafe->messages[] = [ $message, 1, 1 ];
         }
         
-        // endif $good
+        // Good Files
         
-        if ( isset( $ok['dirs'] ) && $ok['dirs'] > 0 || isset( $ok['files'] ) && $ok['files'] > 0 ) {
-            $message = __( 'You have ', SECSAFE_SLUG );
+        if ( isset( $good['files'] ) && $good['files'] > 0 ) {
             
-            if ( isset( $ok['dirs'] ) && $ok['dirs'] > 0 ) {
-                $plural = ( $ok['dirs'] > 1 ? __( ' directories', SECSAFE_SLUG ) : __( ' directory', SECSAFE_SLUG ) );
-                // Add Notice To Look At Process Log
-                $message .= $ok['dirs'] . $plural;
+            if ( $good['files'] > 1 ) {
+                // Plural
+                $message = sprintf( __( 'You have %d files that could be more secure.', SECSAFE_SLUG ), $good['files'] );
+            } else {
+                // Singular
+                $message = sprintf( __( 'You have %d file that could be more secure.', SECSAFE_SLUG ), $good['files'] );
             }
             
-            if ( isset( $ok['dirs'] ) && isset( $ok['files'] ) && $ok['dirs'] > 0 && $ok['files'] > 0 ) {
-                $message .= __( ' and ', SECSAFE_SLUG );
+            $SecuritySafe->messages[] = [ $message, 1, 1 ];
+        }
+        
+        // OK Directories
+        
+        if ( isset( $ok['dirs'] ) && $ok['dirs'] > 0 ) {
+            
+            if ( $ok['dirs'] > 1 ) {
+                // Plural
+                $message = sprintf( __( 'You have %d directories with safe but unique file permissions. This might cause functionality issues.', SECSAFE_SLUG ), $ok['dirs'] );
+            } else {
+                // Singular
+                $message = sprintf( __( 'You have %d directory with safe but unique file permissions. This might cause functionality issues.', SECSAFE_SLUG ), $ok['dirs'] );
             }
             
-            if ( isset( $ok['files'] ) && $ok['files'] > 0 ) {
-                $plural = ( $ok['files'] > 1 ? __( ' files', SECSAFE_SLUG ) : __( ' file', SECSAFE_SLUG ) );
-                // Add Notice To Look At Process Log
-                $message .= $ok['files'] . $plural;
-            }
-            
-            $message .= __( ' with safe but unique permissions. This might cause functionality issues.', SECSAFE_SLUG );
             $SecuritySafe->messages[] = [ $message, 2, 1 ];
         }
         
-        // endif $ok
+        // OK Files
         
-        if ( isset( $bad['dirs'] ) && $bad['dirs'] > 0 || isset( $bad['files'] ) && $bad['files'] > 0 ) {
-            $message = __( 'You have ', SECSAFE_SLUG );
+        if ( isset( $ok['files'] ) && $ok['files'] > 0 ) {
             
-            if ( isset( $bad['dirs'] ) && $bad['dirs'] > 0 ) {
-                $plural = ( $bad['dirs'] > 1 ? __( ' directories', SECSAFE_SLUG ) : __( ' directory', SECSAFE_SLUG ) );
-                $message .= $bad['dirs'] . __( ' vulnerable', SECSAFE_SLUG ) . $plural;
+            if ( $ok['files'] > 1 ) {
+                // Plural
+                $message = sprintf( __( 'You have %d files with safe but unique file permissions. This might cause functionality issues.', SECSAFE_SLUG ), $ok['files'] );
+            } else {
+                // Singular
+                $message = sprintf( __( 'You have %d file with safe but unique file permissions. This might cause functionality issues.', SECSAFE_SLUG ), $ok['files'] );
             }
             
-            if ( isset( $bad['dirs'] ) && isset( $bad['files'] ) && $bad['dirs'] > 0 && $bad['files'] > 0 ) {
-                $message .= __( ' and ', SECSAFE_SLUG );
+            $SecuritySafe->messages[] = [ $message, 2, 1 ];
+        }
+        
+        // Bad Directories
+        
+        if ( isset( $bad['dirs'] ) && $bad['dirs'] > 0 ) {
+            
+            if ( $bad['dirs'] > 1 ) {
+                // Plural
+                $message = sprintf( __( 'You have %d directories that are vulnerable.', SECSAFE_SLUG ), $bad['dirs'] );
+            } else {
+                // Singular
+                $message = sprintf( __( 'You have %d directory that is vulnerable.', SECSAFE_SLUG ), $bad['dirs'] );
             }
             
-            if ( isset( $bad['files'] ) && $bad['files'] > 0 ) {
-                $plural = ( $bad['files'] > 1 ? __( ' files', SECSAFE_SLUG ) : __( ' file', SECSAFE_SLUG ) );
-                // Add Notice To Look At Process Log
-                $message .= $bad['files'] . __( ' vulnerable', SECSAFE_SLUG ) . $plural;
-            }
-            
-            $message .= '.';
             $SecuritySafe->messages[] = [ $message, 3, 0 ];
         }
         
-        // endif $bad
+        // Bad Files
+        
+        if ( isset( $bad['files'] ) && $bad['files'] > 0 ) {
+            
+            if ( $bad['files'] > 1 ) {
+                // Plural
+                $message = sprintf( __( 'You have %d files that are vulnerable.', SECSAFE_SLUG ), $bad['files'] );
+            } else {
+                // Singular
+                $message = sprintf( __( 'You have %d files that is vulnerable.', SECSAFE_SLUG ), $bad['files'] );
+            }
+            
+            $SecuritySafe->messages[] = [ $message, 3, 0 ];
+        }
+        
         // PHP Notices
         
         if ( isset( $ok['php'] ) && is_array( $ok['php'] ) ) {
             $PHP_major = substr( $ok['php'][1], 0, 1 );
             $PHP_changelog = 'https://secure.php.net/ChangeLog-' . $PHP_major . '.php';
-            $message = __( 'You have PHP version ', SECSAFE_SLUG ) . $ok['php'][0] . __( ' and it needs to be updated to version', SECSAFE_SLUG ) . ' ' . $ok['php'][1] . __( ' or higher. If version ', SECSAFE_SLUG ) . $ok['php'][1] . __( ' was released more than 30 days ago and there is more than a 90-day timespan between PHP version ', SECSAFE_SLUG ) . $ok['php'][0] . __( ' and ', SECSAFE_SLUG ) . $ok['php'][1] . ' (<a href="' . $PHP_changelog . '" target="_blank">' . __( 'see changelog', SECSAFE_SLUG ) . '</a>), ' . __( 'contact your hosting provider to upgrade PHP.', SECSAFE_SLUG );
+            $message = sprintf(
+                __( 'You have PHP version %1$s and it needs to be updated to version %2$s or higher. If version %2$s was released more than 30 days ago and there is more than a 90-day timespan between PHP version %1$s and %2$s (<a href="%3$s" target="_blank">see changelog</a>), contact your hosting provider to upgrade PHP.', SECSAFE_SLUG ),
+                $ok['php'][0],
+                $ok['php'][1],
+                $PHP_changelog
+            );
             $SecuritySafe->messages[] = [ $message, 2, 0 ];
         }
         
         // $bad['php']
         
         if ( isset( $bad['php'] ) && is_array( $bad['php'] ) ) {
-            $message = __( 'You are using PHP version ', SECSAFE_SLUG ) . $bad['php'][0] . __( ', which is no longer supported or has critical vulnerabilities. Immediately contact your hosting company to upgrade PHP to version ', SECSAFE_SLUG ) . $bad['php'][1] . __( ' or higher.', SECSAFE_SLUG );
+            $message = sprintf( __( 'You are using PHP version %1$s, which is no longer supported or has critical vulnerabilities. Immediately contact your hosting company to upgrade PHP to version %2$s or higher.', SECSAFE_SLUG ), $bad['php'][0], $bad['php'][1] );
             $SecuritySafe->messages[] = [ $message, 3, 0 ];
         }
         
         // $bad['php']
         // Display Notices Created In This File
         $SecuritySafe->display_notices( true );
+    }
+    
+    // display_notices_perms()
+    /**
+     * Returns the label of the status that is I18n compatible
+     * @since  2.2.0
+     */
+    private static function display_status( $current )
+    {
+        $status = [
+            'ok'     => __( 'OK', SECSAFE_SLUG ),
+            'bad'    => __( 'Bad', SECSAFE_SLUG ),
+            'good'   => __( 'Good', SECSAFE_SLUG ),
+            'secure' => __( 'Secure', SECSAFE_SLUG ),
+        ];
+        return ( isset( $status[$current] ) ? $status[$current] : ucwords( esc_html( $current ) ) );
     }
 
 }

@@ -39,6 +39,7 @@ class UABBVideoGallery extends FLBuilderModule {
 		$this->add_css( 'jquery-magnificpopup' );
 		$this->add_css( 'font-awesome-5' );
 	}
+
 	/**
 	 * Ensure backwards compatibility with old settings.
 	 *
@@ -48,11 +49,11 @@ class UABBVideoGallery extends FLBuilderModule {
 	 * @return object
 	 */
 	public function filter_settings( $settings, $helper ) {
-		$version_bb_check        = UABB_Compatibility::check_bb_version();
-		$page_migrated           = UABB_Compatibility::check_old_page_migration();
-		$stable_version_new_page = UABB_Compatibility::check_stable_version_new_page();
+		$version_bb_check        = UABB_Compatibility::$version_bb_check;
+		$page_migrated           = UABB_Compatibility::$uabb_migration;
+		$stable_version_new_page = UABB_Compatibility::$stable_version_new_page;
 
-		if ( $version_bb_check && ( 'yes' == $page_migrated || 'yes' == $stable_version_new_page ) ) {
+		if ( $version_bb_check && ( 'yes' === $page_migrated || 'yes' === $stable_version_new_page ) ) {
 			if ( ! isset( $settings->filter_font_typo ) || ! is_array( $settings->filter_font_typo ) ) {
 
 				$settings->filter_font_typo            = array();
@@ -68,7 +69,7 @@ class UABBVideoGallery extends FLBuilderModule {
 				}
 				if ( isset( $settings->filter_title_font['weight'] ) ) {
 
-					if ( 'regular' == $settings->filter_title_font['weight'] ) {
+					if ( 'regular' === $settings->filter_title_font['weight'] ) {
 						$settings->filter_font_typo['font_weight'] = 'normal';
 					} else {
 						$settings->filter_font_typo['font_weight'] = $settings->filter_title_font['weight'];
@@ -148,7 +149,7 @@ class UABBVideoGallery extends FLBuilderModule {
 				}
 				if ( isset( $settings->cat_font['weight'] ) ) {
 
-					if ( 'regular' == $settings->cat_font['weight'] ) {
+					if ( 'regular' === $settings->cat_font['weight'] ) {
 						$settings->cat_font_typo['font_weight'] = 'normal';
 					} else {
 						$settings->cat_font_typo['font_weight'] = $settings->cat_font['weight'];
@@ -228,7 +229,7 @@ class UABBVideoGallery extends FLBuilderModule {
 				}
 				if ( isset( $settings->caption_font['weight'] ) ) {
 
-					if ( 'regular' == $settings->caption_font['weight'] ) {
+					if ( 'regular' === $settings->caption_font['weight'] ) {
 						$settings->caption_font_typo['font_weight'] = 'normal';
 					} else {
 						$settings->caption_font_typo['font_weight'] = $settings->caption_font['weight'];
@@ -308,7 +309,7 @@ class UABBVideoGallery extends FLBuilderModule {
 				}
 				if ( isset( $settings->tag_font['weight'] ) ) {
 
-					if ( 'regular' == $settings->tag_font['weight'] ) {
+					if ( 'regular' === $settings->tag_font['weight'] ) {
 						$settings->tag_font_typo['font_weight'] = 'normal';
 					} else {
 						$settings->tag_font_typo['font_weight'] = $settings->tag_font['weight'];
@@ -424,21 +425,10 @@ class UABBVideoGallery extends FLBuilderModule {
 	 */
 	public function get_icon( $icon = '' ) {
 
-		// check if $icon is referencing an included icon.
-		if ( '' != $icon && file_exists( BB_ULTIMATE_ADDON_DIR . 'modules/uabb-video-gallery/icon/' . $icon ) ) {
-			$path = BB_ULTIMATE_ADDON_DIR . 'modules/uabb-video-gallery/icon/' . $icon;
+		if ( '' !== $icon && file_exists( BB_ULTIMATE_ADDON_DIR . 'modules/uabb-video-gallery/icon/' . $icon ) ) {
+			return fl_builder_filesystem()->file_get_contents( BB_ULTIMATE_ADDON_DIR . 'modules/uabb-video-gallery/icon/' . $icon );
 		}
-
-		if ( file_exists( $path ) ) {
-			$remove_icon = apply_filters( 'uabb_remove_svg_icon', false, 10, 1 );
-			if ( true === $remove_icon ) {
-				return;
-			} else {
-				return file_get_contents( $path );
-			}
-		} else {
-			return '';
-		}
+		return '';
 	}
 	/**
 	 * Render Placeholder Image HTML.
@@ -448,13 +438,16 @@ class UABBVideoGallery extends FLBuilderModule {
 	 * @access public
 	 */
 	public function get_placeholder_image( $item ) {
-		$url    = '';
-		$vid_id = '';
+		$url       = '';
+		$vid_id    = '';
+		$video_url = '';
 
 		if ( 'youtube' === $item->video_type ) {
 			$video_url = $item->youtube_link;
 		} elseif ( 'vimeo' === $item->video_type ) {
 			$video_url = $item->vimeo_link;
+		} elseif ( 'wistia' === $item->video_type ) {
+			$video_url = $item->wistia_link;
 		}
 
 		if ( 'youtube' === $item->video_type ) {
@@ -464,6 +457,9 @@ class UABBVideoGallery extends FLBuilderModule {
 		} elseif ( 'vimeo' === $item->video_type ) {
 
 			$vid_id = preg_replace( '/[^\/]+[^0-9]|(\/)/', '', rtrim( $video_url, '/' ) );
+		} elseif ( 'wistia' === $item->video_type ) {
+
+			$vid_id = $this->getStringBetween( $video_url, 'wvideo=', '"' );
 		}
 
 		if ( 'yes' === $item->custom_placeholder ) {
@@ -476,9 +472,12 @@ class UABBVideoGallery extends FLBuilderModule {
 				$url = 'https://i.ytimg.com/vi/' . $vid_id . '/' . apply_filters( 'uabb_vg_youtube_image_quality', $item->yt_thumbnail_size ) . '.jpg';
 			} elseif ( 'vimeo' === $item->video_type ) {
 				if ( '' !== $vid_id && 0 !== $vid_id ) {
-					$vimeo = unserialize( file_get_contents( "https://vimeo.com/api/v2/video/$vid_id.php" ) );
+					$vimeo = maybe_unserialize( file_get_contents( "https://vimeo.com/api/v2/video/$vid_id.php" ) ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
 					$url   = $vimeo[0]['thumbnail_large'];
 				}
+			} elseif ( 'wistia' === $item->video_type ) {
+
+				$url = 'https://embedwistia-a.akamaihd.net/deliveries/' . $this->getStringBetween( $video_url, 'deliveries/', '?' );
 			}
 		}
 		return array(
@@ -486,6 +485,23 @@ class UABBVideoGallery extends FLBuilderModule {
 			'video_id' => $vid_id,
 		);
 	}
+
+	/**
+	 * Returns Video URL.
+	 *
+	 * @param string $url Video URL.
+	 * @param string $from From compare string.
+	 * @param string $to To compare string.
+	 * @since 1.21.0
+	 * @access protected
+	 */
+	protected function getStringBetween( $url, $from, $to ) {
+		$sub = substr( $url, strpos( $url, $from ) + strlen( $from ), strlen( $url ) );
+		$id  = substr( $sub, 0, strpos( $sub, $to ) );
+
+		return $id;
+	}
+
 	/**
 	 * Render Play Button.
 	 *
@@ -500,14 +516,14 @@ class UABBVideoGallery extends FLBuilderModule {
 			<?php
 		} elseif ( 'icon' === $this->settings->play_source ) {
 			?>
-			<i class="<?php echo $this->settings->play_icon . ' uabb-animation-' . $this->settings->hover_animation; ?> uabb-vg__play-icon"></i>
+			<i class="<?php echo esc_attr( $this->settings->play_icon ) . ' uabb-animation-' . esc_attr( $this->settings->hover_animation ); ?> uabb-vg__play-icon"></i>
 			<?php
 		} elseif ( 'img' === $this->settings->play_source ) {
 
 			$url = $this->settings->play_img_src;
 
 			?>
-				<img class="uabb-vg__play-image <?php echo 'uabb-animation-' . $this->settings->hover_animation; ?>" src="<?php echo $url; ?>" />
+				<img class="uabb-vg__play-image <?php echo 'uabb-animation-' . esc_attr( $this->settings->hover_animation ); ?>" src="<?php echo esc_url( $url ); ?>" />
 			<?php
 		}
 	}
@@ -581,6 +597,12 @@ class UABBVideoGallery extends FLBuilderModule {
 			} elseif ( 'vimeo' === $item->video_type ) {
 
 				$href = $item->vimeo_link;
+
+			} elseif ( 'wistia' === $item->video_type ) {
+				$wistia_id = $this->getStringBetween( $item->wistia_link, 'wvideo=', '"' );
+				$video_url = 'https://fast.wistia.net/embed/iframe/' . $wistia_id . '?videoFoam=true';
+				$href      = $video_url . '&autoplay=1';
+
 			}
 
 			$url = $this->get_placeholder_image( $item );
@@ -595,29 +617,33 @@ class UABBVideoGallery extends FLBuilderModule {
 			}
 			if ( 'youtube' === $item->video_type ) {
 				$vurl = 'https://www.youtube.com/embed/' . $url['video_id'] . '?autoplay=1&version=3&enablejsapi=1';
-			} else {
+			} elseif ( 'vimeo' === $item->video_type ) {
 				$vurl = 'https://player.vimeo.com/video/' . $url['video_id'] . '?autoplay=1&version=3&enablejsapi=1';
+			} elseif ( 'wistia' === $item->video_type ) {
+				$vurl = $video_url . '&autoplay=1';
 			}
 			if ( 'inline' !== $this->settings->click_action ) {
-					$html = '<a href="' . $href . '" data-fancybox="uabb-video-gallery" data-url="' . $vurl . '"class="uabb-video-gallery-fancybox ">';
+					$html = '<a href="' . $href . '" data-fancybox="uabb-video-gallery" data-url="' . $vurl . '"class="uabb-video-gallery-fancybox uabb-vg__play_full ">';
 			} else {
 				if ( 'youtube' === $item->video_type ) {
-
 					$vurl = 'https://www.youtube.com/embed/' . $url['video_id'] . '?autoplay=1&version=3&enablejsapi=1';
-				} else {
+				} elseif ( 'vimeo' === $item->video_type ) {
 					$vurl = 'https://player.vimeo.com/video/' . $url['video_id'] . '?autoplay=1&version=3&enablejsapi=1';
+				} elseif ( 'wistia' === $item->video_type ) {
+
+					$vurl = $video_url . '&autoplay=1';
 				}
 				$html = '<a href="' . $href . '" class="uabb-clickable uabb-vg__play_full" data-url="' . $vurl . '">';
 			}
 
 			?>
-			<div  class="uabb-video__gallery-item <?php echo ( isset( $tags_key ) ) ? $tags_key : ''; ?> ">
-				<div class="uabb-video__gallery-iframe" style="background-image:url('<?php echo $url['url']; ?>');">
-					<?php echo $html; ?>
+			<div  class="uabb-video__gallery-item <?php echo ( isset( $tags_key ) ) ? esc_attr( $tags_key ) : ''; ?> ">
+				<div class="uabb-video__gallery-iframe" style="background-image:url('<?php echo esc_url( $url['url'] ); ?>');">
+					<?php echo $html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
 						<div class="uabb-video__content-wrap">
 							<div class="uabb-video__content">
 								<?php $this->get_caption( $item ); ?>
-									<div class="uabb-vg__play <?php echo ( 'default' === $this->settings->play_source ) ? 'uabb-animation-' . $this->settings->hover_animation : ''; ?>">
+									<div class="uabb-vg__play <?php echo ( 'default' === $this->settings->play_source ) ? 'uabb-animation-' . esc_attr( $this->settings->hover_animation ) : ''; ?>">
 										<?php $this->get_play_button(); ?>
 									</div>
 									<?php $this->get_tag( $item ); ?>
@@ -639,14 +665,14 @@ class UABBVideoGallery extends FLBuilderModule {
 	 */
 	public function get_caption( $item ) {
 
-		if ( '' == $item->title ) {
+		if ( '' === $item->title ) {
 			return '';
 		}
 		if ( 'yes' !== $this->settings->show_caption ) {
 			return '';
 		}
 		?>
-		<h4 class="uabb-video__caption"><?php echo $item->title; ?></h4>
+		<h4 class="uabb-video__caption"><?php echo $item->title; //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></h4>
 		<?php
 	}
 	/**
@@ -658,14 +684,14 @@ class UABBVideoGallery extends FLBuilderModule {
 	 */
 	public function get_tag( $item ) {
 
-		if ( '' == $item->tags ) {
+		if ( '' === $item->tags ) {
 			return '';
 		}
 		if ( 'yes' !== $this->settings->show_tag ) {
 			return '';
 		}
 		?>
-		<span class="uabb-video__tags"><?php echo $item->tags; ?></span>
+		<span class="uabb-video__tags"><?php echo $item->tags; //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></span>
 		<?php
 	}
 	/**
@@ -721,22 +747,22 @@ class UABBVideoGallery extends FLBuilderModule {
 			<?php if ( 'yes' === $this->settings->show_filter_title ) { ?>
 				<div class="uabb-video-gallery-title-filters">
 					<div class="uabb-video-gallery-title">
-						<<?php echo $this->settings->filter_title_tag; ?> class="uabb-video-gallery-title-text"><?php echo $this->settings->filters_heading_text; ?></<?php echo $this->settings->filter_title_tag; ?>>
+						<<?php echo esc_attr( $this->settings->filter_title_tag ); ?> class="uabb-video-gallery-title-text"><?php echo $this->settings->filters_heading_text; ?></<?php echo esc_attr( $this->settings->filter_title_tag ); //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 					</div>
 			<?php } ?>
 					<ul class="uabb-video__gallery-filters" data-default="
 					<?php
-					echo ( isset( $default ) ) ? $default : '';
+					echo ( isset( $default ) ) ? $default : ''; //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 					?>
 					">
 						<li class="uabb-video__gallery-filter uabb-filter__current" data-filter="*">
 						<?php
-						echo ( '' !== $this->settings->filters_all_text ) ? $this->settings->filters_all_text : __( 'All', 'uabb' );
+						echo ( '' !== $this->settings->filters_all_text ) ? $this->settings->filters_all_text : __( 'All', 'uabb' ); //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 						?>
 						</li>
 						<?php foreach ( $filters as $key => $value ) { ?>
-							<li class="uabb-video__gallery-filter" data-filter="<?php echo '.' . $key; ?>">
-								<?php echo $value; ?>
+							<li class="uabb-video__gallery-filter" data-filter="<?php echo '.' . esc_attr( $key ); ?>">
+								<?php echo esc_attr( $value ); ?>
 							</li>
 						<?php } ?>
 					</ul>
@@ -760,17 +786,17 @@ class UABBVideoGallery extends FLBuilderModule {
 
 			$filters = $this->get_filter_values();
 
-			$filter_data = json_encode( array_keys( $filters ) );
+			$filter_data = wp_json_encode( array_keys( $filters ) );
 				$this->render_gallery_filters();
 			?>
-			<div class="uabb-video-gallery-wrap uabb-video-gallery-filter uabb-vg__layout-<?php echo $this->settings->layout; ?> uabb-vg__action-<?php echo $this->settings->click_action; ?> uabb-aspect-ratio-<?php echo $this->settings->video_ratio; ?>" data-action ="<?php echo $this->settings->click_action; ?>" data-layout="<?php echo $this->settings->layout; ?>" data-all-filters=<?php echo ( isset( $filter_data ) ) ? $filter_data : ''; ?>>
+			<div class="uabb-video-gallery-wrap uabb-video-gallery-filter uabb-vg__layout-<?php echo esc_attr( $this->settings->layout ); ?> uabb-vg__action-<?php echo esc_attr( $this->settings->click_action ); ?> uabb-aspect-ratio-<?php echo esc_attr( $this->settings->video_ratio ); ?>" data-action ="<?php echo esc_attr( $this->settings->click_action ); ?>" data-layout="<?php echo esc_attr( $this->settings->layout ); ?>" data-all-filters=<?php echo ( isset( $filter_data ) ) ? wp_kses_post( $filter_data ) : ''; ?>>
 				<?php $this->render_gallery_inner_data(); ?>
 			</div>
 			<?php
 		} else {
 			?>
 
-			<div class="uabb-video-gallery-wrap uabb-vg__layout-<?php echo $this->settings->layout; ?> uabb-vg__action-<?php echo $this->settings->click_action; ?> uabb-aspect-ratio-<?php echo $this->settings->video_ratio; ?>" data-action ="<?php echo $this->settings->click_action; ?>" data-layout="<?php echo $this->settings->layout; ?>">
+			<div class="uabb-video-gallery-wrap uabb-vg__layout-<?php echo esc_attr( $this->settings->layout ); ?> uabb-vg__action-<?php echo esc_attr( $this->settings->click_action ); ?> uabb-aspect-ratio-<?php echo esc_attr( $this->settings->video_ratio ); ?>" data-action ="<?php echo esc_attr( $this->settings->click_action ); ?>" data-layout="<?php echo esc_attr( $this->settings->layout ); ?>">
 			<?php $this->render_gallery_inner_data(); ?>
 
 			</div>
@@ -796,7 +822,9 @@ class UABBVideoGallery extends FLBuilderModule {
 			        <div style="%1$s"><b> Valid URL : </b>  https://www.youtube.com/watch?v=HJRzUQMhJMQ</div>
 			        <div style="%1$s"> <b> Invalid URL : </b> https://youtu.be/HJRzUQMhJMQ</div>',
 					'uabb'
-				), $style1, $style2
+				),
+				$style1,
+				$style2
 			);
 
 			return $youtube_link_desc;
@@ -809,10 +837,22 @@ class UABBVideoGallery extends FLBuilderModule {
 			        <div style="%1$s"><b> Valid URL : </b>  https://vimeo.com/274860274</div>
 			        <div style="%1$s"> <b> Invalid URL : </b> https://vimeo.com/channels/staffpicks/274860274</div>',
 					'uabb'
-				), $style1
+				),
+				$style1
 			);
 
 			return $vimeo_link_desc;
+		} elseif ( 'wistia_link' === $field ) {
+
+			$wistia_link_desc = sprintf( /* translators: %s: search term */
+				__(
+					'<div style="%1$s">Go to your Wistia video, right click, "Copy Link & Thumbnail" and paste here.</div>',
+					'uabb'
+				),
+				$style1
+			);
+
+			return $wistia_link_desc;
 		}
 	}
 }
@@ -822,7 +862,7 @@ class UABBVideoGallery extends FLBuilderModule {
  * And accordingly render the required form settings file.
  */
 
-if ( UABB_Compatibility::check_bb_version() ) {
+if ( UABB_Compatibility::$version_bb_check ) {
 	require_once BB_ULTIMATE_ADDON_DIR . 'modules/uabb-video-gallery/uabb-video-gallery-bb-2-2-compatibility.php';
 } else {
 	require_once BB_ULTIMATE_ADDON_DIR . 'modules/uabb-video-gallery/uabb-video-gallery-bb-less-than-2-2-compatibility.php';

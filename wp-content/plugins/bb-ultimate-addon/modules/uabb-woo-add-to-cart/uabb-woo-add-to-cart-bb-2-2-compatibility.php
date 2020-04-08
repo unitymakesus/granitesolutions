@@ -8,17 +8,9 @@
  * @package UABBWooAddToCartModule
  */
 
-$branding_name       = BB_Ultimate_Addon_Helper::get_builder_uabb_branding( 'uabb-plugin-name' );
-$branding_short_name = BB_Ultimate_Addon_Helper::get_builder_uabb_branding( 'uabb-plugin-short-name' );
-$branding            = '';
-if ( empty( $branding_name ) && empty( $branding_short_name ) ) {
-	$branding = 'no';
-} else {
-	$branding = 'yes';
-}
-
 FLBuilder::register_module(
-	'UABBWooAddToCartModule', array(
+	'UABBWooAddToCartModule',
+	array(
 		'general'    => array(
 			'title'    => __( 'General', 'uabb' ),
 			'sections' => array(
@@ -169,9 +161,10 @@ FLBuilder::register_module(
 						'style'                      => array(
 							'type'    => 'select',
 							'label'   => __( 'Style', 'uabb' ),
-							'default' => 'flat',
+							'default' => 'default',
 							'class'   => 'creative_button_styles',
 							'options' => array(
+								'default'     => __( 'Default', 'uabb' ),
 								''            => __( 'Flat', 'uabb' ),
 								'transparent' => __( 'Transparent', 'uabb' ),
 							),
@@ -179,6 +172,33 @@ FLBuilder::register_module(
 								'transparent' => array(
 									'fields' => array( 'border_size', 'transparent_button_options' ),
 								),
+								'transparent' => array(
+									'fields' => array( 'button_border', 'border_hover_color' ),
+								),
+							),
+						),
+						'button_border'              => array(
+							'type'    => 'border',
+							'label'   => __( 'Border', 'uabb' ),
+							'slider'  => true,
+							'units'   => array( 'px' ),
+							'preview' => array(
+								'type'      => 'css',
+								'selector'  => '.uabb-woo-add-to-cart .button',
+								'property'  => 'border',
+								'unit'      => 'px',
+								'important' => true,
+							),
+						),
+						'border_hover_color'         => array(
+							'type'        => 'color',
+							'label'       => __( 'Border Hover Color', 'uabb' ),
+							'default'     => '',
+							'show_reset'  => true,
+							'connections' => array( 'color' ),
+							'show_alpha'  => true,
+							'preview'     => array(
+								'type' => 'none',
 							),
 						),
 						'border_size'                => array(
@@ -328,7 +348,7 @@ FLBuilder::register_module(
 					'fields' => array(
 						'uabb_helpful_information' => array(
 							'type'    => 'raw',
-							'content' => '<ul class="uabb-docs-list" data-branding=' . $branding . '>
+							'content' => '<ul class="uabb-docs-list" data-branding=' . BB_Ultimate_Addon_Helper::$is_branding_enabled . '>
 
 								<li class="uabb-docs-list-item"> <i class="ua-icon ua-icon-chevron-right2"> </i> <a href="https://www.ultimatebeaver.com/docs/how-to-add-woocommerce-add-to-cart-button-on-the-page/?utm_source=uabb-pro-backend&utm_medium=module-editor-screen&utm_campaign=woo-add-to-cart-module" target="_blank" rel="noopener"> How to add WooCommerce Add To Cart button on the page? </a> </li>
 							 </ul>',

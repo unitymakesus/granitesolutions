@@ -709,7 +709,7 @@ background: #ffffff;
 	z-index: 99999;
     transform: scale(0);
 	overflow: hidden;
-	outline: 0
+    outline: 0;
 }
 .cli-modal a {
 	text-decoration: none;
@@ -804,6 +804,7 @@ background: #ffffff;
 }
 .cli-switch .cli-slider {
     border-radius: 34px;
+    font-size:0;
 }
 .cli-switch .cli-slider:before {
     border-radius: 50%;
@@ -1005,21 +1006,28 @@ color:inherit;
     border-radius: 50%;
 	padding: 10px;
 	background: transparent;
-	border:none;
+    border:none;
+    min-width: 40px;
 }
-.cli-tab-container h4 {
+.cli-tab-container h4,.cli-tab-container h1 {
 	font-family: inherit;
     font-size: 16px;
     margin-bottom: 15px;
 	margin:10px 0;
 }
-.cli-tab-container p {
+#cliSettingsPopup .cli-tab-section-container {
+    padding-top: 12px;
+}
+.cli-tab-container p ,.cli-privacy-content-text{
     font-size: 14px;
     line-height: 1.4;
-    margin-bottom: 18px;
     margin-top: 0;
     padding: 0;
     color: #000;
+}
+.wt-cli-privacy
+{
+    display:none;
 }
 .cli-tab-content
 {
@@ -1044,7 +1052,8 @@ color:inherit;
     right: 50px;
 	color: #000;
 	font-size:12px;
-	text-align:right;
+    text-align:right;
+    min-width: 60px;
 }
 .cli-switch input:checked + .cli-slider:after
 {
@@ -1059,7 +1068,7 @@ a.cli-privacy-readmore {
     font-size: 12px;
     padding-top: 12px;
     display: inline-block;
-    padding-bottom: 12px;
+    padding-bottom: 0;
     cursor: pointer;
     color:#000;
     text-decoration: underline;
@@ -1107,6 +1116,7 @@ span.cli-necessary-caption {
 .cli-modal.cli-blowup {
     z-index: 999999;
     transform: scale(1);
+    
   }
   .cli-modal.cli-blowup .cli-modal-dialog {
     animation: blowUpModal 0.5s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
@@ -1166,4 +1176,10 @@ span.cli-necessary-caption {
 .cli_settings_button
 {
     cursor: pointer;
+}
+/* Accessibility Fix */
+.wt-cli-sr-only
+{
+    display: none;
+    font-size:16px;
 }

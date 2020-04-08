@@ -19,9 +19,10 @@ class AdminPageGeneral extends AdminPage
      */
     protected function set_page()
     {
+        $plugin_name = SECSAFE_NAME;
         $this->slug = 'security-safe';
-        $this->title = __( 'Welcome to Security Safe', SECSAFE_SLUG );
-        $this->description = __( 'Thank you for choosing Security Safe to help protect your website.', SECSAFE_SLUG );
+        $this->title = sprintf( __( 'Welcome to %s', SECSAFE_SLUG ), $plugin_name );
+        $this->description = sprintf( __( 'Thank you for choosing %s to help protect your website.', SECSAFE_SLUG ), $plugin_name );
         $this->tabs[] = [
             'id'               => 'settings',
             'label'            => __( 'Settings', SECSAFE_SLUG ),
@@ -34,7 +35,7 @@ class AdminPageGeneral extends AdminPage
             'id'               => 'debug',
             'label'            => __( 'Debug', SECSAFE_SLUG ),
             'title'            => __( 'Plugin Information', SECSAFE_SLUG ),
-            'heading'          => __( 'This information may be useful when troubleshooting compatibility issues or bugs.', SECSAFE_SLUG ),
+            'heading'          => __( 'This information may be useful when troubleshooting compatibility issues.', SECSAFE_SLUG ),
             'intro'            => '',
             'content_callback' => 'tab_info',
         ];
@@ -68,8 +69,8 @@ class AdminPageGeneral extends AdminPage
         $rows .= $this->form_button(
             __( 'Reset Settings', SECSAFE_SLUG ),
             'link-delete',
-            get_admin_url( '', 'admin.php?page=security-safe&reset=1' ),
-            __( 'Click this button to reset the Security Safe settings back to default. WARNING: You will lose all configuration changes you have made.', SECSAFE_SLUG ),
+            admin_url( 'admin.php?page=security-safe&reset=1&_nonce_reset_settings=' . wp_create_nonce( SECSAFE_SLUG . '-reset-settings' ) ),
+            __( 'Click this button to reset the settings back to default. WARNING: You will lose all configuration changes you have made.', SECSAFE_SLUG ),
             $classes
         );
         // Cleanup Database
@@ -80,6 +81,16 @@ class AdminPageGeneral extends AdminPage
             'cleanup',
             __( 'Remove Settings, Logs, and Stats When Disabled', SECSAFE_SLUG ),
             __( 'If you ever decide to permanently disable this plugin, you may want to remove our settings, logs, and stats from the database. WARNING: Do not check this box if you are temporarily disabling the plugin, you will loase all data associated with this plugin.', SECSAFE_SLUG ),
+            $classes,
+            false
+        );
+        $classes = '';
+        $rows .= $this->form_checkbox(
+            $this->settings,
+            __( 'Support Us', SECSAFE_SLUG ),
+            'byline',
+            __( 'Display link to us below the login form.', SECSAFE_SLUG ),
+            __( '(This is optional)', SECSAFE_SLUG ),
             $classes,
             false
         );
@@ -102,15 +113,25 @@ class AdminPageGeneral extends AdminPage
         $html = '<h3>' . __( 'Current Settings', SECSAFE_SLUG ) . '</h3>
                 <table class="wp-list-table widefat fixed striped file-perm-table" cellpadding="10px">
                 <thead><tr><th>' . __( 'Policies', SECSAFE_SLUG ) . '</th><th>' . __( 'Setting', SECSAFE_SLUG ) . '</th><th>' . __( 'Value', SECSAFE_SLUG ) . '</th></tr></thead>';
+        $labels = [
+            'privacy'  => __( 'Privacy', SECSAFE_SLUG ),
+            'files'    => __( 'Files', SECSAFE_SLUG ),
+            'content'  => __( 'Content', SECSAFE_SLUG ),
+            'access'   => __( 'User Access', SECSAFE_SLUG ),
+            'firewall' => __( 'Firewall', SECSAFE_SLUG ),
+            'backups'  => __( 'Backups', SECSAFE_SLUG ),
+            'general'  => __( 'General', SECSAFE_SLUG ),
+            'plugin'   => __( 'Plugin', SECSAFE_SLUG ),
+        ];
         foreach ( $settings as $label => $section ) {
             if ( $label == 'plugin' ) {
-                $html .= '<tr style="background: #e5e5e5;"><td><b>' . strtoupper( esc_html( $label ) ) . '</b></td><td colspan="2"></td></tr>';
+                $html .= '<tr style="background: #e5e5e5;"><td><b>' . strtoupper( $labels[$label] ) . '</b></td><td colspan="2"></td></tr>';
             }
             foreach ( $section as $setting => $value ) {
                 if ( $setting != 'version_history' ) {
                     
                     if ( $setting == 'on' ) {
-                        $html .= '<tr style="background: #e5e5e5;"><td><b>' . strtoupper( esc_html( $label ) ) . '</b></td><td>' . esc_html( $setting ) . '</td><td>' . esc_html( $value ) . '</td></tr>';
+                        $html .= '<tr style="background: #e5e5e5;"><td><b>' . strtoupper( $labels[$label] ) . '</b></td><td>' . esc_html( $setting ) . '</td><td>' . esc_html( $value ) . '</td></tr>';
                     } else {
                         $html .= '<tr><td></td><td>' . esc_html( $setting ) . '</td><td>' . esc_html( $value ) . '</td></tr>';
                     }

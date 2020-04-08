@@ -33,6 +33,7 @@ function uabb_row_particle_render_js() {
  * @param object $global_settings an object to get various settings.
  */
 function uabb_particle_row_settings_dependency_js( $js, $nodes, $global_settings ) {
+
 	$branding_name       = BB_Ultimate_Addon_Helper::get_builder_uabb_branding( 'uabb-plugin-name' );
 	$branding_short_name = BB_Ultimate_Addon_Helper::get_builder_uabb_branding( 'uabb-plugin-short-name' );
 	$branding            = '';
@@ -62,7 +63,7 @@ function uabb_particle_row_settings_dependency_js( $js, $nodes, $global_settings
 
 			var form = $('.fl-builder-settings');
 
-			var branding = '<?php echo $branding; ?>';
+			var branding = '<?php echo esc_attr( $branding ); ?>';
 
 			if ( form.length > 0 ) {
 
@@ -145,7 +146,7 @@ function uabb_particle_row_settings_dependency_js( $js, $nodes, $global_settings
 
 							if ( 'no' === branding ) {
 
-								style_selector.find( '.fl-field-control-wrapper' ).append( '<span class="fl-field-description uabb-particle-docs-list"><div class="uabb-docs-particle"> Add custom JSON for the Particles Background below. To generate a completely customized background style follow steps below - </div><div class="uabb-docs-particle">1. Visit a link <a class="uabb-docs-particle-link" href="https://vincentgarreau.com/particles.js/" target="_blank"> here </a> and choose required attributes for particles</div><div class="uabb-docs-particle">2. Once a custom style is created, download JSON from "Download current config (json)" link</div><div class="uabb-docs-particle">3. Copy JSON code from the above file and paste it below</div><div class="uabb-docs-particle">To know more about creating a custom style, refer to a document <a class="uabb-docs-particle-link" href="https://www.ultimatebeaver.com/docs/how-to-add-custom-particles-background-style/?utm_source=uabb-pro-backend&utm_medium=row-editor-screen&utm_campaign=particle-background-row" target="_blank" rel="noopener"> here. </a></div></span>' );
+								style_selector.find( '.fl-field-control-wrapper' ).append( '<span class="fl-field-description uabb-particle-docs-list"><div class="uabb-docs-particle"> Add custom JSON for the Particles Background below. To generate a completely customized background style follow steps below - </div><div class="uabb-docs-particle">1. Visit a link <a class="uabb-docs-particle-link" href="https://vincentgarreau.com/particles.js/" target="_blank"> here </a> and choose required attributes for particles</div><div class="uabb-docs-particle">2. Once a custom style is created, download JSON from "Download current config (json)" link</div><div class="uabb-docs-particle">3. Copy JSON code from the above file and paste it below</div><div class="uabb-docs-particle">To know more about creating a custom style, refer to a document <a class="uabb-docs-particle-link" href="https://www.ultimatebeaver.com/docs/custom-particle-backgrounds/?utm_source=uabb-pro-backend&utm_medium=row-editor-screen&utm_campaign=particle-backgrounds-row" target="_blank" rel="noopener"> here. </a></div></span>' );
 
 							} else {
 
@@ -180,6 +181,24 @@ function uabb_particle_row_settings_dependency_js( $js, $nodes, $global_settings
  * @param object $global_settings an object to get various settings.
  */
 function uabb_row_dependency_js( $js, $nodes, $global_settings ) {
+
+	$flag = false;
+
+	foreach ( $nodes['rows'] as $row ) {
+
+		if ( 'uabb_gradient' === $row->settings->bg_type ) {
+
+			$flag = true;
+
+			break;
+		}
+	}
+
+	if ( false === $flag ) {
+
+		return $js;
+	}
+
 	ob_start();
 	?>
 		;(function($){
@@ -242,27 +261,46 @@ function uabb_row_dependency_js( $js, $nodes, $global_settings ) {
  * @param object $global_settings an object to get various settings.
  */
 function uabb_particle_row_dependency_js( $js, $nodes, $global_settings ) {
+
+	$flag = false;
+
+	foreach ( $nodes['rows'] as $row ) {
+
+		if ( 'yes' === $row->settings->enable_particles ) {
+
+			$flag = true;
+
+			break;
+		}
+	}
+
+	if ( false === $flag ) {
+
+		return $js;
+	}
+
 	ob_start();
 	?>
 	;(function($) {
-				var url ='<?php echo BB_ULTIMATE_ADDON_URL . 'assets/js/particles.min.js'; ?>';
+
+				var url ='<?php echo esc_url( BB_ULTIMATE_ADDON_URL . 'assets/js/particles.min.js' ); ?>';
 				window.particle_js_loaded = 0;
 
-				$.cachedScript = function( url, options ) {
+				jQuery.cachedScript = function( url, options ) {
 
 					// Allow user to set any option except for dataType, cache, and url.
-					options = $.extend( options || {}, {
+					options = jQuery.extend( options || {}, {
 						dataType: "script",
 						cache: true,
 						url: url
 					});
 					// Return the jqXHR object so we can chain callbacks.
-					return $.ajax( options );
+					return jQuery.ajax( options );
 				};
 
-				if ( $( '.uabb-row-particles-background' ).length ) {
+				if (  jQuery( '.uabb-row-particles-background' ).length ) {
 
-					$.cachedScript( url ).done( function( script, textStatus ) {					
+					jQuery.cachedScript( url ).done( function( script, textStatus ) {
 						window.particle_js_loaded = 1;
 						init_particles_row_background_script();
 
@@ -272,9 +310,15 @@ function uabb_particle_row_dependency_js( $js, $nodes, $global_settings ) {
 
 				<?php
 				foreach ( $nodes['rows'] as $row ) {
+
+					if ( 'no' === $row->settings->enable_particles ) {
+
+						continue;
+					}
+
 					$json_particles_custom = wp_strip_all_tags( $row->settings->uabb_particles_custom_code );
 					?>
-					row_id = '<?php echo $row->node; ?>';
+					row_id = '<?php echo esc_attr( $row->node ); ?>';
 
 					nodeclass = '.fl-node-' + row_id;
 
@@ -301,7 +345,7 @@ function uabb_particle_row_dependency_js( $js, $nodes, $global_settings ) {
 							<?php
 							if ( '' !== $json_particles_custom ) {
 								?>
-								particlesJS( 'uabb-particle-' + row_id, <?php echo $json_particles_custom; ?> );
+								particlesJS( 'uabb-particle-' + row_id, <?php echo $json_particles_custom; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?> );
 								<?php
 							}
 							?>

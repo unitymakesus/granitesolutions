@@ -4,6 +4,15 @@ if ( ! defined( 'WPINC' ) ) {
     die;
 }
 ?>
+<?php
+
+$wt_cli_non_necessary_description =  isset($stored_options['thirdparty_description']) ? $stored_options['thirdparty_description'] : '';
+$wt_cli_non_necessary_head_scripts =  isset($stored_options['thirdparty_head_section']) ? $stored_options['thirdparty_head_section'] : '';
+$wt_cli_non_necessary_body_scripts =  isset($stored_options['thirdparty_body_section']) ? $stored_options['thirdparty_body_section'] : '';
+$wt_cli_non_necessary_enabled =  isset($stored_options['thirdparty_on_field']) ? $stored_options['thirdparty_on_field'] : false;
+$wt_cli_default_state =  isset($stored_options['third_party_default_state']) ? $stored_options['third_party_default_state'] : true;
+
+?>
 <style>
     .vvv_textbox{
         height: 150px;
@@ -25,15 +34,25 @@ if ( ! defined( 'WPINC' ) ) {
                 <tr>
                     <td>
                         <label for="thirdparty_on_field"><?php echo __('Enable Non-necessary Cookie','cookie-law-info'); ?></label>
-                        <input type="radio" id="thirdparty_on_field_yes" name="thirdparty_on_field" class="styled" value="true" <?php echo ( filter_var($stored_options['thirdparty_on_field'], FILTER_VALIDATE_BOOLEAN) == true ) ? ' checked="checked" ' : ' '; ?> /> Yes
-                        <input type="radio" id="thirdparty_on_field_no" name="thirdparty_on_field" class="styled" value="false" <?php echo ( filter_var($stored_options['thirdparty_on_field'], FILTER_VALIDATE_BOOLEAN) == false ) ? ' checked="checked" ' : ''; ?> /> No
+                        <input type="radio" id="thirdparty_on_field_yes" name="thirdparty_on_field" class="styled" value="true" <?php echo ( filter_var($wt_cli_non_necessary_enabled, FILTER_VALIDATE_BOOLEAN) == true ) ? ' checked="checked" ' : ' '; ?> /><?php echo __('Yes','cookie-law-info');?>
+                        <input type="radio" id="thirdparty_on_field_no" name="thirdparty_on_field" class="styled" value="false" <?php echo ( filter_var($wt_cli_non_necessary_enabled, FILTER_VALIDATE_BOOLEAN) == false ) ? ' checked="checked" ' : ''; ?> /><?php echo __('No','cookie-law-info');?>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <label for="third_party_default_state"><?php echo __('Default state','cookie-law-info'); ?></label>
+                        <input type="radio" id="third_party_default_state_yes" name="third_party_default_state" class="styled" value="true" <?php echo ( filter_var($wt_cli_default_state, FILTER_VALIDATE_BOOLEAN) == true ) ? ' checked="checked" ' : ' '; ?> /><?php echo __('Enabled','cookie-law-info');?>
+                        <input type="radio" id="third_party_default_state_no" name="third_party_default_state" class="styled" value="false" <?php echo ( filter_var($wt_cli_default_state, FILTER_VALIDATE_BOOLEAN) == false ) ? ' checked="checked" ' : ''; ?> /><?php echo __('Disabled','cookie-law-info');?>
+                        <span class="cli_form_help">
+                            <?php echo __('If you enable this option, the category toggle button will be in the active state for cookie consent.','cookie-law-info'); ?> <br />
+                        </span>
                     </td>
                 </tr>
                 <tr>
                     <td>
                        <label for="thirdparty_description"><?php echo __('Description','cookie-law-info');?></label>
                         <textarea name="thirdparty_description" class="vvv_textbox"><?php
-                        echo apply_filters('format_to_edit', stripslashes($stored_options['thirdparty_description']));
+                        echo apply_filters('format_to_edit', stripslashes($wt_cli_non_necessary_description));
                         ?></textarea>
                     </td>
                 </tr>
@@ -41,7 +60,7 @@ if ( ! defined( 'WPINC' ) ) {
                     <td>
                         <label for="thirdparty_head_section"><?php echo __('This script will be added to the page HEAD section if the above settings is enabled and user has give consent.','cookie-law-info');?></label>
                         <textarea name="thirdparty_head_section" class="vvv_textbox"><?php
-                        echo apply_filters('format_to_edit', stripslashes($stored_options['thirdparty_head_section']));
+                        echo apply_filters('format_to_edit', stripslashes($wt_cli_non_necessary_head_scripts));
                         ?></textarea>
                         <span class="cli_form_help">
                         <?php echo __('Print scripts in the head tag on the front end if above cookie settings is enabled and user has given consent.','cookie-law-info'); ?> <br />
@@ -52,7 +71,7 @@ if ( ! defined( 'WPINC' ) ) {
                 <tr>
                     <td>
                         <label for="thirdparty_body_section"><?php echo __('This script will be added right after the BODY section if the above settings is enabled and user has given consent.','cookie-law-info'); ?></label>
-                        <textarea name="thirdparty_body_section" class="vvv_textbox"><?php echo apply_filters('format_to_edit', stripslashes($stored_options['thirdparty_body_section']));?></textarea>
+                        <textarea name="thirdparty_body_section" class="vvv_textbox"><?php echo apply_filters('format_to_edit', stripslashes($wt_cli_non_necessary_body_scripts));?></textarea>
                         <span class="cli_form_help">
                             <?php echo __('Print scripts before the closing body tag on the front end if above cookie settings is enabled and user has given consent.','cookie-law-info'); ?> <br />eg:- &lt;script&gt;console.log("body script");&lt;/script&gt;
                         </span>

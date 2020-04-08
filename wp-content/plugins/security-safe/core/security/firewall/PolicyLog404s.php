@@ -22,7 +22,7 @@ class PolicyLog404s extends Firewall {
         // Run parent class constructor first
         parent::__construct();
 
-        add_action( 'wp', array( $this, 'error' ) );
+        add_action( 'get_header', [ $this, 'error' ] );
 
 	} // __construct()
 
@@ -35,20 +35,23 @@ class PolicyLog404s extends Firewall {
 
         if ( is_404() ) {
 
-            if ( Yoda::is_blacklisted() ) { 
-                
-                // Block display of any 404 errors
-                $this->block( '404s', 'IP is blacklisted. [' . __LINE__ . ']' );
-                return; 
-
-            }
-
             $args = [];
             $args['type'] = '404s';
-            $args['threats'] = Threats::is_404();
 
-            // Add 404 Entry
-            $this->add_entry( $args );
+            if ( Yoda::is_blacklisted() ) {
+
+                // Block display of any 404 errors
+                $this->block( $args );
+                return;
+
+            } else {
+
+                $args['threats'] = Threats::is_404();
+
+                // Add 404 Entry
+                $this->add_entry( $args );
+
+            }
 
         } // is_404()
 

@@ -8,21 +8,13 @@
  * @package UABB Video Module
  */
 
-$branding_name       = BB_Ultimate_Addon_Helper::get_builder_uabb_branding( 'uabb-plugin-name' );
-$branding_short_name = BB_Ultimate_Addon_Helper::get_builder_uabb_branding( 'uabb-plugin-short-name' );
-$branding            = '';
-if ( empty( $branding_name ) && empty( $branding_short_name ) ) {
-	$branding = 'no';
-} else {
-	$branding = 'yes';
-}
 FLBuilder::register_module(
 	'UABBVideo',
 	array(
 		'general'          => array(
 			'title'    => __( 'General', 'uabb' ), // Tab title.
 			'sections' => array( // Tab Sections.
-				'general'      => array( // Section.
+				'general'       => array( // Section.
 					'title'  => __( 'Video', 'uabb' ), // Section Title.
 					'fields' => array( // Section Fields.
 						'video_type'   => array(
@@ -32,6 +24,7 @@ FLBuilder::register_module(
 							'options' => array(
 								'youtube' => __( 'YouTube', 'uabb' ),
 								'vimeo'   => __( 'Vimeo', 'uabb' ),
+								'wistia'  => __( 'Wistia', 'uabb' ),
 							),
 							'toggle'  => array(
 								'youtube' => array(
@@ -42,6 +35,10 @@ FLBuilder::register_module(
 								'vimeo'   => array(
 									'fields'   => array( 'vimeo_link', 'start' ),
 									'sections' => array( 'vimeo_option' ),
+								),
+								'wistia'  => array(
+									'fields'   => array( 'wistia_link' ),
+									'sections' => array( 'wistia_option' ),
 								),
 							),
 						),
@@ -57,6 +54,13 @@ FLBuilder::register_module(
 							'label'       => __( 'Link', 'uabb' ),
 							'default'     => 'https://vimeo.com/274860274',
 							'description' => UABBVideo::get_description( 'vimeo_link' ),
+							'connections' => array( 'url' ),
+						),
+						'wistia_link'  => array(
+							'type'        => 'text',
+							'label'       => __( 'Link', 'uabb' ),
+							'default'     => '<p><a href="https://pratikc.wistia.com/medias/gyvkfithw2?wvideo=gyvkfithw2"><img src="https://embedwistia-a.akamaihd.net/deliveries/53eec5fa72737e60aa36731b57b607a7c0636f52.webp?image_play_button_size=2x&amp;image_crop_resized=960x540&amp;image_play_button=1&amp;image_play_button_color=54bbffe0" width="400" height="225" style="width: 400px; height: 225px;"></a></p><p><a href="https://pratikc.wistia.com/medias/gyvkfithw2?wvideo=gyvkfithw2">Video Placeholder - Brainstorm Force - pratikc</a></p>',
+							'description' => UABBVideo::get_description( 'wistia_link' ),
 							'connections' => array( 'url' ),
 						),
 						'start'        => array(
@@ -88,7 +92,7 @@ FLBuilder::register_module(
 						),
 					),
 				),
-				'video_option' => array(
+				'video_option'  => array(
 					'title'  => __( 'Video Options', 'uabb' ),
 					'fields' => array(
 						'yt_autoplay'       => array(
@@ -160,7 +164,7 @@ FLBuilder::register_module(
 						),
 					),
 				),
-				'vimeo_option' => array(
+				'vimeo_option'  => array(
 					'title'  => __( 'Video option', 'uabb' ),
 					'fields' => array(
 						'vimeo_autoplay' => array(
@@ -225,6 +229,54 @@ FLBuilder::register_module(
 							'default'     => '',
 							'show_reset'  => true,
 							'show_alpha'  => true,
+						),
+					),
+				),
+				'wistia_option' => array(
+					'title'  => __( 'Video Options', 'uabb' ),
+					'fields' => array(
+						'wistia_autoplay' => array(
+							'type'    => 'select',
+							'label'   => __( 'AutoPlay', 'uabb' ),
+							'default' => 'no',
+							'options' => array(
+								'yes' => __( 'Yes', 'uabb' ),
+								'no'  => __( 'No', 'uabb' ),
+							),
+							'toggle'  => array(
+								'no' => array(
+									'tabs' => array( 'thumbnail' ),
+								),
+							),
+							'help'    => __( 'Thumbnail will not display if AutoPlay mode is enabled. ', 'uabb' ),
+						),
+						'wistia_loop'     => array(
+							'type'    => 'select',
+							'label'   => __( 'Loop', 'uabb' ),
+							'default' => 'no',
+							'options' => array(
+								'yes' => __( 'Yes', 'uabb' ),
+								'no'  => __( 'No', 'uabb' ),
+							),
+							'help'    => __( 'Choose a video to play continuously in a loop. The video will automatically start again after reaching the end.', 'uabb' ),
+						),
+						'wistia_playbar'  => array(
+							'type'    => 'select',
+							'label'   => __( 'Show Playbar', 'uabb' ),
+							'default' => 'show',
+							'options' => array(
+								'yes' => __( 'Show', 'uabb' ),
+								'no'  => __( 'Hide', 'uabb' ),
+							),
+						),
+						'wistia_muted'    => array(
+							'type'    => 'select',
+							'label'   => __( 'Mute', 'uabb' ),
+							'default' => 'no',
+							'options' => array(
+								'yes' => __( 'Yes', 'uabb' ),
+								'no'  => __( 'No', 'uabb' ),
+							),
 						),
 					),
 				),
@@ -353,7 +405,7 @@ FLBuilder::register_module(
 							'show_alpha'  => 'true',
 							'preview'     => array(
 								'type'      => 'css',
-								'selector'  => '.uabb-youtube-icon-bg,.uabb-vimeo-icon-bg',
+								'selector'  => '.uabb-youtube-icon-bg,.uabb-vimeo-icon-bg,.uabb-video-wistia-play',
 								'property'  => 'fill',
 								'important' => true,
 							),
@@ -543,7 +595,7 @@ FLBuilder::register_module(
 						'sticky_close_icon'          => array(
 							'type'        => 'icon',
 							'label'       => __( 'Select Icon', 'uabb' ),
-							'default'     => 'fa fa-close',
+							'default'     => 'fas fa-times',
 							'show_remove' => true,
 						),
 
@@ -818,6 +870,65 @@ FLBuilder::register_module(
 				),
 			),
 		),
+		'structured_data'  => array(
+			'title'    => __( 'Structured Data', 'uabb' ),
+			'sections' => array(
+				'video_info' => array(
+					'title'  => '',
+					'fields' => array(
+						'schema_enabled'    => array(
+							'type'    => 'select',
+							'label'   => __( 'Enable Structured Data?', 'uabb' ),
+							'default' => 'no',
+							'options' => array(
+								'yes' => __( 'Yes', 'uabb' ),
+								'no'  => __( 'No', 'uabb' ),
+							),
+							'toggle'  => array(
+								'yes' => array(
+									'fields' => array( 'video_title', 'video_desc', 'video_thumbnail', 'video_upload_date' ),
+								),
+							),
+						),
+						'video_title'       => array(
+							'type'        => 'text',
+							'label'       => __( 'Video Title', 'uabb' ),
+							'default'     => '',
+							'connections' => array( 'string' ),
+							'preview'     => array(
+								'type' => 'none',
+							),
+						),
+						'video_desc'        => array(
+							'type'        => 'text',
+							'label'       => __( 'Video Description', 'uabb' ),
+							'default'     => '',
+							'connections' => array( 'string' ),
+							'preview'     => array(
+								'type' => 'none',
+							),
+						),
+						'video_thumbnail'   => array(
+							'type'        => 'photo',
+							'label'       => __( 'Video Thumbnail', 'uabb' ),
+							'show_remove' => true,
+							'connections' => array( 'photo' ),
+							'preview'     => array(
+								'type' => 'none',
+							),
+						),
+						'video_upload_date' => array(
+							'type'        => 'date',
+							'label'       => __( 'Upload Date', 'uabb' ),
+							'connections' => array( 'string' ),
+							'preview'     => array(
+								'type' => 'none',
+							),
+						),
+					),
+				),
+			),
+		),
 		'uabb_docs'        => array(
 			'title'    => __( 'Docs', 'uabb' ),
 			'sections' => array(
@@ -826,7 +937,7 @@ FLBuilder::register_module(
 					'fields' => array(
 						'uabb_helpful_information' => array(
 							'type'    => 'raw',
-							'content' => '<ul class="uabb-docs-list" data-branding=' . $branding . '>
+							'content' => '<ul class="uabb-docs-list" data-branding=' . BB_Ultimate_Addon_Helper::$is_branding_enabled . '>
 
 								<li class="uabb-docs-list-item"> <i class="ua-icon ua-icon-chevron-right2"> </i> <a href="https://www.ultimatebeaver.com/docs/video-module/?utm_source=uabb-pro-backend&utm_medium=module-editor-screen&utm_campaign=video-module" target="_blank" rel="noopener"> Getting started article </a> </li>
 
@@ -837,7 +948,7 @@ FLBuilder::register_module(
 								<li class="uabb-docs-list-item"> <i class="ua-icon ua-icon-chevron-right2"> </i> <a href="https://www.ultimatebeaver.com/docs/display-youtube-subscribe-bar-for-video/?utm_source=uabb-pro-backend&utm_medium=module-editor-screen&utm_campaign=video-module" target="_blank" rel="noopener"> How to Display YouTube Subscribe Bar for Video? </a> </li>
 
 								<li class="uabb-docs-list-item"> <i class="ua-icon ua-icon-chevron-right2"> </i> <a href="https://www.ultimatebeaver.com/docs/how-to-find-youtube-channel-name-and-channel-id/?utm_source=uabb-pro-backend&utm_medium=module-editor-screen&utm_campaign=video-module" target="_blank" rel="noopener"> How to Find YouTube Channel Name and Channel ID? </a> </li>
-								
+
 								<li class="uabb-docs-list-item"> <i class="ua-icon ua-icon-chevron-right2"> </i> <a href="https://www.ultimatebeaver.com/docs/default-thumbnail-broken-in-video-module//?utm_source=uabb-pro-backend&utm_medium=module-editor-screen&utm_campaign=video-module" target="_blank" rel="noopener"> Default Thumbnail Broken in Video Module </a> </li>
 								<li class="uabb-docs-list-item"> <i class="ua-icon ua-icon-chevron-right2"> </i> <a href="https://www.ultimatebeaver.com/docs/sticky-video/?utm_source=uabb-pro-backend&utm_medium=module-editor-screen&utm_campaign=video-module" target="_blank" rel="noopener"> Sticky Video </a> </li>
 							 </ul>',

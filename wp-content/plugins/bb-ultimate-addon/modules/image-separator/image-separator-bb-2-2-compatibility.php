@@ -8,17 +8,9 @@
  * @package UABB Image Separator Module
  */
 
-$branding_name       = BB_Ultimate_Addon_Helper::get_builder_uabb_branding( 'uabb-plugin-name' );
-$branding_short_name = BB_Ultimate_Addon_Helper::get_builder_uabb_branding( 'uabb-plugin-short-name' );
-$branding            = '';
-if ( empty( $branding_name ) && empty( $branding_short_name ) ) {
-	$branding = 'no';
-} else {
-	$branding = 'yes';
-}
-
 FLBuilder::register_module(
-	'UABBImageSeparatorModule', array(
+	'UABBImageSeparatorModule',
+	array(
 		'general'       => array( // Tab.
 			'title'    => __( 'General', 'uabb' ), // Tab title.
 			'sections' => array( // Tab Sections.
@@ -495,7 +487,7 @@ FLBuilder::register_module(
 					'fields' => array(
 						'uabb_helpful_information' => array(
 							'type'    => 'raw',
-							'content' => '<ul class="uabb-docs-list" data-branding=' . $branding . '>
+							'content' => '<ul class="uabb-docs-list" data-branding=' . BB_Ultimate_Addon_Helper::$is_branding_enabled . '>
 
 								<li class="uabb-docs-list-item"> <i class="ua-icon ua-icon-chevron-right2"> </i> <a href="https://www.ultimatebeaver.com/docs/how-to-use-the-image-separator-effectively/?utm_source=uabb-pro-backend&utm_medium=module-editor-screen&utm_campaign=image-separator-module" target="_blank" rel="noopener"> How to use the Image Separator effectively? </a> </li>
 							 </ul>',

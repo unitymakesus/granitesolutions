@@ -1,7 +1,6 @@
 <?php
 /**
- * @package The_SEO_Framework
- * @subpackage The_SEO_Framework\API
+ * @package The_SEO_Framework\API
  */
 
 namespace {
@@ -10,7 +9,7 @@ namespace {
 
 /**
  * The SEO Framework plugin
- * Copyright (C) 2018 - 2019 Sybre Waaijer, CyberWire (https://cyberwire.nl/)
+ * Copyright (C) 2018 - 2020 Sybre Waaijer, CyberWire (https://cyberwire.nl/)
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as published
@@ -45,7 +44,7 @@ namespace {
 	 * Returns the database version of TSF.
 	 *
 	 * @since 3.1.0
-	 * @since 3.1.2 Now forces a string.
+	 * @since 3.1.2 Now casts to string.
 	 *
 	 * @return string The database version. '0' if version isn't found.
 	 */
@@ -60,9 +59,9 @@ namespace {
 	 * will fail to load views.
 	 *
 	 * @since 2.7.0
-	 * @since 2.8.0: Added did_action and current_action check.
+	 * @since 2.8.0 Added `did_action()` check.
 	 *
-	 * @return string|bool The SEO Framework class name. False if The SEO Framework isn't loaded.
+	 * @return string|bool The SEO Framework class name. False if The SEO Framework isn't loaded (yet).
 	 */
 	function the_seo_framework_class() {
 
@@ -71,7 +70,8 @@ namespace {
 		if ( isset( $class ) )
 			return $class;
 
-		if ( ! ( did_action( 'plugins_loaded' ) || current_action( 'plugins_loaded' ) ) )
+		// did_action() checks for current action too.
+		if ( ! did_action( 'plugins_loaded' ) )
 			return false;
 
 		return $class = get_class( the_seo_framework() );
@@ -110,7 +110,6 @@ namespace The_SEO_Framework {
 	 * @uses THE_SEO_FRAMEWORK_DIR_PATH_TRAIT
 	 * @access private
 	 * @staticvar array $loaded
-	 * @TODO use this.
 	 *
 	 * @param string $file Where the trait is for. Must be lowercase.
 	 * @return bool True if loaded, false otherwise.
@@ -142,5 +141,20 @@ namespace The_SEO_Framework {
 		static $cache = [];
 
 		return isset( $cache[ $caller ] ) ?: ( ( $cache[ $caller ] = true ) && false );
+	}
+
+	/**
+	 * Adds and returns-to the bootstrap timer.
+	 *
+	 * @since 4.0.0
+	 * @access private
+	 * @staticvar $time The estimated total time for bootstrapping.
+	 *
+	 * @param int $add The time to add.
+	 * @return int The accumulated time, roughly.
+	 */
+	function _bootstrap_timer( $add = 0 ) {
+		static $time  = 0;
+		return $time += $add;
 	}
 }

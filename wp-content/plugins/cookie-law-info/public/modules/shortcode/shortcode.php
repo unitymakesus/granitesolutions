@@ -95,14 +95,14 @@ class Cookie_Law_Info_Shortcode {
         {
             if($_COOKIE["viewed_cookie_policy"]=='yes')
             {
-                $html.=__('Consent Accepted. ','cookie-law-info');
+                $html.=' '.__('Consent Accepted.','cookie-law-info');
             }else
             {
-                $html.=__('Consent rejected.','cookie-law-info');
+                $html.=' '.__('Consent rejected.','cookie-law-info');
             }
         }else //no conset given
         {
-            $html.=__('No consent given.','cookie-law-info');
+            $html.=' '.__('No consent given.','cookie-law-info');
         }
         $html.=' <a class="cli_manage_current_consent" style="cursor:pointer;">'.__('Manage your consent.','cookie-law-info').'</a> </div>';
         return $html;
@@ -190,6 +190,11 @@ class Cookie_Law_Info_Shortcode {
             'order' => 'ASC',
             'orderby' => 'title'
         );
+        global $sitepress;
+        if(function_exists('icl_object_id') && $sitepress) //wpml enabled
+        {
+            $args['suppress_filters']=false;
+        }
         $posts = get_posts($args);
         $ret = '<table class="cookielawinfo-row-cat-table cookielawinfo-' . $style . '"><thead><tr>';
         if(in_array('cookie',$columns))
@@ -291,7 +296,7 @@ class Cookie_Law_Info_Shortcode {
         $settings = wp_parse_args(Cookie_Law_Info::get_settings(),$defaults);
         $button_1_text=__($settings['button_1_text'],'cookie-law-info');
         $margin_style=$margin!="" ? ' style="margin:'.$margin.';" ' : '';
-        return '<a class="cli_action_button cli-accept-button medium cli-plugin-button ' . $colour . '" data-cli_action="accept"'.$margin_style.'>' . stripslashes($button_1_text) . '</a>';
+        return '<a role="button" tabindex="0" class="cli_action_button cli-accept-button medium cli-plugin-button ' . $colour . '" data-cli_action="accept"'.$margin_style.'>' . stripslashes($button_1_text) . '</a>';
     }
 
     /** Returns HTML for a standard (green, medium sized) 'Reject' button */
@@ -314,7 +319,7 @@ class Cookie_Law_Info_Shortcode {
         {
             $classr=' class="cookie_action_close_header_reject cli_action_button" '; 
         }
-        $url_reject = ( $settings['button_3_action'] == "CONSTANT_OPEN_URL" && $settings['button_3_url'] != "#" ) ? "href='$settings[button_3_url]'" : "";
+        $url_reject = ( $settings['button_3_action'] == "CONSTANT_OPEN_URL" && $settings['button_3_url'] != "#" ) ? "href='$settings[button_3_url]'" : "role='button' tabindex='0'";
         $link_tag = '';
         $link_tag .= ' <a '.$url_reject.' id="'.Cookie_Law_Info_Public::cookielawinfo_remove_hash($settings['button_3_action']).'" ';
         $link_tag .= ($settings['button_3_new_win'] ) ? 'target="_blank" ' : '' ;
@@ -343,15 +348,15 @@ class Cookie_Law_Info_Shortcode {
         }
         else 
         {
-            $classr= 'class="cli_settings_button" ';
+            $classr= ' class="cli_settings_button"';
         }
 
         //adding custom style
-        $url_s = ( $settings['button_4_action'] == "CONSTANT_OPEN_URL" && $settings['button_4_url'] != "#" ) ? "href='$settings[button_4_url]'" : "";
+        $url_s = ( $settings['button_4_action'] == "CONSTANT_OPEN_URL" && $settings['button_4_url'] != "#" ) ? "href='$settings[button_4_url]'" : "role='button' tabindex='0'";
         $link_tag = '';
         $link_tag .= '<a ' . $url_s;
         $link_tag .= ( $settings['button_4_new_win'] ) ? ' target="_blank" ' : '' ;
-        $link_tag .= $classr . ' '.$margin_style.'>' . stripslashes( $settings['button_4_text'] ) . '</a>';
+        $link_tag .= $classr.''.$margin_style.'>' . stripslashes( $settings['button_4_text'] ) . '</a>';
         return $link_tag;           
     }
     /** Returns HTML for a generic button */
@@ -380,7 +385,7 @@ class Cookie_Law_Info_Shortcode {
         }
         
         // If is action not URL then don't use URL!
-        $url = ( $settings['button_1_action'] == "CONSTANT_OPEN_URL" && $settings['button_1_url'] != "#" ) ? "href='$settings[button_1_url]'" : "";        
+        $url = ( $settings['button_1_action'] == "CONSTANT_OPEN_URL" && $settings['button_1_url'] != "#" ) ? "href='$settings[button_1_url]'" : "role='button' tabindex='0'";        
         $link_tag = '<a '.$url.' data-cli_action="accept" id="' . Cookie_Law_Info_Public::cookielawinfo_remove_hash ( $settings['button_1_action'] ) . '" ';
         $link_tag .= ( $settings['button_1_new_win'] ) ? 'target="_blank" ' : '' ;
         $link_tag .= $class.' style="display:inline-block; '.$margin_style.'">' . stripslashes( __($settings['button_1_text'],'cookie-law-info') ) . '</a>';
@@ -504,7 +509,7 @@ class Cookie_Law_Info_Shortcode {
         }
         
         // If is action not URL then don't use URL!
-        $url = ( $settings['button_x_action'] == "CONSTANT_OPEN_URL" && $settings['button_x_url'] != "#" ) ? "href='$settings[button_x_url]'" : "";
+        $url = ( $settings['button_x_action'] == "CONSTANT_OPEN_URL" && $settings['button_x_url'] != "#" ) ? "href='$settings[button_x_url]'" : "role='button' tabindex='0'";
         $link_tag = '<a '. $url . ' id="' . Cookie_Law_Info_Public::cookielawinfo_remove_hash ( $settings['button_x_action'] ) . '" ';
         $link_tag .= ( $settings['button_x_new_win'] ) ? 'target="_blank" ' : '' ;
         $link_tag .= $class.' style="display:inline-block;'.$margin_style.'" >' . $settings['button_x_text'] . '</a>';       

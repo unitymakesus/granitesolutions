@@ -19,10 +19,10 @@ class PolicyLoginRememberMe {
 	function __construct(){
 
         // Clear Cache Attempt
-        add_action( 'login_form', array( $this, 'login_form' ), 99 );
+        add_action( 'login_form', [ $this, 'login_form' ], 99 );
 
         // Clear Variable Attempt
-        add_action( 'login_head', array( $this, 'reset' ), 99 );
+        add_action( 'login_head', [ $this, 'reset' ], 99 );
 
 	} // __construct()
 
@@ -47,7 +47,7 @@ class PolicyLoginRememberMe {
      */ 
     public function login_form() {
 
-      ob_start( array( $this, 'remove' ) );
+      ob_start( [ $this, 'remove' ] );
 
     } // login_form()
 

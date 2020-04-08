@@ -18,7 +18,7 @@ class PolicyLoginErrors {
      */
 	function __construct(){
 
-        add_filter( 'login_errors', array( $this, 'login_errors' ) );
+        add_filter( 'login_errors', [ $this, 'login_errors' ] );
 
 	} // __construct()
 
@@ -28,7 +28,7 @@ class PolicyLoginErrors {
      */ 
     function login_errors(){
       
-      return 'Invalid username or password.';
+      return __( 'Invalid username or password.', SECSAFE_SLUG );
 
     } // login_errors()
 

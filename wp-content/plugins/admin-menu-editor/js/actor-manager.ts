@@ -1,4 +1,5 @@
 /// <reference path="lodash-3.10.d.ts" />
+/// <reference path="knockout.d.ts" />
 /// <reference path="common.d.ts" />
 
 declare let wsAmeActorData: any;
@@ -58,7 +59,7 @@ abstract class AmeBaseActor implements IAmeActor {
 
 	static getActorSpecificity(actorId: string) {
 		let actorType = actorId.substring(0, actorId.indexOf(':')),
-			specificity = 0;
+			specificity;
 		switch (actorType) {
 			case 'role':
 				specificity = 1;
@@ -477,6 +478,19 @@ class AmeActorManager implements AmeActorManagerInterface {
 	}
 
 	/**
+	 * Reset all capabilities granted to an actor.
+	 * @param actor
+	 * @return boolean TRUE if anything was reset or FALSE if the actor didn't have any granted capabilities.
+	 */
+	resetActorCaps(actor: string): boolean {
+		if (AmeActorManager._.has(this.grantedCapabilities, actor)) {
+			delete this.grantedCapabilities[actor];
+			return true;
+		}
+		return false;
+	}
+
+	/**
 	 * Remove redundant granted capabilities.
 	 *
 	 * For example, if user "jane" has been granted the "edit_posts" capability both directly and via the Editor role,
@@ -655,6 +669,71 @@ interface AmeActorManagerInterface {
 
 	getActor(actorId): IAmeActor;
 	actorExists(actorId: string): boolean;
+}
+
+class AmeObservableActorSettings {
+	private items: { [actorId: string] : KnockoutObservable<boolean>; } = {};
+	private readonly numberOfObservables: KnockoutObservable<number>;
+
+	constructor(initialData?: AmeDictionary<boolean>) {
+		this.numberOfObservables = ko.observable(0);
+		if (initialData) {
+			this.setAll(initialData);
+		}
+	}
+
+	get(actor: string, defaultValue = null): boolean {
+		if (this.items.hasOwnProperty(actor)) {
+			let value = this.items[actor]();
+			if (value === null) {
+				return defaultValue;
+			}
+			return value;
+		}
+		this.numberOfObservables(); //Establish a dependency.
+		return defaultValue;
+	}
+
+	set(actor: string, value: boolean) {
+		if (!this.items.hasOwnProperty(actor)) {
+			this.items[actor] = ko.observable(value);
+			this.numberOfObservables(this.numberOfObservables() + 1);
+		} else {
+			this.items[actor](value);
+		}
+	}
+
+	getAll(): AmeDictionary<boolean> {
+		let result: AmeDictionary<boolean> = {};
+		for (let actorId in this.items) {
+			if (this.items.hasOwnProperty(actorId)) {
+				let value = this.items[actorId]();
+				if (value !== null) {
+					result[actorId] = value;
+				}
+			}
+		}
+		return result;
+	}
+
+	setAll(values: AmeDictionary<boolean>) {
+		for (let actorId in values) {
+			if (values.hasOwnProperty(actorId)) {
+				this.set(actorId, values[actorId]);
+			}
+		}
+	}
+
+	/**
+	 * Reset all values to null.
+	 */
+	resetAll() {
+		for (let actorId in this.items) {
+			if (this.items.hasOwnProperty(actorId)) {
+				this.items[actorId](null);
+			}
+		}
+	}
 }
 
 if (typeof wsAmeActorData !== 'undefined') {

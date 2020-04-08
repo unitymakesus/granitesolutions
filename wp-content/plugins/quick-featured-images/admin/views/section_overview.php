@@ -86,9 +86,9 @@ if ( current_user_can( $qfi_settings_instance->get_required_user_cap() ) ) {
 ?>
 	</li>
 	<li>
-		<h3><?php esc_html_e( 'The premium version', 'quick-featured-images' ); ?></h3>
+		<h3><?php esc_html_e( 'The Pro version', 'quick-featured-images' ); ?></h3>
 		<p><a href="https://www.quickfeaturedimages.com<?php esc_attr_e( '/', 'quick-featured-images' ); ?>"><img alt="Quick Featured Images Pro" src="<?php echo plugin_dir_url( dirname( dirname( __FILE__ ) ) ); ?>admin/assets/images/logo_qfi_pro.gif" style="width:100%;height:auto;"></a></p>
-		<p><?php esc_html_e( 'Are you looking for more options and more filters?', 'quick-featured-images' ); ?> <?php esc_html_e( 'Get the premium version', 'quick-featured-images' ); ?> <a href="https://www.quickfeaturedimages.com<?php esc_attr_e( '/', 'quick-featured-images' ); ?>">Quick Featured Images Pro</a>.</p>
+		<p><?php esc_html_e( 'Are you looking for more options and more filters?', 'quick-featured-images' ); ?> <?php esc_html_e( 'Get the Pro version', 'quick-featured-images' ); ?> <a href="https://www.quickfeaturedimages.com<?php esc_attr_e( '/', 'quick-featured-images' ); ?>">Quick Featured Images Pro</a>.</p>
 	</li>
 </ul>
 

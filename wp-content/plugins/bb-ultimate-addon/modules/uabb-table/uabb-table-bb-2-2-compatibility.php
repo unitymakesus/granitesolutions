@@ -8,17 +8,9 @@
  * @package UABB Table Module
  */
 
-$branding_name       = BB_Ultimate_Addon_Helper::get_builder_uabb_branding( 'uabb-plugin-name' );
-$branding_short_name = BB_Ultimate_Addon_Helper::get_builder_uabb_branding( 'uabb-plugin-short-name' );
-$branding            = '';
-if ( empty( $branding_name ) && empty( $branding_short_name ) ) {
-	$branding = 'no';
-} else {
-	$branding = 'yes';
-}
-
 FLBuilder::register_module(
-	'UABBTable', array(
+	'UABBTable',
+	array(
 		'headrow'        => array(
 			'title'    => __( 'Table Header', 'uabb' ),
 			'sections' => array(
@@ -803,7 +795,7 @@ FLBuilder::register_module(
 					'fields' => array(
 						'uabb_helpful_information' => array(
 							'type'    => 'raw',
-							'content' => '<ul class="uabb-docs-list" data-branding=' . $branding . '>
+							'content' => '<ul class="uabb-docs-list" data-branding=' . BB_Ultimate_Addon_Helper::$is_branding_enabled . '>
 
 								<li class="uabb-docs-list-item"> <i class="ua-icon ua-icon-chevron-right2"> </i> <a href="https://www.ultimatebeaver.com/docs/table-module/?utm_source=uabb-pro-backend&utm_medium=module-editor-screen&utm_campaign=table-module" target="_blank" rel="noopener"> Getting started article </a> </li>
 
@@ -833,7 +825,8 @@ FLBuilder::register_module(
 );
 
 FLBuilder::register_settings_form(
-	'thead_row_form', array(
+	'thead_row_form',
+	array(
 		'title' => __( 'Heading Cell', 'uabb' ),
 		'tabs'  => array(
 			'general' => array(
@@ -1049,7 +1042,8 @@ FLBuilder::register_settings_form(
 );
 
 FLBuilder::register_settings_form(
-	'tbody_row_form', array(
+	'tbody_row_form',
+	array(
 		'title' => __( 'Body Row / Cell', 'uabb' ),
 		'tabs'  => array(
 			'general' => array(

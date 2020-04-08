@@ -9,7 +9,8 @@
  */
 
 FLBuilder::register_module(
-	'ImageIconModule', array(
+	'ImageIconModule',
+	array(
 		'general' => array( // Tab.
 			'title'    => __( 'General', 'uabb' ), // Tab title.
 			'sections' => array( // Tab Sections.
@@ -68,10 +69,11 @@ FLBuilder::register_module(
 							),
 						),
 						'icon_align' => array(
-							'type'    => 'align',
-							'label'   => __( 'Alignment', 'uabb' ),
-							'default' => 'center',
-							'preview' => array(
+							'type'       => 'align',
+							'label'      => __( 'Alignment', 'uabb' ),
+							'responsive' => true,
+							'default'    => 'center',
+							'preview'    => array(
 								'type'      => 'css',
 								'selector'  => '.uabb-imgicon-wrap',
 								'property'  => 'text-align',
@@ -136,10 +138,11 @@ FLBuilder::register_module(
 							),
 						),
 						'img_align'    => array(
-							'type'    => 'align',
-							'label'   => __( 'Alignment', 'uabb' ),
-							'default' => 'center',
-							'preview' => array(
+							'type'       => 'align',
+							'label'      => __( 'Alignment', 'uabb' ),
+							'default'    => 'center',
+							'responsive' => true,
+							'preview'    => array(
 								'type'      => 'css',
 								'selector'  => '.uabb-imgicon-wrap',
 								'property'  => 'text-align',

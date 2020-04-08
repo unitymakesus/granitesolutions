@@ -22,7 +22,7 @@ class PolicyLoginPasswordReset {
         add_filter( 'allow_password_reset', '__return_false' );
 
         // Replace Link Text With Null
-        add_filter( 'gettext', array( $this, 'remove' ) );
+        add_filter( 'gettext', [ $this, 'remove' ] );
 
 	} // __construct()
 
@@ -32,7 +32,7 @@ class PolicyLoginPasswordReset {
      */ 
     public function remove( $text ){
 
-        return str_replace( array( 'Lost your password?', 'Lost your password' ), '', trim( $text, '?' ) ); 
+        return str_replace( [ 'Lost your password?', 'Lost your password' ], '', trim( $text, '?' ) ); 
 
     } // remove()
 

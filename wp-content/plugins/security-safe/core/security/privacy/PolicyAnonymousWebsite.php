@@ -19,7 +19,7 @@ class PolicyAnonymousWebsite {
      */
 	function __construct(){
 
-        add_filter( 'http_headers_useragent', array( $this, 'make_anonymous' ) );
+        add_filter( 'http_headers_useragent', [ $this, 'make_anonymous' ] );
 
 	} // __construct()
 

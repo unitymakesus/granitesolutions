@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GA Google Analytics\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2019-03-13 00:51+0000\n"
+"POT-Creation-Date: 2019-11-09 21:39+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: \n"
@@ -190,7 +190,7 @@ msgstr ""
 msgid "Choose either"
 msgstr ""
 
-#: inc/settings-display.php:76 inc/support-panel.php:62
+#: inc/settings-display.php:76 inc/support-panel.php:65
 msgid "or"
 msgstr ""
 
@@ -352,7 +352,7 @@ msgid "before"
 msgstr ""
 
 #: inc/settings-display.php:209
-msgid "the GA tracking code. Leave unchecked to display"
+msgid "the GA tracking code (leave unchecked to display"
 msgstr ""
 
 #: inc/settings-display.php:209
@@ -360,7 +360,7 @@ msgid "after"
 msgstr ""
 
 #: inc/settings-display.php:209
-msgid "the tracking code."
+msgid "the tracking code)"
 msgstr ""
 
 #: inc/settings-display.php:213
@@ -368,7 +368,9 @@ msgid "Admin Area"
 msgstr ""
 
 #: inc/settings-display.php:216
-msgid "Enable GA in the WordPress Admin Area"
+msgid ""
+"Enable tracking in WP Admin Area (adds tracking code only; to view stats log "
+"into your Google account)"
 msgstr ""
 
 #: inc/settings-display.php:220
@@ -419,51 +421,51 @@ msgstr ""
 msgid "Obsessive Web Development"
 msgstr ""
 
-#: inc/support-panel.php:52
+#: inc/support-panel.php:55
 msgid "Perishable Press Books"
 msgstr ""
 
-#: inc/support-panel.php:53
+#: inc/support-panel.php:56
 msgid "Plugin Planet"
 msgstr ""
 
-#: inc/support-panel.php:54
+#: inc/support-panel.php:57
 msgid "Donate via PayPal"
 msgstr ""
 
-#: inc/support-panel.php:56
+#: inc/support-panel.php:59
 msgid "books"
 msgstr ""
 
-#: inc/support-panel.php:57
+#: inc/support-panel.php:60
 msgid "plugins"
 msgstr ""
 
-#: inc/support-panel.php:58
+#: inc/support-panel.php:61
 msgid "donation"
 msgstr ""
 
-#: inc/support-panel.php:60
+#: inc/support-panel.php:63
 msgid "Thank you for using"
 msgstr ""
 
-#: inc/support-panel.php:61
+#: inc/support-panel.php:64
 msgid "Please show support by purchasing one of my"
 msgstr ""
 
-#: inc/support-panel.php:62
+#: inc/support-panel.php:65
 msgid "or by making a"
 msgstr ""
 
-#: inc/support-panel.php:63
+#: inc/support-panel.php:66
 msgid "Your generous support helps to ensure future development of"
 msgstr ""
 
-#: inc/support-panel.php:64
+#: inc/support-panel.php:67
 msgid "and is greatly appreciated."
 msgstr ""
 
-#: inc/support-panel.php:66
+#: inc/support-panel.php:69
 msgid ""
 "Any size donation helps me to continue developing this free plugin and other "
 "awesome WordPress resources."

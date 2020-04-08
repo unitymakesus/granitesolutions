@@ -63,7 +63,7 @@ function uabb_particle_col_settings_dependency_js( $js, $nodes, $global_settings
 
 			var form = $('.fl-builder-settings');
 
-			var branding = '<?php echo $branding; ?>';
+			var branding = '<?php echo esc_attr( $branding ); ?>';
 
 			if ( form.length > 0 ) {
 
@@ -146,7 +146,7 @@ function uabb_particle_col_settings_dependency_js( $js, $nodes, $global_settings
 
 							if ( 'no' === branding ) {
 
-								style_selector.find( '.fl-field-control-wrapper' ).append( '<span class="fl-field-description uabb-particle-docs-list"><div class="uabb-docs-particle"> Add custom JSON for the Particles Background below. To generate a completely customized background style follow steps below - </div><div class="uabb-docs-particle">1. Visit a link <a class="uabb-docs-particle-link" href="https://vincentgarreau.com/particles.js/" target="_blank"> here </a> and choose required attributes for particles</div><div class="uabb-docs-particle">2. Once a custom style is created, download JSON from "Download current config (json)" link</div><div class="uabb-docs-particle">3. Copy JSON code from the above file and paste it below</div><div class="uabb-docs-particle">To know more about creating a custom style, refer to a document <a class="uabb-docs-particle-link" href="https://www.ultimatebeaver.com/docs/how-to-add-custom-particles-background-style/?utm_source=uabb-pro-backend&utm_medium=column-editor-screen&utm_campaign=particle-background-column" target="_blank" rel="noopener"> here. </a></div></span>' );
+								style_selector.find( '.fl-field-control-wrapper' ).append( '<span class="fl-field-description uabb-particle-docs-list"><div class="uabb-docs-particle"> Add custom JSON for the Particles Background below. To generate a completely customized background style follow steps below - </div><div class="uabb-docs-particle">1. Visit a link <a class="uabb-docs-particle-link" href="https://vincentgarreau.com/particles.js/" target="_blank"> here </a> and choose required attributes for particles</div><div class="uabb-docs-particle">2. Once a custom style is created, download JSON from "Download current config (json)" link</div><div class="uabb-docs-particle">3. Copy JSON code from the above file and paste it below</div><div class="uabb-docs-particle">To know more about creating a custom style, refer to a document <a class="uabb-docs-particle-link" href="https://www.ultimatebeaver.com/docs/custom-particle-backgrounds/?utm_source=uabb-pro-backend&utm_medium=column-editor-screen&utm_campaign=particle-backgrounds-column" target="_blank" rel="noopener"> here. </a></div></span>' );
 
 							} else {
 
@@ -181,27 +181,46 @@ function uabb_particle_col_settings_dependency_js( $js, $nodes, $global_settings
  * @param object $global_settings an object to get various settings.
  */
 function uabb_particle_col_dependency_js( $js, $nodes, $global_settings ) {
+
+	$flag = false;
+
+	foreach ( $nodes['columns'] as $column ) {
+
+		if ( 'yes' === $column->settings->enable_particles_col ) {
+
+			$flag = true;
+
+			break;
+		}
+	}
+
+	if ( false === $flag ) {
+
+		return $js;
+	}
+
 	ob_start();
 	?>
 	;(function($) {
-			var url ='<?php echo BB_ULTIMATE_ADDON_URL . 'assets/js/particles.min.js'; ?>';
+
+			var url ='<?php echo esc_url( BB_ULTIMATE_ADDON_URL . 'assets/js/particles.min.js' ); ?>';
+
 				window.particle_js_loaded = 0;
 
-				$.cachedScript = function( url, options ) {
+				jQuery.cachedScript = function( url, options ) {
 
 					// Allow user to set any option except for dataType, cache, and url.
-					options = $.extend( options || {}, {
+					options = jQuery.extend( options || {}, {
 						dataType: "script",
 						cache: true,
 						url: url
 					});
 
 					// Return the jqXHR object so we can chain callbacks.
-					return $.ajax( options );
+					return jQuery.ajax( options );
 				};
-				if ( $( '.uabb-col-particles-background' ).length ) {
-
-					$.cachedScript( url ).done( function( script, textStatus ) {					
+				if ( jQuery( '.uabb-col-particles-background' ).length ) {
+					jQuery.cachedScript( url ).done( function( script, textStatus ) {
 						window.particle_js_loaded = 1;
 						init_particles_col_background_script();
 
@@ -212,9 +231,15 @@ function uabb_particle_col_dependency_js( $js, $nodes, $global_settings ) {
 
 				<?php
 				foreach ( $nodes['columns'] as $columns ) {
+
+					if ( 'no' === $columns->settings->enable_particles_col ) {
+
+						continue;
+					}
+
 					$json_particles_custom = wp_strip_all_tags( $columns->settings->uabb_particles_custom_code_col );
 					?>
-					row_id = '<?php echo $columns->node; ?>';
+					row_id = '<?php echo esc_attr( $columns->node ); ?>';
 
 					nodeclass = '.fl-node-' + row_id;
 
@@ -235,13 +260,14 @@ function uabb_particle_col_dependency_js( $js, $nodes, $global_settings ) {
 						advanced_settings = data_particles.advanced_settings;
 						particles_opacity = data_particles.particles_opacity;
 						particles_direction = data_particles.particles_direction;
+						row_id = data_particles.id;
 
 						if ( 'yes' === enable_particles ){
 							if ( 'custom' === particles_style ) {
 								<?php
 								if ( '' !== $json_particles_custom ) {
 									?>
-									particlesJS( 'uabb-particle-' + row_id, <?php echo $json_particles_custom; ?> );
+									particlesJS( 'uabb-particle-' + row_id, <?php echo $json_particles_custom; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?> );
 									<?php
 								}
 								?>
@@ -446,6 +472,23 @@ function uabb_particle_col_dependency_js( $js, $nodes, $global_settings ) {
  * @param object $global_settings an object to get various settings.
  */
 function uabb_col_dependency_js( $js, $nodes, $global_settings ) {
+
+	$flag = false;
+
+	foreach ( $nodes['columns'] as $column ) {
+
+		if ( 'uabb_gradient' === $column->settings->bg_type ) {
+
+			$flag = true;
+
+			break;
+		}
+	}
+
+	if ( false === $flag ) {
+
+		return $js;
+	}
 	ob_start();
 
 	?>

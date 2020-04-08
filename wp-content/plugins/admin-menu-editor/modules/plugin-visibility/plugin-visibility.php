@@ -76,8 +76,8 @@ class amePluginVisibility extends amePersistentModule {
 
 		//Do we have custom settings for this plugin?
 		if (isset($settings['plugins'][$pluginFileName])) {
-			$isVisibleByDefault = $settings['plugins'][$pluginFileName]['isVisibleByDefault'];
-			$grantAccess = $settings['plugins'][$pluginFileName]['grantAccess'];
+			$isVisibleByDefault = ameUtils::get($settings['plugins'][$pluginFileName], 'isVisibleByDefault', true);
+			$grantAccess = ameUtils::get($settings['plugins'][$pluginFileName], 'grantAccess', array());
 
 			if ($isVisibleByDefault) {
 				$grantAccess = array_merge($settings['grantAccessByDefault'], $grantAccess);
@@ -154,6 +154,10 @@ class amePluginVisibility extends amePersistentModule {
 	 * @return array
 	 */
 	public function filterPluginList($plugins) {
+		if ( !is_array($plugins) && !($plugins instanceof ArrayAccess) ) {
+			return $plugins;
+		}
+
 		$user = wp_get_current_user();
 		$settings = $this->loadSettings();
 
@@ -275,6 +279,7 @@ class amePluginVisibility extends amePersistentModule {
 		if ( $action === 'save_plugin_visibility' ) {
 			check_admin_referer($action);
 
+			/** @noinspection PhpComposerExtensionStubsInspection */
 			$this->settings = json_decode($post['settings'], true);
 			$this->saveSettings();
 

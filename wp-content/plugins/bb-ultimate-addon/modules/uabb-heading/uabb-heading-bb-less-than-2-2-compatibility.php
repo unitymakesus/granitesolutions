@@ -172,6 +172,7 @@ FLBuilder::register_module(
 							'label'      => __( 'Icon Color', 'uabb' ),
 							'default'    => '',
 							'show_reset' => true,
+							'show_alpha' => true,
 							'preview'    => array(
 								'type'     => 'css',
 								'selector' => '.uabb-icon-wrap .uabb-icon i, .uabb-icon-wrap .uabb-icon i:before',
@@ -282,6 +283,7 @@ FLBuilder::register_module(
 							'label'      => __( 'Color', 'uabb' ),
 							'default'    => '',
 							'show_reset' => true,
+							'show_alpha' => true,
 							'preview'    => array(
 								'type'     => 'css',
 								'selector' => '.uabb-separator, .uabb-separator-line > span',
@@ -343,7 +345,7 @@ FLBuilder::register_module(
 							'label'   => __( 'Font', 'uabb' ),
 							'preview' => array(
 								'type'     => 'font',
-								'selector' => '.fl-module-content.fl-node-content .uabb-heading',
+								'selector' => '.fl-module-content.fl-node-content .uabb-heading,.fl-module-content.fl-node-content .uabb-heading .uabb-heading-text',
 							),
 						),
 						'font_size_unit'        => array(

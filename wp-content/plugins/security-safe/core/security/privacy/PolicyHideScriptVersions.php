@@ -20,11 +20,11 @@ class PolicyHideScriptVersions {
 	function __construct(){
 
         // Cache Busting
-        add_action( 'upgrader_process_complete', array( $this, 'increase_cache_busting' ) , 10, 2 );
+        add_action( 'upgrader_process_complete', [ $this, 'increase_cache_busting' ], 10, 2 );
 
         // Remove Version From Scripts
-        add_filter( 'style_loader_src', array( $this, 'css_js_version' ), 99999 );
-        add_filter( 'script_loader_src', array( $this, 'css_js_version' ), 99999 );
+        add_filter( 'style_loader_src', [ $this, 'css_js_version' ], 99999 );
+        add_filter( 'script_loader_src', [ $this, 'css_js_version' ], 99999 );
 
 	} // __construct()
 
@@ -41,10 +41,13 @@ class PolicyHideScriptVersions {
 
         $cache_buster = $SecuritySafe->get_cache_busting();
 
-        $version = 'ver=' . date('Ymd') . $cache_buster;
+        // Replacement version
+        $version = 'ver=' . date('YmdH') . $cache_buster;
 
         if ( strpos( $src, 'ver=' ) ) {
-            $src = preg_replace("/ver=(.*)/", $version , $src );
+
+            $src = preg_replace("/ver=.[^&,\ ]+/", $version , $src );
+
         }
 
         return $src;

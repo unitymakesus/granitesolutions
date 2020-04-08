@@ -5,9 +5,11 @@
  * @package   Quick_Featured_Images_Defaults
  * @author    Martin Stehle <shop@stehle-internet.de>
  * @license   GPL-2.0+
- * @link      http://stehle-internet.de/downloads/quick-featured-images/
+ * @link      http://wordpress.org/plugins/quick-featured-images/
  * @copyright 2014 
  */
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
  * @package Quick_Featured_Images_Defaults

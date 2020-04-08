@@ -236,21 +236,27 @@ var CLI=
 		Trunc = {
 		addReadmore:function(textBlock)
 		{	
-			if(textBlock.text().length > 250)
+			if(textBlock.html().length > 250)
 			{
 				jQuery('.cli-privacy-readmore').show();
 			}
-		},
-		truncateText : function( textBlock ) {            
-			while (textBlock.text().length > 250 ) 
+			else
 			{
-				textBlock.text(function(index, text) {
-				return text.replace(/\W*\s(\S)*$/, '...');
-				});
+				jQuery('.cli-privacy-readmore').hide();
+			}
+		},
+		truncateText : function( textBlock ) {   
+			var strippedText = jQuery('<div />').html(textBlock.html()); 
+			strippedText.find('table').remove();        
+			textBlock.html(strippedText.html());
+			currentText = textBlock.text();
+			if(currentText.trim().length > 250){
+				var newStr = currentText.substring(0, 250);
+				textBlock.empty().html(newStr).append('...');
 			}
 		},     
 		replaceText: function ( textBlock, original ){
-			return textBlock.html(original).height(originalHeight);      
+			return textBlock.html(original);      
 		}  
 		
 		};

@@ -9,7 +9,8 @@
  */
 
 FLBuilder::register_module(
-	'UABBInfoTableModule', array(
+	'UABBInfoTableModule',
+	array(
 		'general'       => array(
 			'title'    => __( 'General', 'uabb' ),
 			'sections' => array(
@@ -41,11 +42,12 @@ FLBuilder::register_module(
 							'type'        => 'editor',
 							'label'       => '',
 							'default'     => __( 'Enter description text here.', 'uabb' ),
-							'connections' => array( 'string', 'html' ),
 							'preview'     => array(
 								'type'     => 'text',
 								'selector' => '.info-table-description',
 							),
+							'connections' => array( 'string', 'html' ),
+							'wpautop'     => false,
 						),
 						'it_link_type' => array(
 							'type'    => 'select',
@@ -368,7 +370,7 @@ FLBuilder::register_module(
 							'type'        => 'icon',
 							'label'       => __( 'Icon', 'uabb' ),
 							'show_remove' => true,
-							'default'     => 'fa fa-child',
+							'default'     => 'fas fa-child',
 						),
 						'icon_size' => array(
 							'type'        => 'unit',

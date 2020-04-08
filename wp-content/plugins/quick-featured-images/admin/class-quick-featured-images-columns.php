@@ -8,6 +8,8 @@
  * @link      http://wordpress.org/plugins/quick-featured-images/
  * @copyright 2014 
  */
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) exit;
 
 /**
  * @package Quick_Featured_Images_Columns
@@ -75,13 +77,22 @@ class Quick_Featured_Images_Columns {
 	protected $stored_settings = array();
 
 	/**
-	 * Name of the additional column.
+	 * Name of the additional thumbnail column.
 	 *
 	 * @since    7.0
 	 *
 	 * @var      string
 	 */
-	protected $column_name = 'qfi-thumbnail';
+	protected $thumbnail_column_name = 'qfi-thumbnail';
+
+	/**
+	 * Name of the additional post list column.
+	 *
+	 * @since    13.4.0
+	 *
+	 * @var      string
+	 */
+	protected $post_list_column_name = 'qfi-post-list';
 
 	/**
 	 * Required user capability to use this plugin
@@ -91,6 +102,42 @@ class Quick_Featured_Images_Columns {
 	 * @var     string
 	 */
 	protected $required_user_cap = null;
+
+	/**
+	 * Required user capability to use this plugin
+	 *
+	 * @since   13.3.5
+	 *
+	 * @var     boolean
+	 */
+	protected $is_capable_user = null;
+
+	/**
+	 * Width of thumbnail images in the current WordPress settings
+	 *
+	 * @since    2.0
+	 *
+	 * @var      integer
+	 */
+	protected $used_thumbnail_width = null;
+	
+	/**
+	 * Storage for computed thumbnail HTML codes to improve performance
+	 *
+	 * @since     13.3.5
+	 *
+	 * @var      array
+	 */
+	protected $thumbnail_cache = null;
+
+	/**
+	 * Storage for computed translations to improve performance
+	 *
+	 * @since     13.3.5
+	 *
+	 * @var      array
+	 */
+	protected $translation_cache = null;
 
 	/**
 	 * Initialize the plugin by loading admin scripts & styles and adding a
@@ -112,13 +159,21 @@ class Quick_Featured_Images_Columns {
 		$add_column_function = array( $this, 'add_thumbnail_column' );
 		$display_column_function = array( $this, 'display_thumbnail_in_column' );
 		$add_sort_function = array( $this, 'add_sortable_column' );
+		// set default width of thumbnails
+		$this->used_thumbnail_width = 80; // or: $width  = absint( get_option( 'thumbnail_size_w', $default_value ) / 2 ); $height = absint( get_option( 'thumbnail_size_h', $default_value ) / 2 );
 		// get current or default settings
 		$this->stored_settings = get_option( $this->settings_db_slug, array() );
-
 		// add Featured Image column in desired posts lists
 		foreach ( $this->stored_settings as $key => $value ) {
 			if ( '1' == $value ) {
-				if ( preg_match('/^column_thumb_([a-z0-9_\-]+)$/', $key, $matches ) ) {
+				if ( 'column_post_list' == $key ) {
+					// print post list column in media library
+					add_action( 'manage_media_columns', array( $this, 'add_post_list_column' ) );
+					// show content of post list column
+					add_action( 'manage_media_custom_column', array( $this, 'display_post_list_column' ), 10, 2 );
+					// print style for post list column
+					add_action( 'admin_head', array( $this, 'display_post_list_column_style' ) );
+				} elseif ( preg_match('/^column_thumb_([a-z0-9_\-]+)$/', $key, $matches ) ) {
 					// make the following lines more readable
 					$post_type = $matches[ 1 ];
 					
@@ -145,8 +200,7 @@ class Quick_Featured_Images_Columns {
 					if ( ! has_action( $hook, $display_column_function ) ) {
 						add_action( $hook, $display_column_function, 10, 2 );
 					}
-					
-				} // if ( preg_match() )
+				} // if ()
 			} // if ( value == 1 )
 		} // foreach( stored_settings )
 
@@ -162,7 +216,11 @@ class Quick_Featured_Images_Columns {
 		} else {
 			$this->required_user_cap = 'edit_others_posts';
 		}
+		// define general capatibility once
+		$this->is_capable_user = current_user_can( $this->required_user_cap );
 		
+		// specify translations
+		add_action( 'admin_init', array( $this, 'set_dynamic_values' ) );
 		// load admin style sheet
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_styles' ) );
 		// load admin scripts
@@ -195,6 +253,44 @@ class Quick_Featured_Images_Columns {
 	}
 
 	/**
+	 * Set translations, cache and variables
+	 *
+	 * @since     13.3.5
+	 *
+	 */
+	public function set_dynamic_values() {
+		// preset translations once
+		$this->translation_cache = array();
+		$text = 'Change image';				$this->translation_cache[ 'Change image' ]			= esc_html__( $text );
+		$text = 'Delete %s';				$this->translation_cache[ 'Delete x' ]				= _x( $text, 'plugin' );
+		$text = 'Delete';					$this->translation_cache[ 'Delete' ]				= esc_html__( $text );
+		$text = 'Edit &#8220;%s&#8221;';	$this->translation_cache[ 'Edit x' ]				= __( $text );
+		$text = 'Edit Image';				$this->translation_cache[ 'Edit Image' ]			= esc_html__( $text );
+		$text = 'Error';					$this->translation_cache[ 'Error' ]					= esc_attr__( $text );
+		$text = 'Item deleted.';			$this->translation_cache[ 'Item deleted.' ]			= esc_html__( $text );
+		$text = 'Item not added.';			$this->translation_cache[ 'Item not added.' ]		= esc_html__( $text );
+		$text = 'Item not updated.';		$this->translation_cache[ 'Item not updated.' ]		= esc_html__( $text );
+		$text = 'Meta';						$this->translation_cache[ 'Meta' ]					= __( $text );
+		$text = 'No file was uploaded.';	$this->translation_cache[ 'No file was uploaded.' ]	= __( $text );
+		$text = 'No image set';				$this->translation_cache[ 'No image set' ]			= esc_html__( $text );
+		$text = 'Remove featured image';	$this->translation_cache[ 'Remove featured image' ]	= esc_html( _x( $text, 'post' ) );
+		$text = 'Set featured image';		$this->translation_cache[ 'Set featured image' ]	= esc_html( _x( $text, 'post' ) );
+		$this->translation_cache[ '(external image)' ]	= esc_html__( '(external image)', 'quick-featured-images' );
+		$this->translation_cache[ 'Change x' ]			= __( 'Change &#8220;%s&#8221;', 'quick-featured-images' );
+		$this->translation_cache[ 'Remove x' ]			= __( 'Remove &#8220;%s&#8221;', 'quick-featured-images' );
+		$this->translation_cache[ 'Set image for x' ]	= __( 'Set image for &#8220;%s&#8221;', 'quick-featured-images' );
+		// preset the "broken image" thumbnail once
+		$esc_path = esc_url( plugin_dir_url( __FILE__ ) );
+		$this->thumbnail_cache = array();
+		$this->thumbnail_cache[ 'No file was uploaded.' ] = sprintf(
+			'<img src="%sassets/images/no-file.png" alt="%s" width="48" height="64" class="qfi-no100p"><br />%s',
+			$esc_path,
+			$this->translation_cache[ 'Error' ],
+			$this->translation_cache[ 'No file was uploaded.' ]
+		);
+	}
+
+	/**
 	 * Register and enqueue admin-specific JavaScript.
 	 *
 	 * @since     12.0
@@ -202,7 +298,7 @@ class Quick_Featured_Images_Columns {
 	 * @return    null    Return early if no settings page is registered.
 	 */
 	public function enqueue_admin_scripts() {
-		// load CSS file in posts list pages only
+		// load JS file in posts list pages only
 		$screen = get_current_screen();
 		if ( 'edit' == $screen->base ) {
 			// define handle once
@@ -221,6 +317,7 @@ class Quick_Featured_Images_Columns {
 			wp_enqueue_media();
 
 		}
+
 	}
 
 	/**
@@ -238,6 +335,13 @@ class Quick_Featured_Images_Columns {
 		}
  	}
 
+	/* 
+	 * ======================================================
+	 * Methods for the thumbnail column
+	 * on post overview pages
+	 * ======================================================
+	 */
+	 
 	/**
 	 * Add a column with the title 'Featured Image' in the post lists
 	 *
@@ -247,7 +351,7 @@ class Quick_Featured_Images_Columns {
 	 */
     public function add_thumbnail_column( $cols ) {
 		$text = 'Featured Image';
-		$cols[ $this->column_name ] = _x( $text, 'post' );
+		$cols[ $this->thumbnail_column_name ] = _x( $text, 'post' );
         return $cols;
     }
 	
@@ -259,7 +363,7 @@ class Quick_Featured_Images_Columns {
 	 * @return    array	extended list of sortable columns    
      */
     public function add_sortable_column( $cols ) {
-        $cols[ $this->column_name ] = $this->column_name;
+        $cols[ $this->thumbnail_column_name ] = $this->thumbnail_column_name;
 
         return $cols;
     }
@@ -272,112 +376,83 @@ class Quick_Featured_Images_Columns {
 	 * @return    array	extended list of columns    
 	 */
     public function display_thumbnail_in_column( $column_name, $post_id ) {
-		/*
-		// export to class wide vars to call it only once
-		$max_dimension = 80; // width of thumbnail column in px at 1024 px window width
-		$default_value = $max_dimension * 2;
-		// set dimensions with values in Settings => Media => Thumbnail Size
-		$width  = absint( get_option( 'thumbnail_size_w', $default_value ) / 2 );
-		$height = absint( get_option( 'thumbnail_size_h', $default_value ) / 2 );
-		// set maximum value if necessary
-		$width = $width > $max_dimension ? $max_dimension : $width;
-		$height = $height > $max_dimension ? $max_dimension : $height;
-		*/
-		$width = $height = 80;
-		if ( $this->column_name == $column_name ) {
+		$width = $height = $this->used_thumbnail_width;
+		if ( $this->thumbnail_column_name == $column_name ) {
 			$thumbnail_id = get_post_thumbnail_id( $post_id );
 			// check if image file exists, omit filters in get_attached_file() ('true')
 			if ( $thumbnail_id ) {
-				if ( file_exists( get_attached_file( $thumbnail_id, true ) ) ) {
-					if ( $thumb = wp_get_attachment_image( $thumbnail_id, array( $width, $height ) ) ) {
+				// if thumbnail HTML was not yet created, create it now
+				if ( empty( $this->thumbnail_cache[ $thumbnail_id ] ) ) {
+					// if the image file does exist
+					if ( file_exists( get_attached_file( $thumbnail_id, true ) ) && $thumb = wp_get_attachment_image( $thumbnail_id, array( $width, $height ) ) ) {
+						// create thumbnail HTML
 						if ( current_user_can( $this->required_user_cap, $thumbnail_id ) ) {
 							// show image linked to media selection box
-							$link_title = __( 'Change &#8220;%s&#8221;', 'quick-featured-images' );
 							$thumb_title = _draft_or_post_title( $thumbnail_id );
-							$text = 'Change image';
-							$link_text = __( $text );
-							printf(
+							$this->thumbnail_cache[ $thumbnail_id ] = sprintf(
 								'<a href="%s" id="qfi_set_%d" class="qfi_set_fi" title="%s">%s<br />%s</a>',
 								esc_url( get_upload_iframe_src( 'image', $post_id ) ),
 								$post_id,
-								esc_attr( sprintf( $link_title, $thumb_title ) ),
+								esc_attr( sprintf( $this->translation_cache[ 'Change x' ], $thumb_title ) ),
 								$thumb,
-								esc_html( $link_text )
+								$this->translation_cache[ 'Change image' ]
 							);
-							
 							// display 'edit' link
-							$link_title = 'Edit &#8220;%s&#8221;';
-							$text = 'Edit Image';
-							$link_text = __( $text );
-							printf(
-								'<br><a href="%s" title="%s">%s</a>',
+							$this->thumbnail_cache[ $thumbnail_id ] .= sprintf(
+								'<br /><a href="%s" title="%s">%s</a>',
 								esc_url( get_edit_post_link( $thumbnail_id ) ),
-								esc_attr( sprintf( __( $link_title ), $thumb_title ) ),
-								esc_html( $link_text )
+								esc_attr( sprintf( $this->translation_cache[ 'Edit x' ], $thumb_title ) ),
+								$this->translation_cache[ 'Edit Image' ]
 							);
-
 							// display removal link
-							$link_title = __( 'Remove &#8220;%s&#8221;', 'quick-featured-images' );
-							$text = 'Remove featured image';
-							$link_text = _x( $text, 'post' );
-							printf(
-								'<br><a href="#" id="qfi_delete_%d" class="qfi_delete_fi hide-if-no-js" title="%s">%s</a>',
+							$this->thumbnail_cache[ $thumbnail_id ] .= sprintf(
+								'<br /><a href="#" id="qfi_delete_%d" class="qfi_delete_fi hide-if-no-js" title="%s">%s</a>',
 								$post_id,
-								esc_attr( sprintf( $link_title, $thumb_title ) ),
-								esc_html( $link_text )
+								esc_attr( sprintf( $this->translation_cache[ 'Remove x' ], $thumb_title ) ),
+								$this->translation_cache[ 'Remove featured image' ]
 							);
 						} else {
 							// if no edit capatibilities show image only
-							echo $thumb;
-						} // if user may
-					} // if thumb
-				} else {
-					// if thumbnail ID is orphaned ("file-less", outdated)
-					if ( current_user_can( $this->required_user_cap ) ) {
+							$this->thumbnail_cache[ $thumbnail_id ] = $thumb;
+						} // if ( current_user_can( $this->required_user_cap, $thumbnail_id ) )
+					// thumbnail ID is orphaned ("file-less", outdated), so create HTML for a "broken image" symbol
+					} else {
 						// print "broken" icon
-						$text = 'No file was uploaded.';
-						printf(
-							'<img src="%sassets/images/no-file.png" alt="%s" width="48" height="64" class="qfi-no100p">',
-							esc_url( plugin_dir_url( __FILE__ ) ),
-							esc_attr__( $text )
-						);
-						// display removal link
-						$text = 'Delete %s';
-						$link_title = _x( $text, 'plugin' );
-						$text = 'Meta';
-						$meta_text = __( $text );
-						$text = 'Delete';
-						$link_text = __( $text );
-						printf(
-							'<br><a href="#" id="qfi_delete_%d" class="qfi_delete_fi hide-if-no-js" title="%s">%s</a>',
-							$post_id,
-							esc_attr( sprintf( $link_title, $meta_text ) ),
-							esc_html( $link_text )
-						);
-						// print creation link
-						$text = 'Set featured image';
-						$link_text = _x( $text, 'post' );
-						printf(
-							'<br><a href="%s" id="qfi_set_%d" class="qfi_set_fi" title="%s">%s</a>',
-							esc_url( get_upload_iframe_src( 'image', $post_id ) ),
-							$post_id,
-							esc_attr( sprintf( __( 'Set image for &#8220;%s&#8221;', 'quick-featured-images' ), _draft_or_post_title( $post_id ) ) ),
-							esc_html( $link_text )
-						);
-					} // if user may
-				} // if file_exists(thumbnail)
+						$this->thumbnail_cache[ $thumbnail_id ] = $this->thumbnail_cache[ 'No file was uploaded.' ];
+						if ( $this->is_capable_user ) {
+							// display removal link
+							$this->thumbnail_cache[ $thumbnail_id ] .= sprintf(
+								'<br /><a href="#" id="qfi_delete_%d" class="qfi_delete_fi hide-if-no-js" title="%s">%s</a>',
+								$post_id,
+								esc_attr( sprintf( $this->translation_cache[ 'Delete x' ], $this->translation_cache[ 'Meta' ] ) ),
+								$this->translation_cache[ 'Delete' ]
+							);
+							// print creation link
+							$this->thumbnail_cache[ $thumbnail_id ] .= sprintf(
+								'<br /><a href="%s" id="qfi_set_%d" class="qfi_set_fi" title="%s">%s</a>',
+								esc_url( get_upload_iframe_src( 'image', $post_id ) ),
+								$post_id,
+								esc_attr( sprintf( $this->translation_cache[ 'Set image for x' ], _draft_or_post_title( $post_id ) ) ),
+								$this->translation_cache[ 'Set featured image' ]
+							);
+						} // if ( $this->is_capable_user )
+					} // if ( file_exists( get_attached_file( $thumbnail_id, true ) ) && $thumb = wp_get_attachment_image( $thumbnail_id, array( $width, $height ) ) )
+				} // if ( empty( $this->thumbnail_cache[ $thumbnail_id ] ) )
+				// print thumbnail HTML code
+				echo $this->thumbnail_cache[ $thumbnail_id ];
 			} else {
-				if ( current_user_can( $this->required_user_cap ) ) {
-					$text = 'Set featured image';
-					$link_text = _x( $text, 'post' );
+				// print note
+				echo $this->translation_cache[ 'No image set' ];
+				if ( $this->is_capable_user ) {
+					// print
 					printf(
-						'<a href="%s" id="qfi_set_%d" class="qfi_set_fi" title="%s">%s</a>',
+						'<br /><a href="%s" id="qfi_set_%d" class="qfi_set_fi" title="%s">%s</a>',
 						esc_url( get_upload_iframe_src( 'image', $post_id ) ),
 						$post_id,
-						esc_attr( sprintf( __( 'Set image for &#8220;%s&#8221;', 'quick-featured-images' ), _draft_or_post_title( $post_id ) ) ),
-						esc_html( $link_text )
+						esc_attr( sprintf( $this->translation_cache[ 'Set image for x' ], _draft_or_post_title( $post_id ) ) ),
+						$this->translation_cache[ 'Set featured image' ]
 					);
-				} // if user may
+				} // if ( $this->is_capable_user )
 			} // if thumbnail_id
 		} // if this column name == column_name
     }
@@ -394,16 +469,16 @@ class Quick_Featured_Images_Columns {
 		echo "\n";
 		echo "/* Quick Featured Images plugin styles */\n";
 		echo "/* Fit thumbnails in posts list column */\n";
-		printf( '.column-%s img {', $this->column_name );
+		printf( '.column-%s img {', $this->thumbnail_column_name );
 		echo 'width:100%;height:auto;';
-		printf( 'max-width:%dpx;', 80 );
-		printf( 'max-height:%dpx;', 80 );
+		printf( 'max-width:%dpx;', $this->used_thumbnail_width );
+		printf( 'max-height:%dpx;', $this->used_thumbnail_width );
 		echo "}\n";
 		/* hide image column in small displays in WP version smaller than 4.3 */
 		if ( version_compare( get_bloginfo( 'version' ), '4.3', '<' ) ) {
 			echo "/* Auto-hiding of the thumbnail column in posts lists */\n";
 			echo '@media screen and (max-width:782px) {';
-			printf( '.column-%s {', $this->column_name );
+			printf( '.column-%s {', $this->thumbnail_column_name );
 			echo "display:none;}}\n";
 		} // if WP < 4.3
 		echo '</style>';
@@ -419,7 +494,7 @@ class Quick_Featured_Images_Columns {
     public function sort_column_by_image_id( $query ) {
 	
 		// if user wants to get rows sorted by featured image
-        if ( $query->get( 'orderby' ) === $this->column_name ) {
+        if ( $query->get( 'orderby' ) === $this->thumbnail_column_name ) {
 			// set thumbnail id as sort value
             $query->set( 'meta_key', '_thumbnail_id' );
 			// change sorting from alphabetical to numeric
@@ -447,20 +522,6 @@ class Quick_Featured_Images_Columns {
 			$success = set_post_thumbnail( $post_id, $thumbnail_id );
 			if ( $success ) {
 
-				// Localize the texts
-				$title_edit		= 'Edit &#8220;%s&#8221;';
-				$text_change	= 'Change image';
-				$text_edit		= 'Edit Image';
-				$text_remove	= 'Remove featured image';
-				$translations = array(
-					'title_change'	=> __( 'Change &#8220;%s&#8221;', 'quick-featured-images' ),
-					'title_remove'	=> __( 'Remove &#8220;%s&#8221;', 'quick-featured-images' ),
-					'title_edit'	=> __( $title_edit ),
-					'text_change'	=> __( $text_change ),
-					'text_edit'		=> __( $text_edit ),
-					'text_remove'	=> _x( $text_remove, 'post' ),
-				);
-				
 				/*
 				 * build the HTML response
 				 */
@@ -472,25 +533,25 @@ class Quick_Featured_Images_Columns {
 					'<a href="%s" id="qfi_set_%d" class="qfi_set_fi" title="%s">%s<br />%s</a>',
 					esc_url( get_upload_iframe_src( 'image', $post_id ) ),
 					$post_id,
-					esc_attr( sprintf( $translations[ 'title_change' ], $thumb_title ) ),
-					get_the_post_thumbnail( $post_id, array( 80, 80 ) ),
-					esc_html( $translations[ 'text_change' ] )
+					esc_attr( sprintf( $this->translation_cache[ 'Change x' ], $thumb_title ) ),
+					get_the_post_thumbnail( $post_id, array( $this->used_thumbnail_width, $this->used_thumbnail_width ) ),
+					$this->translation_cache[ 'Change image' ]
 				);
 
 				// 'edit image' link
 				$html .= sprintf(	
 					'<br /><a href="%s" title="%s">%s</a>',
 					esc_url( get_edit_post_link( $thumbnail_id ) ),
-					esc_attr( sprintf( $translations[ 'title_edit' ], $thumb_title ) ),
-					esc_html( $translations[ 'text_edit' ] )
+					esc_attr( sprintf( $this->translation_cache[ 'Edit x' ], $thumb_title ) ),
+					$this->translation_cache[ 'Edit Image' ]
 				);
 
 				// 'remove thumbnail' link
 				$html .= sprintf(
 					'<br /><a href="#" id="qfi_delete_%d" class="qfi_delete_fi hide-if-no-js" title="%s">%s</a>',
 					$post_id,
-					esc_attr( sprintf( $translations[ 'title_remove' ], $thumb_title ) ),
-					esc_html( $translations[ 'text_remove' ] )
+					esc_attr( sprintf( $this->translation_cache[ 'Remove x' ], $thumb_title ) ),
+					$this->translation_cache[ 'Remove featured image' ]
 				);
 				
 				// return response to Ajax script
@@ -498,8 +559,7 @@ class Quick_Featured_Images_Columns {
 				
 			} else {
 				// return error message to Ajax script
-				$text = 'Item not added.';
-				esc_html_e( $text );
+				echo $this->translation_cache[ 'Item not added.' ];
 			}
 		}
 		die();
@@ -522,15 +582,6 @@ class Quick_Featured_Images_Columns {
 			// try to delete thumbnail; returns true if successful
 			$success = delete_post_thumbnail( $post_id );
 			if ( $success ) {
-				// Localize the texts
-				$text_set		= 'Set featured image';
-				$text_deleted	= 'Item deleted.';
-				$translations = array(
-					'title_set'		=> __( 'Set image for &#8220;%s&#8221;', 'quick-featured-images' ),
-					'text_set'		=> _x( $text_set, 'post' ),
-					'text_deleted'	=> __( $text_deleted ),
-				);
-				
 				/*
 				 * build the HTML response
 				 */
@@ -540,11 +591,11 @@ class Quick_Featured_Images_Columns {
 				// 'set thumbnail' link
 				$html = sprintf(
 					'%s<br /><a href="%s" id="qfi_set_%d" class="qfi_set_fi" title="%s">%s</a>',
-					esc_html( $translations[ 'text_deleted' ] ),
+					$this->translation_cache[ 'Item deleted.' ],
 					esc_url( get_upload_iframe_src( 'image', $post_id ) ),
 					$post_id,
-					esc_attr( sprintf( $translations[ 'title_set' ], $post_title ) ),
-					esc_html( $translations[ 'text_set' ] )
+					esc_attr( sprintf( $this->translation_cache[ 'Set image for x' ], $post_title ) ),
+					$this->translation_cache[ 'Set featured image' ]
 				);
 
 				// return response to Ajax script
@@ -552,11 +603,107 @@ class Quick_Featured_Images_Columns {
 				
 			} else {
 				// return error message to Ajax script
-				$text = 'Item not updated.';
-				esc_html_e( $text );
+				echo $this->translation_cache[ 'Item not updated.' ];
 			}
 		}
 		die();
     }
+
+	/**
+	 *
+	 * Render HTML image element for the thumbnail of the external image
+	 *
+	 * @access   private
+	 * @since    13.3.5
+	 */
+	private function get_html_external_thumbnail( $url, $alt, $size ) {
+		$image_height = $size[ 1 ] / $size[ 0 ] * $this->used_thumbnail_width;
+		return sprintf(
+			'<img width="%s" height="%s" src="%s" class="attachment-thumbnail" alt="%s"><br />%s',
+			absint( $this->used_thumbnail_width / 2 ),
+			absint( $image_height / 2 ),
+			$url,
+			$alt,
+			$this->translation_cache[ '(external image)' ]
+		);
+	}
+
+	/* 
+	 * ======================================================
+	 * Methods for the post list column
+	 * on the media library pages
+	 * ======================================================
+	 */
+	 
+	/**
+	 * Add a column with the title 'Featured Image' in the post lists
+	 *
+	 * @since     13.4.0
+	 *
+	 * @return    array	list of columns    
+	 */
+    public function add_post_list_column( $cols ) {
+		$cols[ $this->post_list_column_name ] = __( 'Featured image for', 'quick-featured-images' );
+        return $cols;
+    }
+	
+	/**
+	 * Print the post titles which has the current image as featured image
+	 *
+	 * @since     13.4.0
+	 *
+	 * @return    array	extended list of columns    
+	 */
+    public function display_post_list_column( $column_name, $attachment_id ) {
+		// quit if not the desired column
+		if ( $this->post_list_column_name !== $column_name ) {
+			return;
+		}
+		
+		// look up the posts for which the attachment was set as featured image 
+		// returns an array of post IDs if any, else an empty array
+		global $wpdb;
+		$post_ids = $wpdb->get_col( $wpdb->prepare( "
+			SELECT	`post_id` 
+			FROM	$wpdb->postmeta 
+			WHERE	`meta_key` LIKE '_thumbnail_id' 
+				AND	`meta_value` = %d", $attachment_id
+		) ); 
+		
+		// if posts were found
+		if ( $post_ids ) {
+			// if there is more than one post
+			if ( 1 < sizeof( $post_ids ) ) {
+				// print a list
+				echo '<ul>';
+				foreach ( $post_ids as $id ) {
+					echo '<li>';
+					// print the link to the edit page of the post
+					edit_post_link( get_the_title( $id ), '', '', $id );
+					echo '</li>';
+				}
+				echo '</ul>';
+			} else {
+				// print in a single line the link to the edit page of the found post
+				edit_post_link( get_the_title( $post_ids[ 0 ] ), '', '', $post_ids[ 0 ] );
+			}
+		}
+    }
+
+	/**
+	 * Print CSS for post list column
+	 *
+	 * @since     13.4.0
+	 *
+	 * @return    null    
+	 */
+	public function display_post_list_column_style(){
+		echo '<style type="text/css">';
+		echo "\n";
+		echo "/* Quick Featured Images plugin styles */\n";
+		echo ".widefat td.column-qfi-post-list ul { margin: 0; }\n";
+		echo "</style>\n";
+	}
+
 
 }

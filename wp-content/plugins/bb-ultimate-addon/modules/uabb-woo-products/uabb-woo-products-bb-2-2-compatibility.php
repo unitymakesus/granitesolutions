@@ -8,16 +8,9 @@
  * @package UABB Woo Products Module
  */
 
-$branding_name       = BB_Ultimate_Addon_Helper::get_builder_uabb_branding( 'uabb-plugin-name' );
-$branding_short_name = BB_Ultimate_Addon_Helper::get_builder_uabb_branding( 'uabb-plugin-short-name' );
-$branding            = '';
-if ( empty( $branding_name ) && empty( $branding_short_name ) ) {
-	$branding = 'no';
-} else {
-	$branding = 'yes';
-}
 FLBuilder::register_module(
-	'UABBWooProductsModule', array(
+	'UABBWooProductsModule',
+	array(
 		'general'       => array(
 			'title'    => __( 'General', 'uabb' ),
 			'sections' => array(
@@ -422,11 +415,12 @@ FLBuilder::register_module(
 							'help'    => __( 'This alignment will apply on Mobile', 'uabb' ),
 						),
 						'content_around_spacing' => array(
-							'type'    => 'dimension',
-							'label'   => __( 'Spacing Around Content', 'uabb' ),
-							'slider'  => true,
-							'units'   => array( 'px' ),
-							'preview' => array(
+							'type'       => 'dimension',
+							'label'      => __( 'Spacing Around Content', 'uabb' ),
+							'slider'     => true,
+							'units'      => array( 'px' ),
+							'responsive' => true,
+							'preview'    => array(
 								'type'      => 'css',
 								'selector'  => '.uabb-woo-products-summary-wrap',
 								'property'  => 'padding',
@@ -1160,7 +1154,7 @@ FLBuilder::register_module(
 					'fields' => array(
 						'uabb_helpful_information' => array(
 							'type'    => 'raw',
-							'content' => '<ul class="uabb-docs-list" data-branding=' . $branding . '>
+							'content' => '<ul class="uabb-docs-list" data-branding=' . BB_Ultimate_Addon_Helper::$is_branding_enabled . '>
 
 								<li class="uabb-docs-list-item"> <i class="ua-icon ua-icon-chevron-right2"> </i> <a href="https://www.ultimatebeaver.com/docs/woo-products-module/?utm_source=uabb-pro-backend&utm_medium=module-editor-screen&utm_campaign=woo-products-module" target="_blank" rel="noopener"> Getting started article </a> </li>
 

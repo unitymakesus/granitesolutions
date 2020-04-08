@@ -19,7 +19,7 @@ class PolicyDisableTextHighlight {
      */
 	function __construct(){
 
-        add_action( 'wp_enqueue_scripts', array( $this, 'scripts' ) );
+        add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ] );
 
 	} // __construct()
 
@@ -30,7 +30,7 @@ class PolicyDisableTextHighlight {
     function scripts(){
       
         // Load CSS
-        wp_register_style( 'ss-pdth', SECSAFE_URL_ASSETS . 'css/pdth.css', array(), SECSAFE_VERSION, 'all' );
+        wp_register_style( 'ss-pdth', SECSAFE_URL_ASSETS . 'css/pdth.css', [], SECSAFE_VERSION, 'all' );
         wp_enqueue_style( 'ss-pdth' );
 
     } // scripts()

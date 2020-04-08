@@ -8,17 +8,9 @@
  *  @package UABB Creative Menu
  */
 
-$branding_name       = BB_Ultimate_Addon_Helper::get_builder_uabb_branding( 'uabb-plugin-name' );
-$branding_short_name = BB_Ultimate_Addon_Helper::get_builder_uabb_branding( 'uabb-plugin-short-name' );
-$branding            = '';
-if ( empty( $branding_name ) && empty( $branding_short_name ) ) {
-	$branding = 'no';
-} else {
-	$branding = 'yes';
-}
-
 FLBuilder::register_module(
-	'UABBCreativeMenu', array(
+	'UABBCreativeMenu',
+	array(
 		'general'    => array( // Tab.
 			'title'    => __( 'General', 'uabb' ), // Tab title.
 			'sections' => array( // Tab Sections.
@@ -117,8 +109,8 @@ FLBuilder::register_module(
 							'units'      => array( 'px' ),
 							'preview'    => array(
 								'type'      => 'css',
-								'selector'  => '.uabb-creative-menu .menu > li',
-								'property'  => 'margin',
+								'selector'  => '.uabb-creative-menu.uabb-menu-default .menu > li > a,.uabb-creative-menu.uabb-menu-default .menu > li > .uabb-has-submenu-container > a,.uabb-creative-menu.off-canvas .menu > li > a,.uabb-creative-menu.off-canvas .menu > li > .uabb-has-submenu-container > a,.uabb-creative-menu.full-screen .menu > li > a,.uabb-creative-menu.full-screen .menu > li > .uabb-has-submenu-container > a',
+								'property'  => 'padding',
 								'unit'      => 'px',
 								'important' => true,
 							),
@@ -363,14 +355,14 @@ FLBuilder::register_module(
 							'type'       => 'border',
 							'label'      => __( 'Border', 'uabb' ),
 							'responsive' => true,
-							'default'	 => array(
-								'style'		=> 'solid',
-								'color'		=> '000000',
-								'width'		=> array(
-									'top'	 => '1',
-									'right'	 => '1',
+							'default'    => array(
+								'style' => 'solid',
+								'color' => '000000',
+								'width' => array(
+									'top'    => '1',
+									'right'  => '1',
 									'bottom' => '1',
-									'left'	 => '1',
+									'left'   => '1',
 								),
 							),
 							'preview'    => array(
@@ -504,10 +496,11 @@ FLBuilder::register_module(
 							),
 						),
 						'creative_menu_navigation_alignment' => array(
-							'type'    => 'align',
-							'label'   => __( 'Navigation Alignment', 'uabb' ),
-							'default' => 'center',
-							'preview' => array(
+							'type'       => 'align',
+							'label'      => __( 'Navigation Alignment', 'uabb' ),
+							'default'    => 'center',
+							'responsive' => true,
+							'preview'    => array(
 								'type'      => 'css',
 								'selector'  => '.uabb-creative-menu-mobile-toggle-container, .uabb-creative-menu-mobile-toggle-container > .uabb-creative-menu-mobile-toggle.text',
 								'property'  => 'text-align',
@@ -836,7 +829,7 @@ FLBuilder::register_module(
 					'fields' => array(
 						'uabb_helpful_information' => array(
 							'type'    => 'raw',
-							'content' => '<ul class="uabb-docs-list" data-branding=' . $branding . '>
+							'content' => '<ul class="uabb-docs-list" data-branding=' . BB_Ultimate_Addon_Helper::$is_branding_enabled . '>
 
 								<li class="uabb-docs-list-item"> <i class="ua-icon ua-icon-chevron-right2"> </i> <a href="https://www.ultimatebeaver.com/docs/overlay-effect-advanced-menu/?utm_source=uabb-pro-backend&utm_medium=module-editor-screen&utm_campaign=advanced-menu-module" target="_blank" rel="noopener"> Overlay Effect in Advanced Menu </a> </li>
 

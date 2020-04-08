@@ -30,10 +30,15 @@ class Firewall {
 
         global $wpdb;
 
+        $status_list = [
+            'allow' => 'allow', 
+            'deny'  => 'deny'
+        ];
+
         if ( 
             $args['type'] == 'allow_deny' && 
             isset( $args['status'] ) && 
-            in_array( $args['status'], [ 'allow', 'deny' ] ) 
+            isset( $status_list[ $args['status'] ] ) 
         ) {
 
             $type = $args['type'];
@@ -73,20 +78,13 @@ class Firewall {
         // Bail if whitelisted
         if ( Yoda::is_whitelisted() ) { return; }
 
-        // Compatible with WP Super Cache and W3 Total Cache
-        if( ! defined('DONOTCACHEPAGE') ) {
-
-            define( 'DONOTCACHEPAGE', true );
-        
-        }
-
         $args['status']     = 'blocked';
         $args['threats']    = 1;
 
-        // Add blocked Entry
+        // Add blocked Entry & Prevent Caching
         $result = $this->add_entry( $args );
 
-        $message = 'Security Safe: Access blocked.';
+        $message = sprintf( __( '%s: Access blocked.', SECSAFE_SLUG ), SECSAFE_NAME );
         $message .= ( SECSAFE_DEBUG ) ? ' - ' . $args['type'] . ': ' . $args['details'] : '';
 
         status_header( '406', $message );
@@ -99,7 +97,7 @@ class Firewall {
 
 
     /**
-     * Logs the blocked attempt.
+     * Logs the threat attempt.
      * @since  2.0.0
      */ 
     protected function threat( $type, $details = '' ) {
@@ -109,19 +107,12 @@ class Firewall {
         // Bail if whitelisted
         if ( Yoda::is_whitelisted() ) { return; }
 
-        // Compatible with WP Super Cache and W3 Total Cache
-        if( ! defined('DONOTCACHEPAGE') ) {
-
-            define( 'DONOTCACHEPAGE', true );
-        
-        }
-
         $args = [];
         $args['type']       = $type;
         $args['details']    = ( $details ) ? $details : '';
         $args['threats']    = 1;
 
-        // Add blocked Entry
+        // Add threat Entry & prevent Caching
         $this->add_entry( $args );
 
     } // threat()

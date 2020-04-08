@@ -8,16 +8,9 @@
  * @package UABB Modal Popup Module
  */
 
-$branding_name       = BB_Ultimate_Addon_Helper::get_builder_uabb_branding( 'uabb-plugin-name' );
-$branding_short_name = BB_Ultimate_Addon_Helper::get_builder_uabb_branding( 'uabb-plugin-short-name' );
-$branding            = '';
-if ( empty( $branding_name ) && empty( $branding_short_name ) ) {
-	$branding = 'no';
-} else {
-	$branding = 'yes';
-}
 FLBuilder::register_module(
-	'ModalPopupModule', array(
+	'ModalPopupModule',
+	array(
 		'general'    => array( // Tab.
 			'title'    => __( 'Content', 'uabb' ), // Tab title.
 			'sections' => array( // Tab Sections.
@@ -160,6 +153,10 @@ FLBuilder::register_module(
 								'type'     => 'text',
 								'selector' => '.uabb-modal-content-data',
 							),
+						),
+						'ct_raw'            => array(
+							'type'    => 'raw',
+							'content' => '<div class="uabb-module-raw" data-uabb-module-nonce=' . wp_create_nonce( 'uabb-module-nonce' ) . '></div>',
 						),
 						'ct_photo'          => array(
 							'type'        => 'photo',
@@ -535,13 +532,31 @@ FLBuilder::register_module(
 						'btn_style'                      => array(
 							'type'    => 'select',
 							'label'   => __( 'Style', 'uabb' ),
-							'default' => 'flat',
+							'default' => 'default',
 							'class'   => 'creative_button_styles',
 							'options' => array(
+								'default'     => __( 'Default', 'uabb' ),
 								'flat'        => __( 'Flat', 'uabb' ),
 								'gradient'    => __( 'Gradient', 'uabb' ),
 								'transparent' => __( 'Transparent', 'uabb' ),
 								'threed'      => __( '3D', 'uabb' ),
+							),
+							'toggle'  => array(
+								'default'     => array(
+									'fields' => array( 'button_padding_dimension', 'button_border', 'border_hover_color' ),
+								),
+								'gradient'    => array(
+									'fields' => array( 'btn_width', 'btn_border_radius' ),
+								),
+								'transparent' => array(
+									'fields' => array( 'btn_width', 'btn_border_radius' ),
+								),
+								'threed'      => array(
+									'fields' => array( 'btn_width', 'btn_border_radius' ),
+								),
+								'flat'        => array(
+									'fields' => array( 'btn_width', 'btn_border_radius' ),
+								),
 							),
 						),
 						'btn_border_size'                => array(
@@ -692,7 +707,7 @@ FLBuilder::register_module(
 				'btn-structure'      => array(
 					'title'  => __( 'Structure', 'uabb' ),
 					'fields' => array(
-						'btn_width'              => array(
+						'btn_width'                => array(
 							'type'    => 'select',
 							'label'   => __( 'Width', 'uabb' ),
 							'default' => 'auto',
@@ -713,7 +728,45 @@ FLBuilder::register_module(
 								),
 							),
 						),
-						'btn_custom_width'       => array(
+						'button_padding_dimension' => array(
+							'type'       => 'dimension',
+							'label'      => __( 'Padding', 'uabb' ),
+							'slider'     => true,
+							'units'      => array( 'px' ),
+							'responsive' => true,
+							'preview'    => array(
+								'type'      => 'css',
+								'selector'  => '.uabb-creative-button-wrap a',
+								'property'  => 'padding',
+								'unit'      => 'px',
+								'important' => true,
+							),
+						),
+						'button_border'            => array(
+							'type'    => 'border',
+							'label'   => __( 'Border', 'uabb' ),
+							'slider'  => true,
+							'units'   => array( 'px' ),
+							'preview' => array(
+								'type'      => 'css',
+								'selector'  => '.uabb-creative-button-wrap a',
+								'property'  => 'border',
+								'unit'      => 'px',
+								'important' => true,
+							),
+						),
+						'border_hover_color'       => array(
+							'type'        => 'color',
+							'label'       => __( 'Border Hover Color', 'uabb' ),
+							'default'     => '',
+							'show_reset'  => true,
+							'connections' => array( 'color' ),
+							'show_alpha'  => true,
+							'preview'     => array(
+								'type' => 'none',
+							),
+						),
+						'btn_custom_width'         => array(
 							'type'      => 'unit',
 							'label'     => __( 'Custom Width', 'uabb' ),
 							'default'   => '200',
@@ -734,7 +787,7 @@ FLBuilder::register_module(
 								'unit'     => 'px',
 							),
 						),
-						'btn_custom_height'      => array(
+						'btn_custom_height'        => array(
 							'type'      => 'unit',
 							'label'     => __( 'Custom Height', 'uabb' ),
 							'default'   => '45',
@@ -755,7 +808,7 @@ FLBuilder::register_module(
 								'unit'     => 'px',
 							),
 						),
-						'btn_padding_top_bottom' => array(
+						'btn_padding_top_bottom'   => array(
 							'type'        => 'unit',
 							'label'       => __( 'Padding Top/Bottom', 'uabb' ),
 							'placeholder' => '0',
@@ -785,7 +838,7 @@ FLBuilder::register_module(
 								),
 							),
 						),
-						'btn_padding_left_right' => array(
+						'btn_padding_left_right'   => array(
 							'type'        => 'unit',
 							'label'       => __( 'Padding Left/Right', 'uabb' ),
 							'placeholder' => '0',
@@ -815,7 +868,7 @@ FLBuilder::register_module(
 								),
 							),
 						),
-						'btn_border_radius'      => array(
+						'btn_border_radius'        => array(
 							'type'      => 'unit',
 							'label'     => __( 'Round Corners', 'uabb' ),
 							'maxlength' => '3',
@@ -835,7 +888,7 @@ FLBuilder::register_module(
 								'unit'     => 'px',
 							),
 						),
-						'btn_align'              => array(
+						'btn_align'                => array(
 							'type'    => 'align',
 							'label'   => __( 'Alignment', 'uabb' ),
 							'default' => 'left',
@@ -845,7 +898,7 @@ FLBuilder::register_module(
 								'property' => 'text-align',
 							),
 						),
-						'btn_mob_align'          => array(
+						'btn_mob_align'            => array(
 							'type'    => 'align',
 							'label'   => __( 'Mobile Alignment', 'uabb' ),
 							'default' => 'center',
@@ -1163,7 +1216,7 @@ FLBuilder::register_module(
 					'fields' => array(
 						'uabb_helpful_information' => array(
 							'type'    => 'raw',
-							'content' => '<ul class="uabb-docs-list" data-branding=' . $branding . '>
+							'content' => '<ul class="uabb-docs-list" data-branding=' . BB_Ultimate_Addon_Helper::$is_branding_enabled . '>
 
 								<li class="uabb-docs-list-item"> <i class="ua-icon ua-icon-chevron-right2"> </i> <a href="https://www.ultimatebeaver.com/docs/trigger-modal-popup-on-click-of-menu-element/?utm_source=uabb-pro-backend&utm_medium=module-editor-screen&utm_campaign=modal-popup-module" target="_blank" rel="noopener"> How to trigger a Modal Popup on the click of a Menu Element? </a> </li>
 

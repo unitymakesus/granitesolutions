@@ -13,8 +13,9 @@
 // Colors
 $green: #157F7A;
 $yellow: #e8d700;
+$gold: #DAA520;
 $black: #111111;
-$blue: #497593;
+$blue: #0081A6;
 $gray: #555555;
 $orange: #DC602E;
 $orange_2: #ffb900;
@@ -82,9 +83,25 @@ $white: #ffffff;
     .icon-right-open:before { content: '\e808'; } /* '' */
     .icon-privacy:before { content: '\e809'; } /* '' */
     .icon-up-open:before { content: '\e80a'; } /* '' */
+    .icon-lock:before { content: '\e80b'; } /* '' */
     .icon-twitter:before { content: '\f099'; } /* '' */
     .icon-files:before { content: '\f0c5'; } /* '' */
     .icon-backups:before { content: '\f1da'; } /* '' */
+    
+    &.login {
+
+        a.icon-lock {
+            
+            text-decoration: none;
+            color: #999;
+            letter-spacing: 0em;
+            font-size: 12px;
+
+            &:before { font-size: 16px; }
+
+        }
+
+    }
 
     .updated,
     .notice,
@@ -100,11 +117,6 @@ $white: #ffffff;
         margin: 20px 20px 0 0;
         position: relative;
         max-width: 1200px;
-        box-sizing: border-box;
-
-        *, *:before, *:after {
-            box-sizing: inherit;
-        }
     }
 
     .intro { 
@@ -176,8 +188,8 @@ $white: #ffffff;
 
                 &.active { 
                     background: $white;
-                    border-color: $orange;
-                    color: $orange; 
+                    border-color: $blue;
+                    color: $blue; 
                 }
 
                 &.disabled,
@@ -200,8 +212,8 @@ $white: #ffffff;
                 }
 
                 &:hover {
-                    border-color: $green;
-                    color: $green; 
+                    border-color: $gold;
+                    color: $gold; 
                 }
 
                 &.icon-privacy:before {
@@ -249,7 +261,7 @@ $white: #ffffff;
 
     h2 {
         font-size: 1.8125em;
-        color: $green; 
+        color: $blue; 
     }
 
     h3 {
@@ -331,6 +343,7 @@ $white: #ffffff;
                 color: $blue;
                 text-align: center;
                 margin: 0 0 21px;
+                line-height: 1;
             }
 
             p {
@@ -371,9 +384,10 @@ $white: #ffffff;
             h5 {
                 font-size: 2.125em;
                 letter-spacing: 0.01em;
-                color: $green;
+                color: $blue;
                 text-align: center;
                 margin: 0 0 21px;
+                line-height: 1;
             }
 
             p {
@@ -385,13 +399,13 @@ $white: #ffffff;
             .cta a { 
                 font-size: 21px;
                 text-decoration: none;
-                color: $orange; 
+                color: $blue; 
                 -webkit-transition: color 1s; /* Safari */
                 transition: color 1s;
 
                 &:hover {
 
-                    color: $green;
+                    color: $gray;
 
                     &:before { 
                     left: 167px; }
@@ -472,6 +486,8 @@ $white: #ffffff;
                 .td-8 { width: calc( 100% * .66666 ); }
                 .td-9 { width: calc( 100% * .75 ); }
                 .td-12 { width: 100% ; }
+
+                .chart { box-sizing: border-box; }
 
                 .chart-logins-pie { 
                     border-left: 1px solid #ddd;
@@ -615,10 +631,18 @@ $white: #ffffff;
             border-radius: 3px;
             max-width: 479px;
 
+            input[type="button"] { cursor: pointer; }
+
             label { 
                 display: block;
                 font-weight: bold;
-                margin: 0 0 3px; }
+                margin: 0 0 8px; }
+
+            #import-file { display: none; }
+
+            .file-selected {     
+                font-size: 16px;
+                padding: 0 0 0 5px; }
 
         } // .file-upload-wrap
 

@@ -25,7 +25,7 @@
 .wp-admin .gap-panel-settings table { border: 0; }
 .wp-admin .gap-panel-settings th { width: 25%; vertical-align: middle; }
 .wp-admin .gap-panel-settings td { padding: 15px; vertical-align: middle; }
-.wp-admin .gap-panel-settings td input[type="checkbox"] { position: relative; top: -2px; }
+.wp-admin .gap-panel-settings td input[type=checkbox] { position: relative; top: -2px; }
 .wp-admin .gap-panel-settings td textarea { box-sizing: border-box; width: 96%; }
 .wp-admin .gap-panel-settings td textarea + .gap-caption { width: 95%; }
 

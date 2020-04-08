@@ -110,7 +110,8 @@ foreach ( $this->valid_actions_without_image as $name => $label ) {
 <?php
 }
 ?>
-		<p class="qfi_ad_for_pro"><?php esc_html_e( 'Do you want to assign the first image of each post?', 'quick-featured-images' ); ?> <?php esc_html_e( 'Get the premium version', 'quick-featured-images' ); ?> <a href="https://www.quickfeaturedimages.com<?php esc_html_e( '/', 'quick-featured-images' ); ?>">Quick Featured Images Pro</a>.</p>
+		<p class="qfi_ad_for_pro"><?php esc_html_e( 'Do you want to assign the first image of each post?', 'quick-featured-images' ); ?> <?php esc_html_e( 'Get the Pro version', 'quick-featured-images' ); ?> <a href="https://www.quickfeaturedimages.com<?php esc_html_e( '/', 'quick-featured-images' ); ?>">Quick Featured Images Pro</a>.</p>
+		<p class="qfi_ad_for_pro"><?php esc_html_e( 'Do you want to use external featured images, e.g. from a CDN?', 'quick-featured-images' ); ?> <?php esc_html_e( 'Get the Pro version', 'quick-featured-images' ); ?> <a href="https://www.quickfeaturedimages.com<?php esc_html_e( '/', 'quick-featured-images' ); ?>">Quick Featured Images Pro</a>.</p>
 	</fieldset>
 <?php 
 wp_nonce_field( 'quickfi_start', $this->plugin_slug . '_nonce' );

@@ -21,9 +21,9 @@ if ( ! class_exists( 'UABB_WPML_Translatable' ) ) {
 		 * @since 1.6.7
 		 * @return void
 		 */
-		static public function init() {
+		public static function init() {
 			add_filter( 'wpml_beaver_builder_modules_to_translate', __CLASS__ . '::wpml_uabb_modules_translate' );
-			UABB_WPML_Translatable::load_files();
+			self::load_files();
 		}
 
 		/**
@@ -31,7 +31,7 @@ if ( ! class_exists( 'UABB_WPML_Translatable' ) ) {
 		 *
 		 * @since 1.6.7
 		 */
-		static public function load_files() {
+		public static function load_files() {
 
 			if ( class_exists( 'WPML_Page_Builders_Defined' ) ) {
 				require_once BB_ULTIMATE_ADDON_DIR . 'classes/wpml/class-wpml-uabb-progress-bar.php';
@@ -48,6 +48,11 @@ if ( ! class_exists( 'UABB_WPML_Translatable' ) ) {
 				require_once BB_ULTIMATE_ADDON_DIR . 'classes/wpml/class-wpml-uabb-list-icon.php';
 				require_once BB_ULTIMATE_ADDON_DIR . 'classes/wpml/class-wpml-uabb-video-gallery.php';
 				require_once BB_ULTIMATE_ADDON_DIR . 'classes/wpml/class-wpml-uabb-price-list.php';
+				require_once BB_ULTIMATE_ADDON_DIR . 'classes/wpml/class-wpml-uabb-business-hours.php';
+				require_once BB_ULTIMATE_ADDON_DIR . 'classes/wpml/class-wpml-uabb-pricing-box.php';
+				require_once BB_ULTIMATE_ADDON_DIR . 'classes/wpml/class-wpml-uabb-slide-box.php';
+				require_once BB_ULTIMATE_ADDON_DIR . 'classes/wpml/class-wpml-uabb-how-to.php';
+				require_once BB_ULTIMATE_ADDON_DIR . 'classes/wpml/class-wpml-uabb-faq.php';
 			}
 
 		}
@@ -58,7 +63,7 @@ if ( ! class_exists( 'UABB_WPML_Translatable' ) ) {
 		 * @param array $form gets the forms array to be resolved.
 		 * @return array
 		 */
-		static public function wpml_uabb_modules_translate( $form ) {
+		public static function wpml_uabb_modules_translate( $form ) {
 
 			// Heading Module.
 			$form['uabb-heading'] = array(
@@ -324,6 +329,23 @@ if ( ! class_exists( 'UABB_WPML_Translatable' ) ) {
 					array(
 						'field'       => 'form_desc',
 						'type'        => __( 'Gravity Form Description', 'uabb' ),
+						'editor_type' => 'VISUAL',
+					),
+				),
+			);
+
+			// Caldera Form Styler.
+			$form['uabb-caldera-form-styler'] = array(
+				'conditions' => array( 'type' => 'uabb-caldera-form-styler' ),
+				'fields'     => array(
+					array(
+						'field'       => 'caf_form_title',
+						'type'        => __( 'Caldera Form Title', 'uabb' ),
+						'editor_type' => 'LINE',
+					),
+					array(
+						'field'       => 'caf_form_desc',
+						'type'        => __( 'Caldera Form Description', 'uabb' ),
 						'editor_type' => 'VISUAL',
 					),
 				),
@@ -748,8 +770,8 @@ if ( ! class_exists( 'UABB_WPML_Translatable' ) ) {
 
 			// Slide Box Module.
 			$form['slide-box'] = array(
-				'conditions' => array( 'type' => 'slide-box' ),
-				'fields'     => array(
+				'conditions'        => array( 'type' => 'slide-box' ),
+				'fields'            => array(
 					array(
 						'field'       => 'title_front',
 						'type'        => __( 'Slide Box : Title on Front', 'uabb' ),
@@ -781,6 +803,7 @@ if ( ! class_exists( 'UABB_WPML_Translatable' ) ) {
 						'editor_type' => 'LINE',
 					),
 				),
+				'integration-class' => 'WPML_UABB_Slide_Box',
 			);
 
 			// Advanced Separator Module.
@@ -1005,20 +1028,10 @@ if ( ! class_exists( 'UABB_WPML_Translatable' ) ) {
 			);
 
 			// Business Hours.
-			$form['business-hours'] = array(
-				'conditions' => array( 'type' => 'business-hours' ),
-				'fields'     => array(
-					array(
-						'field'       => 'days',
-						'type'        => __( 'Business Hours : Enter Day', 'uabb' ),
-						'editor_type' => 'LINE',
-					),
-					array(
-						'field'       => 'hours',
-						'type'        => __( 'Business Hours : Enter Time', 'uabb' ),
-						'editor_type' => 'LINE',
-					),
-				),
+			$form['uabb-business-hours'] = array(
+				'conditions'        => array( 'type' => 'uabb-business-hours' ),
+				'fields'            => array(),
+				'integration-class' => 'WPML_UABB_Business_Hours',
 			);
 
 			// Woo - Add to Cart.
@@ -1134,6 +1147,136 @@ if ( ! class_exists( 'UABB_WPML_Translatable' ) ) {
 					),
 				),
 			);
+
+			// Business Reviews Module.
+			$form['uabb-business-reviews'] = array(
+				'conditions' => array( 'type' => 'uabb-business-reviews' ),
+				'fields'     => array(
+					array(
+						'field'       => 'read_more',
+						'type'        => __( 'Business Reviews : Read More Text', 'uabb' ),
+						'editor_type' => 'LINE',
+					),
+				),
+			);
+
+			// Off Canvas Module.
+			$form['uabb-off-canvas'] = array(
+				'conditions' => array( 'type' => 'uabb-off-canvas' ),
+				'fields'     => array(
+					array(
+						'field'       => 'ct_content',
+						'type'        => __( 'Off Canvas : Content', 'uabb' ),
+						'editor_type' => 'VISUAL',
+					),
+					array(
+						'field'       => 'btn_text',
+						'type'        => __( 'Off Canvas : Button Text', 'uabb' ),
+						'editor_type' => 'LINE',
+					),
+				),
+			);
+
+			// Retina Image Module.
+			$form['uabb-retina-image'] = array(
+				'conditions' => array( 'type' => 'uabb-retina-image' ),
+				'fields'     => array(
+					array(
+						'field'       => 'custom_caption',
+						'type'        => __( 'Retina Image : Custom Caption', 'uabb' ),
+						'editor_type' => 'LINE',
+					),
+				),
+			);
+
+			// Pricing Box.
+			$form['pricing-box'] = array(
+				'conditions'        => array( 'type' => 'pricing-box' ),
+				'fields'            => array(),
+				'integration-class' => 'WPML_UABB_Pricing_Box',
+			);
+
+			// Login Form Module.
+			$form['uabb-login-form'] = array(
+				'conditions' => array( 'type' => 'uabb-login-form' ),
+				'fields'     => array(
+					array(
+						'field'       => 'username_label',
+						'type'        => __( 'UABB Login : Username Field Label', 'uabb' ),
+						'editor_type' => 'LINE',
+					),
+					array(
+						'field'       => 'username_placeholder',
+						'type'        => __( 'UABB Login : Username Field Placeholder', 'uabb' ),
+						'editor_type' => 'LINE',
+					),
+					array(
+						'field'       => 'password_label',
+						'type'        => __( 'UABB Login : Password Field Label', 'uabb' ),
+						'editor_type' => 'LINE',
+					),
+					array(
+						'field'       => 'password_placeholder',
+						'type'        => __( 'UABB Login : Password Field Placeholder', 'uabb' ),
+						'editor_type' => 'LINE',
+					),
+					array(
+						'field'       => 'lost_your_password_text',
+						'type'        => __( 'UABB Login : Lost your Password Text', 'uabb' ),
+						'editor_type' => 'LINE',
+					),
+					array(
+						'field'       => 'lost_your_password_url',
+						'type'        => __( 'UABB Login : Lost Your Password URL', 'uabb' ),
+						'editor_type' => 'LINK',
+					),
+					array(
+						'field'       => 'custom_link_text',
+						'type'        => __( 'UABB Login : Custom Link Text', 'uabb' ),
+						'editor_type' => 'LINE',
+					),
+					array(
+						'field'       => 'custom_link_url',
+						'type'        => __( 'UABB Login : Custom Link URL', 'uabb' ),
+						'editor_type' => 'LINK',
+					),
+					array(
+						'field'       => 'rememberme_text',
+						'type'        => __( 'UABB Login : Remember me Text', 'uabb' ),
+						'editor_type' => 'LINE',
+					),
+					array(
+						'field'       => 'wp_login_btn_text',
+						'type'        => __( 'UABB Login : WP Login Button Text', 'uabb' ),
+						'editor_type' => 'LINE',
+					),
+					array(
+						'field'       => 'login_redirect_url',
+						'type'        => __( 'UABB Login : Custom Redirect URL', 'uabb' ),
+						'editor_type' => 'LINK',
+					),
+					array(
+						'field'       => 'logout_redirect_url',
+						'type'        => __( 'UABB Login : Custom Redirect URL', 'uabb' ),
+						'editor_type' => 'LINK',
+					),
+				),
+			);
+
+			// UABB How To.
+			$form['uabb-how-to'] = array(
+				'conditions'        => array( 'type' => 'uabb-how-to' ),
+				'fields'            => array(),
+				'integration-class' => 'WPML_UABB_How_To',
+			);
+
+			// UABB FAQ.
+			$form['uabb-faq'] = array(
+				'conditions'        => array( 'type' => 'uabb-faq' ),
+				'fields'            => array(),
+				'integration-class' => 'WPML_UABB_FAQ',
+			);
+
 			return $form;
 		}
 	}

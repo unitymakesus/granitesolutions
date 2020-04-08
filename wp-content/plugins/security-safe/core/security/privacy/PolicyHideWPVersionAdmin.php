@@ -20,7 +20,7 @@ class PolicyHideWPVersionAdmin {
 	function __construct(){
 
         // Update footer
-        add_action( 'admin_init', array( $this, 'update_footer' ) );
+        add_action( 'admin_init', [ $this, 'update_footer' ] );
 
 	} // __construct()
 
@@ -32,7 +32,7 @@ class PolicyHideWPVersionAdmin {
      */ 
     function update_footer(){
 
-        add_filter( 'admin_footer_text',    array( $this, 'custom_footer' ), 11 );
+        add_filter( 'admin_footer_text',    [ $this, 'custom_footer' ], 11 );
         add_filter( 'update_footer',        '__return_false', 11 );
 
     } // update_footer()

@@ -20,7 +20,7 @@ class PolicyHideWPVersion {
 	function __construct(){
 
         // Remove Version From RSS
-        add_filter( 'the_generator', array( $this, 'rss_version' ) );
+        add_filter( 'the_generator', [ $this, 'rss_version' ] );
 
         // Remove Generator Tag in HTML
         remove_action('wp_head', 'wp_generator');

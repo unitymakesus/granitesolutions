@@ -17,9 +17,9 @@ class PolicyWordPressVersionFiles {
     /**
      * PolicyWordPressVersionFiles constructor.
      */
-	function __construct(){
+	function __construct() {
 
-        add_action( 'upgrader_process_complete', array( $this, 'protect_files' ) , 10, 2 );
+        add_action( 'upgrader_process_complete', [ $this, 'protect_files' ] , 10, 2 );
 
 	} // __construct()
 
@@ -49,7 +49,7 @@ class PolicyWordPressVersionFiles {
     private function set_permissions( $path ) {
 
         // Cleanup Path
-        $path = str_replace( array( '/./', '////', '///', '//' ), '/', $path );
+        $path = str_replace( [ '/./', '////', '///', '//' ], '/', $path );
 
         if ( file_exists( $path ) ) {
 
