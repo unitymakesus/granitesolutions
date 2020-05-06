@@ -1,5 +1,5 @@
 ---
 deployment:
  tasks:
-  - export DEPLOYPATH=/home/granite/public_html/
+  - export DEPLOYPATH=/home/granitesolutions/public_html/
   - /bin/cp -R * $DEPLOYPATH
