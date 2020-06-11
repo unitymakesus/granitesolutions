@@ -65,10 +65,34 @@ $classes = array(
 	<header class="matador-job-header">
 
 		<?php if ( isset( $fields['title'] ) && $fields['title'] ) : ?>
-			<h4 class="entry-title matador-job-title">
+			<h2 class="entry-title matador-job-title">
 				<?php matador_the_job_title_link( null, $context ); ?>
-			</h4>
-		<?php endif; ?>
+			</h2>
+        <?php endif; ?>
+
+        <?php
+            $post_id = get_the_ID();
+            $general_location = get_post_meta($post_id, 'job_general_location', true);
+            $employment_type = get_post_meta($post_id, 'employmentType', true);
+            $category = get_the_term_list($post_id, 'matador-categories', '', ', ');
+        ?>
+
+        <?php if (!empty($category) && !is_wp_error($category)) : ?>
+            <div>
+                <span class="screen-reader-text"><?php echo __('Job Category:', 'sage'); ?></span>
+                <strong><?php echo strip_tags($category); ?></strong>
+            </div>
+        <?php endif; ?>
+
+        <?php if ($general_location) : ?>
+            <em><span class="screen-reader-text"><?php echo __('Job Location:', 'sage'); ?></span><?php echo $general_location; ?></em>
+        <?php endif; ?>
+        <?php if ($general_location && $employment_type) : ?>
+            <span aria-hidden="true" style="margin: 0 0.25rem;">|</span>
+        <?php endif; ?>
+        <?php if ($employment_type) : ?>
+            <em><span class="screen-reader-text"><?php echo __('Employment Type:', 'sage'); ?></span><?php echo $employment_type; ?></em>
+        <?php endif; ?>
 
 		<?php if ( isset( $fields['info'] ) && $fields['info'] ) : ?>
 			<?php matador_the_job_info( array(), array(), $context ); ?>
@@ -92,11 +116,6 @@ $classes = array(
 	</header>
 
 	<div class="matador-job-description">
-
-		<?php if ( isset( $fields['content'] ) && $fields['content'] ) : ?>
-			<p><?php matador_the_job_description( get_the_ID(), $content_limit, $context ); ?></p>
-		<?php endif; ?>
-
 		<?php
 		/**
 		 * Matador Job Content
@@ -113,11 +132,6 @@ $classes = array(
 	</div>
 
 	<footer class="matador-job-footer">
-
-		<?php if ( isset( $fields['link'] ) && $fields['link'] ) : ?>
-			<?php matador_the_job_navigation(); ?>
-		<?php endif; ?>
-
 		<?php
 		/**
 		 * Matador Job Footer
