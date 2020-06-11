@@ -309,3 +309,60 @@ add_filter('matador_template_the_job_navigation_buttons', function($html) {
 
     return $html;
 }, 99, 1);
+
+/**
+ * Provide query argument for Job Application form field dynamic population.
+ */
+add_filter('matador_template_the_job_apply_link', function($url, $id, $context) {
+    $job_id = get_post_meta($id, 'bullhorn_job_id', true);
+    $job_apply_page = get_field('job_application_page', 'option');
+
+    if (!empty($job_id) && !empty($job_apply_page)) {
+        $url = add_query_arg('job_id', $job_id, get_the_permalink($job_apply_page));
+    }
+
+    return $url;
+}, 10, 3);
+
+/**
+ * Load in all Matador Jobs to Job Application Gravity Form (the job_id query arg will pre-select the choice user made).
+ */
+function gform_populate_matador_jobs($form) {
+    foreach ($form['fields'] as &$field) {
+        // We only want to populate the job listing select field.
+        if ($field->id != 6) {
+            continue;
+        }
+
+        $jobs = get_posts([
+            'post_type'   => 'matador-job-listings',
+            'numberposts' => -1,
+            'post_status' => 'publish',
+            'fields'      => 'ids',
+        ]);
+
+        $choices = [];
+
+        foreach ($jobs as $job) {
+            $label = get_the_title($job);
+
+            if ($job_location = get_post_meta($job, 'job_general_location', true)) {
+                $label .= " (${job_location})";
+            }
+
+            $choices[] = [
+                'text'  => $label,
+                'value' => get_post_meta($job, 'bullhorn_job_id', true),
+            ];
+        }
+
+        $field->placeholder = __('Select a job opportunity', 'sage');
+        $field->choices = $choices;
+    }
+
+    return $form;
+}
+add_filter('gform_pre_render_1', __NAMESPACE__.'\\gform_populate_matador_jobs');
+add_filter('gform_pre_validation_1', __NAMESPACE__.'\\gform_populate_matador_jobs');
+add_filter('gform_pre_submission_filter_1', __NAMESPACE__.'\\gform_populate_matador_jobs');
+add_filter('gform_admin_pre_render_1', __NAMESPACE__.'\\gform_populate_matador_jobs');
