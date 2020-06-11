@@ -269,6 +269,13 @@ function resources_tax() {
 add_action( 'init', __NAMESPACE__.'\\resources_tax' );
 
 /**
+ * Increase nonce life for Public Post Preview.
+ */
+add_filter('ppp_nonce_life', function() {
+    return 60 * 60 * 24 * 5; // 5 days
+});
+
+/**
  * ACF Local JSON
  * @source https://www.advancedcustomfields.com/resources/local-json/
  */
