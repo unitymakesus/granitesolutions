@@ -298,3 +298,14 @@ add_action('acf/init', function() {
         ]);
     }
 });
+
+/**
+ * Override link text in Matador Jobs navigation.
+ */
+add_filter('matador_template_the_job_navigation_buttons', function($html) {
+    if (isset($html['jobs'])) {
+        $html['jobs'] = esc_html__('View all opportunities', 'sage');
+    }
+
+    return $html;
+}, 99, 1);
