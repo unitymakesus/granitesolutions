@@ -1,3 +1,34 @@
+::placeholder {
+  color: $color-black;
+}
+
+select {
+  display: inline-block;
+  border: 1px solid $color-grey-light;
+  border-radius: 0;
+  width: 250px;
+  height: 56px;
+  font-size: 16px;
+  padding-right: 30px;
+  margin-bottom: 0;
+  box-sizing: border-box;
+  -moz-appearance: none;
+  -webkit-appearance: none;
+  appearance: none;
+  background-color: white;
+  background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23000000%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E');
+  background-repeat: no-repeat, repeat;
+  background-position: right 0.7em top 50%, 0 0;
+  background-size: 0.65em auto, 100%;
+  transition: all 0.3s ease-in-out;
+
+  &:focus {
+    border-bottom-color: $color-purple;
+    box-shadow: 0 1px 0 0 $input-focus-color;
+    outline: 0;
+  }
+}
+
 .cli-switch input + .cli-slider {
   background-color: transparent !important;
 
@@ -23,6 +54,74 @@ textarea {
     .col {
       width: 100%;
       padding: 0;
+    }
+  }
+}
+
+// Gravity Forms
+.gform_body {
+  label {
+    color: inherit;
+  }
+}
+
+.gform_wrapper .gform_body {
+  .gsection {
+    border-bottom: 0;
+  }
+
+  .gsection_title {
+    text-transform: uppercase;
+  }
+
+  .gsection_title,
+  .gfield_label {
+    font-weight: normal;
+  }
+
+  .gfield {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+
+    input:not([type="submit"]) {
+      width: 100% !important;
+    }
+
+    &::before {
+      display: none;
+    }
+  }
+
+  .ginput_container_text + .gfield_label {
+    position: relative;
+    top: 2.5rem;
+
+    &:focus {
+      top: 0;
+      color: $color-purple;
+    }
+  }
+
+  textarea {
+    border: 1px solid $color-grey-light;
+    transition: all 0.3s ease-in-out;
+
+    &:focus {
+      border-bottom: 1px solid $input-focus-color;
+      outline: 0;
+      box-shadow: 0 1px 0 0 $input-focus-color;
+    }
+  }
+}
+
+.gform_wrapper .gform_footer {
+  input[type="submit"] {
+    color: $color-purple;
+    box-shadow: none;
+
+    &:hover,
+    &:focus {
+      color: $color-white;
     }
   }
 }

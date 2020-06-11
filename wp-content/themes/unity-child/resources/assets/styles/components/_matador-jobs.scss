@@ -1,0 +1,160 @@
+.matador-search-form {
+  display: flex;
+  flex-direction: column;
+
+  .matador-search-form-field-group {
+    margin-bottom: 1rem;
+    padding-right: 0;
+    margin-right: 0;
+  }
+
+  .matador-search-form-field-keyword,
+  .matador-terms-select,
+  .matador-terms-select select {
+    width: 100%;
+  }
+}
+
+@media #{$small-and-up} {
+  .matador-search-form {
+    flex-direction: row;
+    flex-wrap: wrap;
+
+    .matador-search-form-field-group {
+      margin-right: 1rem;
+      width: auto;
+      flex-grow: 1;
+      flex-shrink: 0;
+      flex-basis: auto;
+    }
+
+    .matador-search-form-field-keyword {
+      width: 100%;
+      margin-right: 0;
+    }
+
+    .matador-search-form-field-submit {
+      margin-right: 0;
+      padding-right: 0;
+      flex-grow: 0;
+    }
+  }
+}
+
+.matador-search-submit {
+  @extend .btn-secondary;
+
+  cursor: pointer;
+}
+
+.matador-job-navigation {
+  background-color: $color-white;
+  padding: 0;
+  box-shadow: none;
+
+  ul {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    margin: 0;
+  }
+
+  li {
+    padding-left: 0 !important;
+
+    &::before {
+      display: none !important;
+    }
+  }
+
+  li a,
+  li + li a {
+    @extend .bb_boot_card_link_button;
+
+    background-color: $color-white;
+    color: $color-purple;
+    font-family: $font-roboto;
+    font-size: 14px;
+    transition: all 0.3s;
+    cursor: pointer;
+    border: 1px solid $color-purple;
+
+    &:hover,
+    &:focus {
+      background-color: $color-purple;
+      color: $color-white;
+      border: 1px solid $color-purple;
+    }
+  }
+}
+
+.matador-job {
+  position: relative;
+  box-shadow: $box-shadow;
+  padding: 1rem;
+
+  .matador-job-title {
+    margin-bottom: 0.25rem;
+  }
+
+  .matador-job-title a {
+    text-decoration: none;
+
+    &:hover,
+    &:focus {
+      background-color: transparent;
+      color: $color-green;
+      text-decoration: underline !important;
+    }
+
+    // Accessible link wrap, requires a relative parent.
+    &::after {
+      position: absolute;
+      left: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      content: '';
+    }
+  }
+}
+
+.matador-pagination {
+  @extend .pagination;
+
+  .page-numbers {
+    font-size: 1.2em !important;
+    font-weight: 400 !important;
+  }
+
+  a,
+  a.next.page-numbers,
+  a.prev.page-numbers {
+    background: $color-green !important;
+    text-decoration: none !important;
+    border: 2px solid $color-green;
+
+    &:hover,
+    &:focus {
+      color: $color-green !important;
+      background: $color-white !important;
+    }
+  }
+
+  .current {
+    border: 2px solid $color-light-green;
+    background: $color-light-green;
+  }
+
+  a,
+  span {
+    font-size: 1.2em;
+  }
+}
+
+.matador-pagination .next.page-numbers,
+.matador-pagination .prev.page-numbers {
+  float: none;
+  border-radius: 0;
+}
