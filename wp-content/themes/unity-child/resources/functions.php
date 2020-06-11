@@ -267,3 +267,34 @@ function resources_tax() {
 
 }
 add_action( 'init', __NAMESPACE__.'\\resources_tax' );
+
+/**
+ * ACF Local JSON
+ * @source https://www.advancedcustomfields.com/resources/local-json/
+ */
+add_filter('acf/settings/save_json', function() {
+    return get_stylesheet_directory() . '/acf-json';
+});
+
+add_filter('acf/settings/load_json', function($paths) {
+    if (is_child_theme()) {
+        $paths[] = get_template_directory() . '/acf-json';
+    }
+
+    return $paths;
+});
+
+/**
+ * ACF Theme Options
+ */
+add_action('acf/init', function() {
+    if (function_exists('acf_add_options_sub_page')) {
+        acf_add_options_sub_page([
+            'page_title' 	=> __('Custom Matador Jobs Settings', 'sage'),
+            'menu_title'	=> __('Custom Settings', 'sage'),
+            'parent_slug' 	=> 'edit.php?post_type=matador-job-listings',
+            'capability'	=> 'edit_posts',
+            'redirect'		=> false,
+        ]);
+    }
+});

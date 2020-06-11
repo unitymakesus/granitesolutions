@@ -1,0 +1,46 @@
+{
+    "key": "group_5ee0fc1543cd0",
+    "title": "Custom Matador Jobs Settings",
+    "fields": [
+        {
+            "key": "field_5ee0fc19bbfa4",
+            "label": "Job Application Page",
+            "name": "job_application_page",
+            "type": "post_object",
+            "instructions": "Select the page where the main Job Application form lives. This is required to dynamically pull in the job's information from the job listing's page or link to the form.",
+            "required": 0,
+            "conditional_logic": 0,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "post_type": [
+                "page"
+            ],
+            "taxonomy": "",
+            "allow_null": 0,
+            "multiple": 0,
+            "return_format": "object",
+            "ui": 1
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "options_page",
+                "operator": "==",
+                "value": "acf-options-custom-settings"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": 1,
+    "description": "",
+    "modified": 1591804311
+}
