@@ -87,12 +87,6 @@ $classes = array(
         <?php if ($general_location) : ?>
             <em><span class="screen-reader-text"><?php echo __('Job Location:', 'sage'); ?></span><?php echo $general_location; ?></em>
         <?php endif; ?>
-        <?php if ($general_location && $employment_type) : ?>
-            <span aria-hidden="true" style="margin: 0 0.25rem;">|</span>
-        <?php endif; ?>
-        <?php if ($employment_type) : ?>
-            <em><span class="screen-reader-text"><?php echo __('Employment Type:', 'sage'); ?></span><?php echo $employment_type; ?></em>
-        <?php endif; ?>
 
 		<?php if ( isset( $fields['info'] ) && $fields['info'] ) : ?>
 			<?php matador_the_job_info( array(), array(), $context ); ?>

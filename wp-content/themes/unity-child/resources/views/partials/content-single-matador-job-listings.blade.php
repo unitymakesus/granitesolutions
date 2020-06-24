@@ -23,12 +23,6 @@ $bullhorn_job_id = get_post_meta($post_id, 'bullhorn_job_id', true);
       @if ($general_location)
         <em><span class="screen-reader-text">{{ __('Job Location:', 'sage') }}</span>{{ $general_location }}</em>
       @endif
-      @if ($general_location && $employment_type)
-        <span aria-hidden="true" style="margin: 0 0.25rem;">|</span>
-      @endif
-      @if ($employment_type)
-        <em><span class="screen-reader-text">{{ __('Employment Type:', 'sage') }}</span>{{ $employment_type }}</em>
-      @endif
     </div>
   </header>
   <div class="entry-content container">
