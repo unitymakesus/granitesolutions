@@ -46,7 +46,7 @@ if ( ! class_exists( 'FLBuilderLoader' ) ) {
 		 * @return void
 		 */
 		static private function define_constants() {
-			define( 'FL_BUILDER_VERSION', '2.3.2.5' );
+			define( 'FL_BUILDER_VERSION', '2.3.2.7' );
 			define( 'FL_BUILDER_FILE', trailingslashit( dirname( dirname( __FILE__ ) ) ) . 'fl-builder.php' );
 			define( 'FL_BUILDER_DIR', plugin_dir_path( FL_BUILDER_FILE ) );
 			define( 'FL_BUILDER_URL', plugins_url( '/', FL_BUILDER_FILE ) );
@@ -106,6 +106,7 @@ if ( ! class_exists( 'FLBuilderLoader' ) ) {
 			require_once FL_BUILDER_DIR . 'classes/class-fl-builder-user-settings.php';
 			require_once FL_BUILDER_DIR . 'classes/class-fl-builder-utils.php';
 			require_once FL_BUILDER_DIR . 'classes/class-fl-builder-wpml.php';
+			require_once FL_BUILDER_DIR . 'classes/class-fl-builder-seo.php';
 			require_once FL_BUILDER_DIR . 'classes/class-fl-builder-privacy.php';
 			require_once FL_BUILDER_DIR . 'classes/class-fl-builder-settings-presets.php';
 			require_once FL_BUILDER_DIR . 'classes/class-fl-builder-compatibility.php';

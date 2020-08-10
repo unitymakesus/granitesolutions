@@ -59,7 +59,7 @@ switch ( $instance ) :
 		?>
 		<h4><?php esc_html_e( 'Social Meta Tags Settings', 'autodescription' ); ?></h4>
 		<?php
-		$this->description( __( 'Output various meta tags for social site integration, among other 3rd party services.', 'autodescription' ) );
+		$this->description( __( 'Output various meta tags for social site integration, among other third-party services.', 'autodescription' ) );
 
 		?>
 		<hr>
@@ -115,10 +115,31 @@ switch ( $instance ) :
 		?>
 		<hr>
 
+		<h4><?php esc_html_e( 'Social Title Settings', 'autodescription' ); ?></h4>
+		<?php
+		$this->description( __( 'Most social sites and third-party services automatically include the website URL inside their embeds. When the site title is described well in the site URL, including it in the social title will be redundant.', 'autodescription' ) );
+
+		$info = $this->make_info(
+			__( 'When you provide a custom Open Graph or Twitter title, the site title will be omitted automatically.', 'autodescription' ),
+			'',
+			false
+		);
+
+		$this->wrap_fields(
+			$this->make_checkbox(
+				'social_title_rem_additions',
+				esc_html__( 'Remove site title from generated social titles?', 'autodescription' ) . ' ' . $info,
+				'',
+				false
+			),
+			true
+		);
+		?>
+		<hr>
+
 		<h4><?php esc_html_e( 'Social Image Settings', 'autodescription' ); ?></h4>
 		<?php
 		$this->description( __( 'A social image can be displayed when your website is shared. It is a great way to grab attention.', 'autodescription' ) );
-
 
 		$this->wrap_fields(
 			$this->make_checkbox(
@@ -142,7 +163,7 @@ switch ( $instance ) :
 		</p>
 		<p class="hide-if-no-tsf-js">
 			<?php
-			// phpcs:ignore, WordPress.Security.EscapeOutput
+			// phpcs:ignore, WordPress.Security.EscapeOutput.OutputNotEscaped -- already escaped.
 			echo $this->get_social_image_uploader_form( 'tsf_fb_socialimage' );
 			?>
 		</p>

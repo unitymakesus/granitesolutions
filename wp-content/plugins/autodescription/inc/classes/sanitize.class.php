@@ -37,18 +37,19 @@ class Sanitize extends Admin_Pages {
 	/**
 	 * Checks the SEO Settings page nonce. Returns false if nonce can't be found.
 	 * Performs wp_die() when nonce verification fails.
+	 * Memoizes the return value.
 	 *
 	 * Never run a sensitive function when it's returning false. This means no nonce can be verified.
 	 *
 	 * @since 2.7.0
 	 * @since 3.1.0 Removed settings field existence check.
 	 * @since 4.0.0 Added redundant user capability check.
+	 * @since 4.1.0 Is now a protected method.
 	 * @securitycheck 3.0.0 OK.
-	 * @staticvar bool $verified.
 	 *
 	 * @return bool True if verified and matches. False if can't verify.
 	 */
-	public function verify_seo_settings_nonce() {
+	protected function verify_seo_settings_nonce() {
 
 		static $validated = null;
 
@@ -83,30 +84,33 @@ class Sanitize extends Admin_Pages {
 	 * @since 2.8.0
 	 * @since 3.0.6 Now updates db version, too.
 	 * @since 3.1.0 Now always flushes the cache, even before the options are updated.
+	 * @since 4.1.0 1. Renamed from 'handle_update_post' to 'process_settings_submission'
+	 *              2. Is now a protected method.
 	 *
 	 * @return void Early if nonce failed.
 	 */
-	public function handle_update_post() {
+	protected function process_settings_submission() {
 
-		//* Verify update headers.
+		// Verify update headers.
 		if ( ! $this->verify_seo_settings_nonce() ) return;
 
-		//* Initialize sanitation filters parsed on each option update.
+		// Initialize sanitation filters parsed on each option update.
 		$this->init_sanitizer_filters();
 
-		//* Delete main cache now. For when the options don't change.
+		// Delete main cache now. For when the options don't change.
 		$this->delete_main_cache();
 
-		//* Sets that the options are unchanged, preemptively.
+		// Set backward compatibility. This runs after the sanitization.
+		\add_filter( 'pre_update_option_' . THE_SEO_FRAMEWORK_SITE_OPTIONS, [ $this, '_set_backward_compatibility' ], 10 );
+
+		// Sets that the options are unchanged, preemptively.
 		$this->update_static_cache( 'settings_notice', 'unchanged' );
-		//* But, if this action fires, we can assure that the settings have been changed.
+		// But, if this action fires, we can assure that the settings have been changed (according to WP).
 		\add_action( 'update_option_' . THE_SEO_FRAMEWORK_SITE_OPTIONS, [ $this, '_set_option_updated_notice' ], 0 );
 
-		//* Flush transients after options have changed.
+		// Flush transients again after options have changed.
 		\add_action( 'update_option_' . THE_SEO_FRAMEWORK_SITE_OPTIONS, [ $this, 'delete_main_cache' ] );
 		\add_action( 'update_option_' . THE_SEO_FRAMEWORK_SITE_OPTIONS, [ $this, 'update_db_version' ], 12 );
-		//* TEMP: Set backward compatibility.
-		// \add_action( 'update_option_' . THE_SEO_FRAMEWORK_SITE_OPTIONS, [ $this, '_set_backward_compatibility' ], 13 );
 	}
 
 	/**
@@ -123,7 +127,7 @@ class Sanitize extends Admin_Pages {
 	 * Updates the database version to the defined one.
 	 *
 	 * This prevents errors when users go back to an earlier version, where options
-	 * might be different from a future one.
+	 * might be different from a future (or past, since v4.1.0) one.
 	 *
 	 * @since 3.0.6
 	 */
@@ -132,19 +136,37 @@ class Sanitize extends Admin_Pages {
 	}
 
 	/**
-	 * Maintains backward compatibility for older, migrated options.
+	 * Maintains backward compatibility for older, migrated options, by injecting them
+	 * into the options array before that's processed for updating.
 	 *
 	 * @since 3.1.0
 	 * @since 4.0.0 Emptied and is no longer enqueued.
+	 * @since 4.1.0 : 1. Added taxonomical robots options backward compat.
+	 *                2. Added the first two parameters.
 	 * @access private
-	 * @staticvar bool $running Prevents on-update loops.
+	 *
+	 * @param mixed $new_value The new, unserialized, and filtered option value.
+	 * @return mixed $new_value The updated option.
 	 */
-	public function _set_backward_compatibility() {
-		static $running = false;
-		if ( $running ) return;
-		$running = true;
+	public function _set_backward_compatibility( $new_value ) {
+
+		db_4103:
+		//= Category and Tag robots backward compat.
+		foreach ( [ 'noindex', 'nofollow', 'noarchive' ] as $r ) :
+			$robots_option_id   = $this->get_robots_taxonomy_option_id( $r );
+			$new_robots_options = isset( $new_value[ $robots_option_id ] ) ? $new_value[ $robots_option_id ] : [];
+
+			$new_category_option = isset( $new_robots_options['category'] ) ? $new_robots_options['category'] : 0;
+			$new_tag_option      = isset( $new_robots_options['post_tag'] ) ? $new_robots_options['post_tag'] : 0;
+
+			// Don't compare to old option--it's never reliably set; it might skip otherwise, although it's always correct.
+			// Do not resanitize. Others might've overwritten that, let's keep their value.
+			$new_value[ "category_$r" ] = $new_category_option;
+			$new_value[ "tag_$r" ]      = $new_tag_option;
+		endforeach;
+
 		end:;
-		$running = false;
+		return $new_value;
 	}
 
 	/**
@@ -251,22 +273,16 @@ class Sanitize extends Admin_Pages {
 
 				'auto_description',
 
-				'category_noindex',
-				'tag_noindex',
 				'author_noindex',
 				'date_noindex',
 				'search_noindex',
 				'site_noindex',
 
-				'category_nofollow',
-				'tag_nofollow',
 				'author_nofollow',
 				'date_nofollow',
 				'search_nofollow',
 				'site_nofollow',
 
-				'category_noarchive',
-				'tag_noarchive',
 				'author_noarchive',
 				'date_noarchive',
 				'search_noarchive',
@@ -297,6 +313,8 @@ class Sanitize extends Admin_Pages {
 				'facebook_tags',
 				'twitter_tags',
 				'oembed_scripts',
+
+				'social_title_rem_additions',
 
 				'multi_og_image',
 
@@ -334,6 +352,7 @@ class Sanitize extends Admin_Pages {
 				'social_image_fb_id',
 				'homepage_social_image_id',
 				'knowledge_logo_id',
+				'sitemap_logo_id',
 			]
 		);
 
@@ -354,6 +373,14 @@ class Sanitize extends Admin_Pages {
 		);
 
 		$this->add_option_filter(
+			's_disabled_taxonomies',
+			THE_SEO_FRAMEWORK_SITE_OPTIONS,
+			[
+				'disabled_taxonomies',
+			]
+		);
+
+		$this->add_option_filter(
 			's_post_types',
 			THE_SEO_FRAMEWORK_SITE_OPTIONS,
 			[
@@ -363,9 +390,18 @@ class Sanitize extends Admin_Pages {
 			]
 		);
 
+		$this->add_option_filter(
+			's_taxonomies',
+			THE_SEO_FRAMEWORK_SITE_OPTIONS,
+			[
+				$this->get_robots_taxonomy_option_id( 'noindex' ),
+				$this->get_robots_taxonomy_option_id( 'nofollow' ),
+				$this->get_robots_taxonomy_option_id( 'noarchive' ),
+			]
+		);
+
 		/**
-		 * @todo create content="code" stripper
-		 * @priority low 2.9.0+
+		 * @todo create content="code" stripper in PHP (redundant from JS's)
 		 */
 		$this->add_option_filter(
 			's_no_html_space',
@@ -404,6 +440,7 @@ class Sanitize extends Admin_Pages {
 				'social_image_fb_url',
 				'homepage_social_image_url',
 				'knowledge_logo_url',
+				'sitemap_logo_url',
 			]
 		);
 
@@ -488,7 +525,6 @@ class Sanitize extends Admin_Pages {
 	 * @since 2.7.0 Uses external caching function.
 	 * @since 2.8.0 Renamed.
 	 * @since 4.0.0 Now caches its $option registration.
-	 * @staticvar array $cache
 	 *
 	 * @param string       $filter Sanitization filter type
 	 * @param string       $option The option key.
@@ -497,13 +533,14 @@ class Sanitize extends Admin_Pages {
 	 */
 	public function add_option_filter( $filter, $option, $suboption = null ) {
 
-		static $cache = [];
+		static $registered = [];
 
 		$this->set_option_filter( $filter, $option, $suboption );
 
-		if ( ! isset( $cache[ $option ] ) ) {
+		// Memoize whether a filter has been set for the option already. Should only run once internally.
+		if ( ! isset( $registered[ $option ] ) ) {
 			\add_filter( 'sanitize_option_' . $option, [ $this, 'sanitize' ], 10, 2 );
-			$cache[ $option ] = true;
+			$registered[ $option ] = true;
 		}
 
 		return true;
@@ -511,13 +548,15 @@ class Sanitize extends Admin_Pages {
 
 	/**
 	 * Sets sanitation filters cache.
+	 * Memoizes the filters set so we can get them later.
 	 *
 	 * Associates a sanitization filter to each option (or sub options if they
 	 * exist) before adding a reference to run the option through that
 	 * sanitizer at the right time.
 	 *
 	 * @since 2.7.0
-	 * @staticvar $options The options filter cache.
+	 * @see $this->get_option_filters()
+	 * @TODO allow for multiple filters per option? That'd speed up backward compat migration.
 	 *
 	 * @param string       $filter    Sanitization filter type
 	 * @param string       $option    Option key
@@ -574,14 +613,14 @@ class Sanitize extends Admin_Pages {
 			return $new_value;
 		} elseif ( is_string( $filters[ $option ] ) ) {
 			//* Single option value
-			return $this->do_filter( $filters[ $option ], $new_value, \get_option( $option ) );
+			return $this->do_filter( $filters[ $option ], $new_value, \get_option( $option ), $option );
 		} elseif ( is_array( $filters[ $option ] ) ) {
 			//* Array of suboption values to loop through
 			$old_value = \get_option( $option, [] );
 			foreach ( $filters[ $option ] as $suboption => $filter ) {
 				$old_value[ $suboption ] = isset( $old_value[ $suboption ] ) ? $old_value[ $suboption ] : '';
 				$new_value[ $suboption ] = isset( $new_value[ $suboption ] ) ? $new_value[ $suboption ] : '';
-				$new_value[ $suboption ] = $this->do_filter( $filter, $new_value[ $suboption ], $old_value[ $suboption ] );
+				$new_value[ $suboption ] = $this->do_filter( $filter, $new_value[ $suboption ], $old_value[ $suboption ], $option, $suboption );
 			}
 			return $new_value;
 		}
@@ -594,22 +633,31 @@ class Sanitize extends Admin_Pages {
 	 * Checks sanitization filter exists, and if so, passes the value through it.
 	 *
 	 * @since 2.2.2
+	 * @since 4.1.0 Added $option and $suboption parameters.
 	 *
-	 * @thanks StudioPress (http://www.studiopress.com/) for some code.
-	 *
-	 * @param string $filter Sanitization filter type
-	 * @param string $new_value New value
-	 * @param string $old_value Previous value
+	 * @param string $filter    Sanitization filter type.
+	 * @param string $new_value New value.
+	 * @param string $old_value Previous value.
+	 * @param string $option    The option to filter.
+	 * @param string $suboption The suboption to filter. Optional.
 	 * @return mixed Returns filtered value, or submitted value if value is unfiltered.
 	 */
-	protected function do_filter( $filter, $new_value, $old_value ) {
+	protected function do_filter( $filter, $new_value, $old_value, $option, $suboption = '' ) {
 
 		$available_filters = $this->get_available_filters();
 
 		if ( ! in_array( $filter, array_keys( $available_filters ), true ) )
 			return $new_value;
 
-		return call_user_func( $available_filters[ $filter ], $new_value, $old_value );
+		return call_user_func_array(
+			$available_filters[ $filter ],
+			[
+				$new_value,
+				$old_value,
+				$option,
+				$suboption,
+			]
+		);
 	}
 
 	/**
@@ -645,7 +693,9 @@ class Sanitize extends Admin_Pages {
 				's_alter_query_type'    => [ $this, 's_alter_query_type' ],
 				's_one_zero'            => [ $this, 's_one_zero' ],
 				's_disabled_post_types' => [ $this, 's_disabled_post_types' ],
+				's_disabled_taxonomies' => [ $this, 's_disabled_taxonomies' ],
 				's_post_types'          => [ $this, 's_post_types' ],
+				's_taxonomies'          => [ $this, 's_taxonomies' ],
 				's_numeric_string'      => [ $this, 's_numeric_string' ],
 				's_no_html'             => [ $this, 's_no_html' ],
 				's_no_html_space'       => [ $this, 's_no_html_space' ],
@@ -880,12 +930,15 @@ class Sanitize extends Admin_Pages {
 	 *
 	 * @since 2.8.2
 	 * @since 3.1.0 Simplified method.
+	 * @since 4.1.0 1. Made this method about 25~92% faster (more replacements = more faster). 73% slower on empty strings (negligible).
+	 *              2. Now also strips form-feed and vertical whitespace characters--might they appear in the wild.
 	 *
 	 * @param string $new_value The input value with possible multiline.
 	 * @return string The input string without multiple lines.
 	 */
 	public function s_singleline( $new_value ) {
-		return trim( preg_replace( '/[\p{Zl}\p{Zp}\r\n]+/u', ' ', $new_value ) );
+		// Use x20 because it's a human-visible real space.
+		return trim( strtr( $new_value, "\r\n\t\v\f", "\x20\x20\x20\x20\x20" ) );
 	}
 
 	/**
@@ -913,7 +966,8 @@ class Sanitize extends Admin_Pages {
 	 * @return string The input string without tabs.
 	 */
 	public function s_tabs( $new_value ) {
-		return str_replace( "\t", ' ', $new_value );
+		// Use x20 because it's a human-visible real space.
+		return strtr( $new_value, "\t", "\x20" );
 	}
 
 	/**
@@ -923,6 +977,7 @@ class Sanitize extends Admin_Pages {
 	 * @since 2.8.2 : 1. Added $allow_shortcodes parameter.
 	 *                2. Added $escape parameter.
 	 * @since 3.2.4 Now selectively clears tags.
+	 * @since 4.1.0 Moved `figcaption`, `figure`, `footer`, and `tfoot`, from `space` to `clear`.
 	 * @see `$this->strip_tags_cs()`
 	 *
 	 * @param string $excerpt          The excerpt.
@@ -937,9 +992,9 @@ class Sanitize extends Admin_Pages {
 
 		$strip_args = [
 			'space' =>
-				[ 'article', 'aside', 'blockquote', 'dd', 'div', 'dl', 'dt', 'figcaption', 'figure', 'footer', 'li', 'main', 'ol', 'p', 'section', 'tfoot', 'ul' ],
+				[ 'article', 'aside', 'blockquote', 'dd', 'div', 'dl', 'dt', 'li', 'main', 'ol', 'p', 'section', 'ul' ],
 			'clear' =>
-				[ 'address', 'bdo', 'br', 'button', 'canvas', 'code', 'fieldset', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'header', 'hr', 'iframe', 'input', 'label', 'link', 'meta', 'nav', 'noscript', 'option', 'pre', 'samp', 'script', 'select', 'style', 'svg', 'table', 'textarea', 'var', 'video' ],
+				[ 'address', 'bdo', 'br', 'button', 'canvas', 'code', 'fieldset', 'figcaption', 'figure', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'header', 'hr', 'iframe', 'input', 'label', 'link', 'meta', 'nav', 'noscript', 'option', 'pre', 'samp', 'script', 'select', 'style', 'svg', 'table', 'textarea', 'tfoot', 'var', 'video' ],
 		];
 
 		/**
@@ -1037,22 +1092,23 @@ class Sanitize extends Admin_Pages {
 	 *
 	 * @since 2.2.8
 	 * @since 2.8.0 Method is now public.
+	 * @since 4.1.0 Can no longer fall back to its previous value--instead, it will fall back to a generic value.
 	 *
-	 * @param mixed $new_value Should be identical to any of the $person_organization values.
+	 * @param mixed $new_value Should ideally be a string 'person' or 'organization' passed in.
 	 * @return string title Knowledge type option
 	 */
 	public function s_knowledge_type( $new_value ) {
 
-		if ( 'person' === $new_value || 'organization' === $new_value )
-			return (string) $new_value;
+		if ( in_array( $new_value, [ 'person', 'organization' ], true ) )
+			return $new_value;
 
-		$previous = $this->get_option( 'knowledge_type' );
-
-		return (string) $previous;
+		return 'organization';
 	}
 
 	/**
 	 * Returns left or right, for the separator location.
+	 *
+	 * This method fetches the default option because it's conditional (LTR/RTL).
 	 *
 	 * @since 2.2.2
 	 * @since 2.8.0 Method is now public.
@@ -1062,13 +1118,13 @@ class Sanitize extends Admin_Pages {
 	 */
 	public function s_left_right( $new_value ) {
 
-		if ( 'left' === $new_value || 'right' === $new_value )
-			return (string) $new_value;
+		if ( in_array( $new_value, [ 'left', 'right' ], true ) )
+			return $new_value;
 
 		$previous = $this->get_option( 'title_location' );
 
 		//* Fallback if previous is also empty.
-		if ( empty( $previous ) )
+		if ( ! $previous )
 			$previous = $this->get_default_option( 'title_location' );
 
 		return (string) $previous;
@@ -1076,6 +1132,8 @@ class Sanitize extends Admin_Pages {
 
 	/**
 	 * Returns left or right, for the home separator location.
+	 *
+	 * This method fetches the default option because it's conditional (LTR/RTL).
 	 *
 	 * @since 2.5.2
 	 * @since 2.8.0 Method is now public.
@@ -1085,13 +1143,13 @@ class Sanitize extends Admin_Pages {
 	 */
 	public function s_left_right_home( $new_value ) {
 
-		if ( 'left' === $new_value || 'right' === $new_value )
-			return (string) $new_value;
+		if ( in_array( $new_value, [ 'left', 'right' ], true ) )
+			return $new_value;
 
 		$previous = $this->get_option( 'home_title_location' );
 
 		//* Fallback if previous is also empty.
-		if ( empty( $previous ) )
+		if ( ! $previous )
 			$previous = $this->get_default_option( 'home_title_location' );
 
 		return (string) $previous;
@@ -1173,12 +1231,56 @@ class Sanitize extends Admin_Pages {
 	/**
 	 * Sanitizes generic post type entries.
 	 *
+	 * Ideally, we want to check if the post type exists; however, some might be registered too late.
+	 *
 	 * @since 3.1.0
 	 *
 	 * @param mixed $new_values Should ideally be an array with post type name indexes, and 1 or 0 passed in.
 	 * @return array
 	 */
 	public function s_post_types( $new_values ) {
+
+		if ( ! is_array( $new_values ) ) return [];
+
+		foreach ( $new_values as $index => $value ) {
+			$new_values[ $index ] = $this->s_one_zero( $value );
+		}
+
+		return $new_values;
+	}
+
+	/**
+	 * Sanitizes disabled taxonomy entries.
+	 *
+	 * Filters out default taxonomies.
+	 *
+	 * @since 4.1.0
+	 *
+	 * @param mixed $new_values Should ideally be an array with taxonomy name indexes, and 1 or 0 passed in.
+	 * @return array
+	 */
+	public function s_disabled_taxonomies( $new_values ) {
+
+		if ( ! is_array( $new_values ) ) return [];
+
+		foreach ( $this->get_forced_supported_taxonomies() as $forced ) {
+			unset( $new_values[ $forced ] );
+		}
+
+		return $this->s_taxonomies( $new_values );
+	}
+
+	/**
+	 * Sanitizes generic taxonomy entries.
+	 *
+	 * Ideally, we want to check if the taxonomy exists; however, some might be registered too late.
+	 *
+	 * @since 4.1.0
+	 *
+	 * @param mixed $new_values Should ideally be an array with taxonomy name indexes, and 1 or 0 passed in.
+	 * @return array
+	 */
+	public function s_taxonomies( $new_values ) {
 
 		if ( ! is_array( $new_values ) ) return [];
 
@@ -1406,6 +1508,7 @@ class Sanitize extends Admin_Pages {
 
 		if ( strpos( $link, 'profile.php' ) ) {
 			//= Gets query parameters.
+			// FIXME why don't we use parse_url( $link, PHP_URL_QUERY );?
 			$q = strtok( substr( $link, strpos( $link, '?' ) ), '?' );
 			parse_str( $q, $r );
 			if ( isset( $r['id'] ) ) {
@@ -1564,7 +1667,8 @@ class Sanitize extends Admin_Pages {
 
 		$text = preg_replace( '/((-{2,3})(*SKIP)-|-)(?(2)(*FAIL))/', '&#x2d;', $text );
 
-		// This is faster than putting these alternative sequences in the `-|-` regex above.
+		// str_replace is faster than putting these alternative sequences in the `-|-` regex above.
+		// That'd be this: "/((?'h'-|&\#45;|\xe2\x80\x90){2,3}(*SKIP)(?&h)|(?&h))(?(h)(*FAIL))/u"
 		return str_replace( [ '&#45;', "\xe2\x80\x90" ], '&#x2d;', $text );
 	}
 
@@ -1749,6 +1853,7 @@ class Sanitize extends Admin_Pages {
 	 *              2. Now also clears `iframe` tags by default.
 	 *              3. Now no longer (for example) accidentally takes `link` tags when only `li` tags are set for stripping.
 	 *              4. Now performs a separate query for void elements; to prevent regex recursion.
+	 * @since 4.1.0 Now detects nested elements and preserves that content correctly--as if we'd pass through scrupulously beyond infinity.
 	 * @link https://www.w3schools.com/html/html_blocks.asp
 	 * @link https://html.spec.whatwg.org/multipage/syntax.html#void-elements
 	 *
@@ -1761,6 +1866,7 @@ class Sanitize extends Admin_Pages {
 	 *                                                       If not set or null, skip check.
 	 *                                                       If empty array, skips stripping; otherwise, use input.
 	 *                         'strip'   : @param bool       If set, strip_tags() is performed before returning the output.
+	 *                                                       Recommended always true, since Regex doesn't understand XML.
 	 *                      }
 	 *                      NOTE: WARNING The array values are forwarded to a regex without sanitization/quoting.
 	 *                      NOTE: Unlisted, script, and style tags will be stripped via PHP's `strip_tags()`. (togglable via `$args['strip']`)
@@ -1804,17 +1910,16 @@ class Sanitize extends Admin_Pages {
 			// fill = Normal, template, raw text, escapable text, foreign.
 			$fill_query = array_diff( $args[ $type ], $void );
 
-			$_replace = 'space' === $type ? ' $2 ' : ' ';
-
 			$_regex = sprintf( '<(%s)\b[^>]*?>', implode( '|', $args[ $type ] ) );
 
 			if ( $void_query ) {
 				$_regex = sprintf( '<(%s)\b[^>]*?>', implode( '|', $void_query ) );
-				$input  = preg_replace( "/$_regex/si", $_replace, $input );
+				$input  = preg_replace( "/$_regex/si", '', $input );
 			}
 			if ( $fill_query ) {
-				$_regex = sprintf( '<(%s)\b[^>]*?>(.*?<\/\1>)?', implode( '|', $fill_query ) );
-				$input  = preg_replace( "/$_regex/si", $_replace, $input );
+				$_regex   = sprintf( '<(%s)\b[^>]*>([^<]*)(<\/\1>)?|(<\/?(?1)>)', implode( '|', $fill_query ) );
+				$_replace = 'space' === $type ? ' $2 ' : ' ';
+				$input    = preg_replace( "/$_regex/si", $_replace, $input );
 			}
 		}
 
@@ -1869,6 +1974,8 @@ class Sanitize extends Admin_Pages {
 		 * since we don't perform a live MIME-test.
 		 *
 		 * Tested with Facebook; they ignore them too. There's no documentation available.
+		 * TODO Should we even test for this here, or at the image generators' type?
+		 * It seems, however, that all services we want to communicate with ignore these types, anyway.
 		 */
 		if ( in_array(
 			strtolower( strtok( pathinfo( $url, PATHINFO_EXTENSION ), '?' ) ),
@@ -1876,13 +1983,14 @@ class Sanitize extends Admin_Pages {
 			true
 		) ) return $defaults;
 
-		$width  = (int) $width;
-		$height = (int) $height;
+		$width  = \absint( $width );
+		$height = \absint( $height );
 
 		if ( ! $width || ! $height )
 			$width = $height = 0;
 
 		if ( $width > 4096 || $height > 4096 ) {
+			// FIXME Why do we assume there's an $id available here, because we only know $width/$height when there's an $id?
 			$new_image = $this->get_largest_acceptable_image_src( $id, 4096 );
 			$url       = $new_image ? $this->s_url_relative_to_current_scheme( $new_image[0] ) : '';
 
@@ -1935,5 +2043,34 @@ class Sanitize extends Admin_Pages {
 				array_unique( array_filter( array_column( $cleaned_details, 'url' ) ) )
 			)
 		);
+	}
+
+	/**
+	 * Sets string value and returns boolean if it has any content.
+	 *
+	 * Best used in an or loop.
+	 * e.g.         set_and_strlen( $title, 'one' ) || set_and_strlen( $title, 'two' );
+	 * or (slower): set_and_strlen( $title, [ 'one', 'two', ...[value] ] );
+	 *
+	 * @since 4.1.0
+	 * @ignore unused. untested. Creates super-smelly code, but fixes bugs revolving around input '0' or ' '.
+	 *         We'd prefer a native PHP "string has length" comparison operator.
+	 *         I don't believe any language has this. Then again, many languages don't see '0' as false.
+	 *
+	 * @param variable        $var   The variable to set. Passed by reference.
+	 * @param string|string[] $value The value to set, or array of values.
+	 * @return bool True if content has any length.
+	 */
+	protected function set_and_strlen( &$var, $value = '' ) {
+
+		if ( is_array( $value ) ) {
+			foreach ( $value as $v ) {
+				if ( $this->set_and_strlen( $var, $v ) )
+					return true;
+			}
+			return false;
+		}
+
+		return is_string( $var ) && strlen( trim( $var ) );
 	}
 }

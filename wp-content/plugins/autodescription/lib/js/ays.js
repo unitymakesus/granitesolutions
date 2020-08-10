@@ -293,7 +293,7 @@ window.tsfAys = function( $ ) {
 			'click'
 		);
 
-		$( document ).trigger( 'tsf-registered-ays-listeners' );
+		document.dispatchEvent( new CustomEvent( 'tsf-registered-ays-listeners' ) );
 
 		_loadedListeners = true;
 	}
@@ -336,7 +336,7 @@ window.tsfAys = function( $ ) {
 		 * @return {undefined}
 		 */
 		load: () => {
-			$( document.body ).on( 'tsf-ready', _readyAys );
+			document.body.addEventListener( 'tsf-ready', _readyAys );
 		}
 	}, {
 		reset,
@@ -351,4 +351,4 @@ window.tsfAys = function( $ ) {
 		l10n
 	} );
 }( jQuery );
-jQuery( window.tsfAys.load );
+window.tsfAys.load();

@@ -2,10 +2,17 @@
 /**
  * @package The_SEO_Framework\Bootstrap\Install
  *
- * @NOTE This file MUST be written according to WordPress' minimum PHP requirements.
+ * @NOTE This file MUST be written according to WordPress's minimum PHP requirements.
  *       Which is PHP 5.2.
  * When we only support WordPress 5.2+, it'll be PHP 5.6.
  * When we only support WordPress 5.4?+, it'll be PHP 7.1.
+ *
+ * This file can be removed when we only support WordPress 5.2 or later. However, their
+ * onboarding message isn't as useful, informative, or even as friendly.
+ *
+ * To use that, we need to add these plugin headers in the plugin's main PHP file:
+ * Requires PHP: 5.6.5
+ * Requires at least: 5.1
  */
 
 defined( 'THE_SEO_FRAMEWORK_DB_VERSION' ) or die;
@@ -72,7 +79,7 @@ function the_seo_framework_pre_boot_test() {
 
 	$requirements = array(
 		'php' => 50600,
-		'wp'  => '4.9-dev',
+		'wp'  => '5.1-dev',
 	);
 
 	// phpcs:disable, Generic.Formatting.MultipleStatementAlignment, WordPress.WhiteSpace.PrecisionAlignment
@@ -118,7 +125,7 @@ function the_seo_framework_pre_boot_test() {
 
 		case 2:
 			//* WordPress requirements not met.
-			$requirement = 'WordPress 4.9 or later';
+			$requirement = 'WordPress 5.1 or later';
 			$issue       = 'WordPress version';
 			$version     = $GLOBALS['wp_version'];
 			$subtitle    = 'WordPress Requirements';

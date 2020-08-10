@@ -42,16 +42,6 @@ define( 'THE_SEO_FRAMEWORK_PRESENT', true );
 define( 'THE_SEO_FRAMEWORK_SITE_OPTIONS', (string) \apply_filters( 'the_seo_framework_site_options', 'autodescription-site-settings' ) );
 
 /**
- * The plugin network options.
- *
- * Unused in our code.
- *
- * @since 2.2.2
- * @param string THE_SEO_FRAMEWORK_NETWORK_OPTIONS
- */
-define( 'THE_SEO_FRAMEWORK_NETWORK_OPTIONS', (string) \apply_filters( 'the_seo_framework_network_settings', 'autodescription-network-settings' ) );
-
-/**
  * Plugin term options key.
  *
  * @since 2.7.0
@@ -138,6 +128,34 @@ define( 'THE_SEO_FRAMEWORK_DIR_PATH_FUNCT', THE_SEO_FRAMEWORK_DIR_PATH . 'inc' .
  * @since 2.8.0
  */
 define( 'THE_SEO_FRAMEWORK_DIR_PATH_COMPAT', THE_SEO_FRAMEWORK_DIR_PATH . 'inc' . DIRECTORY_SEPARATOR . 'compat' . DIRECTORY_SEPARATOR );
+
+/**
+ * The user capability required to access the extension overview page.
+ *
+ * == WARNING ==
+ * When this constant is used incorrectly, you can expose your site to
+ * unforeseen security risks. We assume the role supplied here is lower than the webmaster's;
+ * for example, in a WPMU environment. However, proceed with caution.
+ *
+ * @since 4.1.0
+ * @param string
+ */
+defined( 'THE_SEO_FRAMEWORK_SETTINGS_CAP' )
+	or define( 'THE_SEO_FRAMEWORK_SETTINGS_CAP', 'manage_options' );
+
+/**
+ * The user capability required to access the extension overview page.
+ *
+ * == WARNING ==
+ * When this constant is used incorrectly, you can expose your site to
+ * unforeseen security risks. We assume the role supplied here is lower than the webmaster's;
+ * for example, in a WPMU environment. However, proceed with caution.
+ *
+ * @since 4.1.0
+ * @param string
+ */
+defined( 'THE_SEO_FRAMEWORK_AUTHOR_INFO_CAP' )
+	or define( 'THE_SEO_FRAMEWORK_AUTHOR_INFO_CAP', 'edit_posts' );
 
 /**
  * Robots setting, ignore protection.

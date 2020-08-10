@@ -208,7 +208,7 @@ class Generate_Ldjson extends Generate_Image {
 		];
 
 		//= Building
-		$key = 'WebSite';
+		$key = 'website';
 		$this->build_json_data( $key, $data );
 		$json = $this->receive_json_data( $key );
 
@@ -227,7 +227,7 @@ class Generate_Ldjson extends Generate_Image {
 	 */
 	public function get_ld_json_links() {
 
-		if ( false === $this->enable_ld_json_knowledge() )
+		if ( ! $this->enable_ld_json_knowledge() )
 			return '';
 
 		$knowledge_type = $this->get_option( 'knowledge_type' );
@@ -281,7 +281,7 @@ class Generate_Ldjson extends Generate_Image {
 			];
 		}
 
-		$key = 'Links';
+		$key = 'links';
 		$this->build_json_data( $key, $data );
 		$json = $this->receive_json_data( $key );
 
@@ -388,14 +388,18 @@ class Generate_Ldjson extends Generate_Image {
 
 		$position = 1; // 0 is the homepage.
 		foreach ( $parents as $parent_id ) {
-
 			++$position;
 
+			$_generator_args = [
+				'id'       => $parent_id,
+				'taxonomy' => '',
+			];
+
 			if ( $this->ld_json_breadcrumbs_use_seo_title() ) {
-				$parent_name = $this->get_filtered_raw_custom_field_title( [ 'id' => $parent_id ] )
-							?: $this->get_filtered_raw_generated_title( [ 'id' => $parent_id ] );
+				$parent_name = $this->get_filtered_raw_custom_field_title( $_generator_args )
+							?: $this->get_filtered_raw_generated_title( $_generator_args );
 			} else {
-				$parent_name = $this->get_filtered_raw_generated_title( [ 'id' => $parent_id ] );
+				$parent_name = $this->get_filtered_raw_generated_title( $_generator_args );
 			}
 
 			$crumb = [
@@ -405,7 +409,7 @@ class Generate_Ldjson extends Generate_Image {
 					'@id'  => $this->get_schema_url_id(
 						'breadcrumb',
 						'create',
-						[ 'id' => $parent_id ]
+						$_generator_args
 					),
 					'name' => $this->escape_title( $parent_name ),
 				],
@@ -667,13 +671,13 @@ class Generate_Ldjson extends Generate_Image {
 
 	/**
 	 * Generates homepage LD+JSON breadcrumb.
+	 * Memoizes the return value.
 	 *
 	 * @since 2.9.3
 	 * @since 3.2.2 : 1. The title now works for the homepage as blog.
 	 *                2. The image has been disabled for the homepage as blog.
 	 *                   i. I couldn't fix it without evading the API, which is bad.
 	 * @since 4.0.0 Removed the image input requirement.
-	 * @staticvar array $crumb
 	 *
 	 * @return array The HomePage crumb entry.
 	 */
@@ -683,12 +687,15 @@ class Generate_Ldjson extends Generate_Image {
 		if ( isset( $crumb ) )
 			return $crumb;
 
-		$front_id = $this->get_the_front_page_ID();
+		$_generator_args = [
+			'id'       => $this->get_the_front_page_ID(),
+			'taxonomy' => '',
+		];
 
 		if ( $this->ld_json_breadcrumbs_use_seo_title() ) {
-			$title = $this->get_filtered_raw_custom_field_title( [ 'id' => $front_id ] ) ?: $this->get_blogname();
+			$title = $this->get_filtered_raw_custom_field_title( $_generator_args ) ?: $this->get_blogname();
 		} else {
-			$title = $this->get_filtered_raw_generated_title( [ 'id' => $front_id ] ) ?: $this->get_blogname();
+			$title = $this->get_filtered_raw_generated_title( $_generator_args ) ?: $this->get_blogname();
 		}
 
 		$crumb = [
@@ -705,11 +712,11 @@ class Generate_Ldjson extends Generate_Image {
 
 	/**
 	 * Generates current Page/Post LD+JSON breadcrumb.
+	 * Memoizes the return value.
 	 *
 	 * @since 2.9.3
 	 * @since 3.0.0 Removed @id output to allow for more same-page schema items.
 	 * @since 4.0.0 Removed the image input requirement.
-	 * @staticvar array $crumb
 	 *
 	 * @param int $position The previous crumb position.
 	 * @return array The Current Page/Post crumb entry.
@@ -725,11 +732,15 @@ class Generate_Ldjson extends Generate_Image {
 			return $crumb;
 		}
 
-		$post_id = $this->get_the_real_ID();
+		$post_id         = $this->get_the_real_ID();
+		$_generator_args = [
+			'id'       => $post_id,
+			'taxonomy' => '',
+		];
 
 		// phpcs:disable, WordPress.WhiteSpace.PrecisionAlignment
 		if ( $this->ld_json_breadcrumbs_use_seo_title() ) {
-			$name = $this->get_filtered_raw_custom_field_title( [ 'id' => $post_id ] )
+			$name = $this->get_filtered_raw_custom_field_title( $_generator_args )
 				 ?: $this->get_generated_single_post_title( $post_id )
 				 ?: $this->get_static_untitled_title();
 		} else {
@@ -752,10 +763,10 @@ class Generate_Ldjson extends Generate_Image {
 
 	/**
 	 * Creates LD+JSON Breadcrumb script from items.
+	 * Memoizes the iterations of this method, to create a key for the builder.
 	 *
 	 * @since 2.9.0
-	 * @since 2.9.3 : Rewritten to conform to the new generator.
-	 * @staticvar int $it The iteration count for script generation cache busting.
+	 * @since 2.9.3 Rewritten to conform to the new generator.
 	 *
 	 * @param array $items The LD+JSON breadcrumb items.
 	 * @return string The LD+JSON Breadcrumb script.
@@ -767,7 +778,7 @@ class Generate_Ldjson extends Generate_Image {
 
 		static $it = 0;
 
-		$key = 'Breadcrumbs_' . $it;
+		$key = 'breadcrumbs_' . $it;
 
 		$data = [
 			'@context'        => 'https://schema.org',
@@ -821,9 +832,9 @@ class Generate_Ldjson extends Generate_Image {
 
 	/**
 	 * Determines whether to use the SEO title or only the fallback page title.
+	 * Memoizes the return value.
 	 *
 	 * @since 2.9.0
-	 * @staticvar bool $cache
 	 *
 	 * @return bool
 	 */
@@ -840,9 +851,9 @@ class Generate_Ldjson extends Generate_Image {
 
 	/**
 	 * Determines if breadcrumbs scripts are enabled.
+	 * Memoizes the return value.
 	 *
 	 * @since 2.6.0
-	 * @staticvar bool $cache
 	 *
 	 * @return bool
 	 */
@@ -865,9 +876,9 @@ class Generate_Ldjson extends Generate_Image {
 
 	/**
 	 * Determines if searchbox script is enabled.
+	 * Memoizes the return value.
 	 *
 	 * @since 2.6.0
-	 * @staticvar bool $cache
 	 *
 	 * @return bool
 	 */
@@ -890,9 +901,9 @@ class Generate_Ldjson extends Generate_Image {
 
 	/**
 	 * Determines if Knowledge Graph Script is enabled.
+	 * Memoizes the return value.
 	 *
 	 * @since 2.6.5
-	 * @staticvar bool $cache
 	 *
 	 * @return bool
 	 */

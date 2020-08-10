@@ -79,18 +79,32 @@ switch ( $instance ) :
 		endif;
 
 		if ( $this->is_static_frontpage( $post_id ) ) {
-			// When the homepage title is set, we can safely get the custom field.
-			// phpcs:disable, WordPress.WhiteSpace.PrecisionAlignment
-			$title_placeholder = $this->escape_title( $this->get_option( 'homepage_title' ) )
-							   ? $this->get_custom_field_title( $_generator_args )
-							   : $this->get_generated_title( $_generator_args );
-			// phpcs:enable, WordPress.WhiteSpace.PrecisionAlignment
+			$_has_home_title = (bool) $this->escape_title( $this->get_option( 'homepage_title' ) );
+			$_has_home_desc  = (bool) $this->escape_title( $this->get_option( 'homepage_description' ) );
 
-			$description_placeholder = $this->escape_description( $this->get_option( 'homepage_description' ) )
-									?: $this->get_generated_description( $_generator_args );
+			// phpcs:disable, WordPress.WhiteSpace.PrecisionAlignment
+			// When the homepage title is set, we can safely get the custom field.
+			$default_title     = $_has_home_title
+							   ? $this->get_custom_field_title( $_generator_args )
+							   : $this->get_filtered_raw_generated_title( $_generator_args );
+			$title_ref_locked  = $_has_home_title;
+			$title_additions   = $this->get_home_title_additions();
+			$title_seplocation = $this->get_home_title_seplocation();
+
+			// When the homepage description is set, we can safely get the custom field.
+			$default_description    = $_has_home_desc
+									? $this->get_description_from_custom_field( $_generator_args )
+									: $this->get_generated_description( $_generator_args );
+			$description_ref_locked = $_has_home_desc;
+			// phpcs:enable, WordPress.WhiteSpace.PrecisionAlignment
 		} else {
-			$title_placeholder       = $this->get_generated_title( $_generator_args );
-			$description_placeholder = $this->get_generated_description( $_generator_args );
+			$default_title     = $this->get_filtered_raw_generated_title( $_generator_args );
+			$title_ref_locked  = false;
+			$title_additions   = $this->get_blogname();
+			$title_seplocation = $this->get_title_seplocation();
+
+			$default_description    = $this->get_generated_description( $_generator_args );
+			$description_ref_locked = false;
 		}
 
 		?>
@@ -117,9 +131,25 @@ switch ( $instance ) :
 				</div>
 			</div>
 			<div class="tsf-flex-setting-input tsf-flex">
-				<div id="tsf-title-wrap">
-					<input class="large-text" type="text" name="autodescription[_genesis_title]" id="autodescription_title" placeholder="<?php echo esc_attr( $title_placeholder ); ?>" value="<?php echo $this->esc_attr_preserve_amp( $this->get_post_meta_item( '_genesis_title', $post_id ) ); ?>" autocomplete=off />
-					<?php $this->output_js_title_elements(); ?>
+				<div class=tsf-title-wrap>
+					<input class="large-text" type="text" name="autodescription[_genesis_title]" id="autodescription_title" value="<?php echo $this->esc_attr_preserve_amp( $this->get_post_meta_item( '_genesis_title', $post_id ) ); ?>" autocomplete=off />
+					<?php
+					$this->output_js_title_elements(); // legacy
+					$this->output_js_title_data(
+						'autodescription_title',
+						[
+							'state' => [
+								'refTitleLocked'    => $title_ref_locked,
+								'defaultTitle'      => $default_title,
+								'addAdditions'      => $this->use_title_branding( $_generator_args ),
+								'useSocialTagline'  => $this->use_title_branding( $_generator_args, true ),
+								'additionValue'     => $this->s_title_raw( $title_additions ),
+								'additionPlacement' => 'left' === $title_seplocation ? 'before' : 'after',
+								'hasLegacy'         => true,
+							],
+						]
+					);
+					?>
 				</div>
 
 				<div class="tsf-checkbox-wrapper">
@@ -131,14 +161,14 @@ switch ( $instance ) :
 							<input type="checkbox" id="autodescription_title_no_blogname" value="1" <?php checked( $this->get_post_meta_item( '_tsf_title_no_blogname' ) ); ?> disabled />
 							<input type="hidden" name="autodescription[_tsf_title_no_blogname]" value="1" <?php checked( $this->get_post_meta_item( '_tsf_title_no_blogname' ) ); ?> />
 							<?php
-							esc_html_e( 'Remove the blog name?', 'autodescription' );
+							esc_html_e( 'Remove the site title?', 'autodescription' );
 							echo ' ';
-							$this->make_info( __( 'This option must be managed on the SEO Settings page for the homepage.', 'autodescription' ) );
+							$this->make_info( __( 'For the homepage, this option must be managed on the SEO Settings page.', 'autodescription' ) );
 						else :
 							?>
 							<input type="checkbox" name="autodescription[_tsf_title_no_blogname]" id="autodescription_title_no_blogname" value="1" <?php checked( $this->get_post_meta_item( '_tsf_title_no_blogname' ) ); ?> />
 							<?php
-							esc_html_e( 'Remove the blog name?', 'autodescription' );
+							esc_html_e( 'Remove the site title?', 'autodescription' );
 							echo ' ';
 							$this->make_info( __( 'Use this when you want to rearrange the title parts manually.', 'autodescription' ) );
 						endif;
@@ -171,8 +201,20 @@ switch ( $instance ) :
 				</div>
 			</div>
 			<div class="tsf-flex-setting-input tsf-flex">
-				<textarea class="large-text" name="autodescription[_genesis_description]" id="autodescription_description" placeholder="<?php echo esc_attr( $description_placeholder ); ?>" rows="4" cols="4" autocomplete=off><?php echo $this->esc_attr_preserve_amp( $this->get_post_meta_item( '_genesis_description', $post_id ) ); ?></textarea>
-				<?php $this->output_js_description_elements(); ?>
+				<textarea class="large-text" name="autodescription[_genesis_description]" id="autodescription_description" rows="4" cols="4" autocomplete=off><?php echo $this->esc_attr_preserve_amp( $this->get_post_meta_item( '_genesis_description', $post_id ) ); ?></textarea>
+				<?php
+				$this->output_js_description_elements(); // legacy
+				$this->output_js_description_data(
+					'autodescription_description',
+					[
+						'state' => [
+							'defaultDescription'   => $default_description,
+							'refDescriptionLocked' => $description_ref_locked,
+							'hasLegacy'            => true,
+						],
+					]
+				);
+				?>
 			</div>
 		</div>
 		<?php
@@ -258,7 +300,7 @@ switch ( $instance ) :
 						);
 						printf(
 							'<div class=tsf-flex-setting-label-sub-item><span class="description">%s</span></div>',
-							esc_html__( 'Note: A non-default selection will overwrite the global homepage settings.', 'autodescription' )
+							esc_html__( 'Note: A non-default selection here will overwrite the global homepage SEO settings.', 'autodescription' )
 						);
 					}
 					?>
@@ -492,7 +534,7 @@ switch ( $instance ) :
 				<input type="hidden" name="autodescription[_social_image_id]" id="autodescription_socialimage-id" value="<?php echo absint( $this->get_post_meta_item( '_social_image_id' ) ); ?>" disabled class="tsf-enable-media-if-js" />
 				<div class="hide-if-no-tsf-js tsf-social-image-buttons">
 					<?php
-					// phpcs:ignore, WordPress.Security.EscapeOutput -- Already escaped.
+					// phpcs:ignore, WordPress.Security.EscapeOutput.OutputNotEscaped -- already escaped. (phpcs is broken here?)
 					echo $this->get_social_image_uploader_form( 'autodescription_socialimage' );
 					?>
 				</div>

@@ -90,6 +90,7 @@ class Admin_Init extends Init {
 	 *
 	 * @since 3.1.0
 	 * @since 4.0.0 Now discerns autoloading between taxonomies and singular types.
+	 * @since 4.1.0 Now invokes autoloading when persistent scripts are enqueued (regardless of validity).
 	 * @access private
 	 *
 	 * @param string|null $hook The current page hook.
@@ -134,6 +135,9 @@ class Admin_Init extends Init {
 
 			if ( in_array( $hook, $enqueue_hooks, true ) )
 				$autoenqueue = true;
+
+			if ( $this->get_static_cache( 'persistent_notices', [] ) )
+				$autoenqueue = true;
 		}
 
 		$autoenqueue and $this->init_admin_scripts();
@@ -159,6 +163,8 @@ class Admin_Init extends Init {
 	 * Returns the title and description input guideline table, for
 	 * (Google) search, Open Graph, and Twitter.
 	 *
+	 * Memoizes the output, so the return filter will run only once.
+	 *
 	 * NB: Some scripts have wide characters. These are recognized by Google, and have been adjusted for in the chactacter
 	 * guidelines. German is a special Case, where we account for the Capitalization of Nouns.
 	 *
@@ -168,7 +174,6 @@ class Admin_Init extends Init {
 	 * @since 3.1.0
 	 * @since 4.0.0 1. Now gives different values for various WordPress locales.
 	 *              2. Added $locale input parameter.
-	 * @staticvar array $guidelines
 	 * @TODO Consider splitting up search into Google, Bing, etc., as we might
 	 *       want users to set their preferred search engine. Now, these engines
 	 *       are barely any different.
@@ -425,7 +430,7 @@ class Admin_Init extends Init {
 		$headers_list = headers_list();
 		$location     = sprintf( 'Location: %s', \wp_sanitize_redirect( $target ) );
 
-		//* Test if WordPress' redirect header is sent. Bail if true.
+		//* Test if WordPress's redirect header is sent. Bail if true.
 		if ( in_array( $location, $headers_list, true ) )
 			return;
 
@@ -442,6 +447,200 @@ class Admin_Init extends Init {
 			)
 		);
 		// phpcs:enable, WordPress.Security.EscapeOutput
+	}
+
+	/**
+	 * Registers dismissible persistent notice, that'll respawn during page load until dismissed or otherwise expired.
+	 *
+	 * @since 4.1.0
+	 * @uses $this->generate_dismissible_persistent_notice()
+	 *
+	 * @param string $message    The notice message. Expected to be escaped if $escape is false.
+	 *                           When the message contains HTML, it must start with a <p> tag,
+	 *                           or it will be added for you--regardless of proper semantics.
+	 * @param string $key        The notice key. Must be unique--prevents double-registering of the notice, and allows for
+	 *                           deregistering of the notice.
+	 * @param array  $args       : {
+	 *    'type'   => string Optional. The notification type. Default 'updated'.
+	 *    'icon'   => bool   Optional. Whether to enable icon. Default true.
+	 *    'escape' => bool   Optional. Whether to escape the $message. Default true.
+	 * }
+	 * @param array  $conditions : {
+	 *     'capability'   => string Required. The user capability required for the notice to display. Defaults to settings capability.
+	 *     'screens'      => array  Optional. The screen bases the notice may be displayed on. When left empty, it'll output on any page.
+	 *     'excl_screens' => array  Optional. The screen bases the notice may NOT be displayed on. When left empty, only `screens` applies.
+	 *     'user'         => int    Optional. The user ID to display the notice for. Capability will not be ignored.
+	 *     'count'        => int    Optional. The number of times the persistent notice may appear (for everyone allowed to see it).
+	 *                              Set to -1 for unlimited. When -1, the notice must be removed from display manually.
+	 *     'timeout'      => int    Optional. The number of seconds the notice should remain valid for display. Set to -1 to disable check.
+	 * }
+	 */
+	public function register_dismissible_persistent_notice( $message, $key, array $args = [], array $conditions = [] ) {
+
+		// We made this mistake ourselves. Let's test against it. Can't wait for PHP 7.1+ support.
+		if ( ! is_scalar( $key ) || ! strlen( $key ) ) return;
+
+		// Sanitize the key so that HTML, JS, and PHP can communicate easily via it.
+		$key = \sanitize_key( $key );
+
+		$args = array_merge(
+			[
+				'type'   => 'updated',
+				'icon'   => true,
+				'escape' => true,
+			],
+			$args
+		);
+
+		$conditions = array_merge(
+			[
+				'screens'      => [],
+				'excl_screens' => [],
+				'capability'   => $this->get_settings_capability(),
+				'user'         => 0,
+				'count'        => 1,
+				'timeout'      => -1,
+			],
+			$conditions
+		);
+
+		// Required key for security.
+		if ( ! $conditions['capability'] ) return;
+
+		// Add current time to timeout, so we can compare against it later.
+		if ( $conditions['timeout'] > -1 )
+			$conditions['timeout'] += time();
+
+		$notices         = $this->get_static_cache( 'persistent_notices', [] );
+		$notices[ $key ] = compact( 'message', 'args', 'conditions' );
+
+		$this->update_static_cache( 'persistent_notices', $notices );
+	}
+
+	/**
+	 * Lowers the persistent notice display count.
+	 * When the threshold is reached, the notice is deleted.
+	 *
+	 * @since 4.1.0
+	 *
+	 * @param string $key   The notice key.
+	 * @param int    $count The number of counts the notice has left. Passed by reference.
+	 *                      When -1 (permanent notice), nothing happens.
+	 */
+	public function count_down_persistent_notice( $key, &$count ) {
+
+		$_count_before = $count;
+
+		if ( $count > 0 )
+			--$count;
+
+		if ( ! $count ) {
+			$this->clear_persistent_notice( $key );
+		} elseif ( $_count_before !== $count ) {
+			$notices = $this->get_static_cache( 'persistent_notices' );
+			if ( isset( $notices[ $key ]['conditions']['count'] ) ) {
+				$notices[ $key ]['conditions']['count'] = $count;
+				$this->update_static_cache( 'persistent_notices', $notices );
+			} else {
+				// Notice didn't conform. Remove it.
+				$this->clear_persistent_notice( $key );
+			}
+		}
+	}
+
+	/**
+	 * Clears a persistent notice by key.
+	 *
+	 * @since 4.1.0
+	 *
+	 * @param string $key The notice key.
+	 * @return bool True on success, false on failure.
+	 */
+	public function clear_persistent_notice( $key ) {
+
+		$notices = $this->get_static_cache( 'persistent_notices', [] );
+		unset( $notices[ $key ] );
+
+		return $this->update_static_cache( 'persistent_notices', $notices );
+	}
+
+	/**
+	 * Clears all registered persistent notices. Useful after upgrade.
+	 *
+	 * @since 4.1.0
+	 *
+	 * @return bool True on success, false on failure.
+	 */
+	public function clear_all_persistent_notices() {
+		return $this->update_static_cache( 'persistent_notices', [] );
+	}
+
+	/**
+	 * Returns the snaitized notice action key.
+	 *
+	 * @since 4.1.0
+	 *
+	 * @param string $key The notice key.
+	 * @return string The sanitized nonce action.
+	 */
+	protected function get_dismiss_notice_nonce_action( $key ) {
+		return \sanitize_key( "tsf-notice-nonce-$key" );
+	}
+
+	/**
+	 * Clears persistent notice on user request (clicked Dismiss icon) via the no-JS form.
+	 *
+	 * @since 4.1.0
+	 * Security check OK.
+	 */
+	public function _dismiss_notice() {
+
+		// phpcs:ignore, WordPress.Security.NonceVerification.Missing -- We require the POST data to find locally stored nonces.
+		$key = isset( $_POST['tsf-notice-submit'] ) ? $_POST['tsf-notice-submit'] : '';
+		if ( ! $key ) return;
+
+		$notices = $this->get_static_cache( 'persistent_notices', [] );
+		// Notice was deleted already elsewhere, or key was faulty. Either way, ignore--should be self-resolving.
+		if ( empty( $notices[ $key ]['conditions']['capability'] ) ) return;
+
+		// phpcs:ignore, WordPress.Security.NonceVerification.Missing -- We require the POST data to find locally stored nonces.
+		$nonce = isset( $_POST['tsf-notice-nonce'] ) ? $_POST['tsf-notice-nonce'] : '';
+
+		if ( ! \current_user_can( $notices[ $key ]['conditions']['capability'] )
+		|| ! \wp_verify_nonce( $nonce, $this->get_dismiss_notice_nonce_action( $key ) ) ) {
+			\wp_die( -1, 403 );
+		}
+
+		$this->clear_persistent_notice( $key );
+	}
+
+	/**
+	 * Clears persistent notice on user request (clicked Dismiss icon) via AJAX.
+	 *
+	 * @since 4.1.0
+	 * Security check OK.
+	 */
+	public function _wp_ajax_dismiss_notice() {
+
+		// phpcs:ignore, WordPress.Security.NonceVerification.Missing -- We require the POST data to find locally stored nonces.
+		$key = isset( $_POST['tsf-dismiss-key'] ) ? $_POST['tsf-dismiss-key'] : '';
+		if ( ! $key ) {
+			\wp_send_json_error( null, 400 );
+		}
+
+		$notices = $this->get_static_cache( 'persistent_notices', [] );
+		if ( empty( $notices[ $key ]['conditions']['capability'] ) ) {
+			// Notice was deleted already elsewhere, or key was faulty. Either way, ignore--should be self-resolving.
+			\wp_send_json_error( null, 409 );
+		}
+
+		if ( ! \current_user_can( $notices[ $key ]['conditions']['capability'] )
+		|| ! \check_ajax_referer( $this->get_dismiss_notice_nonce_action( $key ), 'tsf-dismiss-nonce', false ) ) {
+			\wp_die( -1, 403 );
+		}
+
+		$this->clear_persistent_notice( $key );
+		\wp_send_json_success( null, 200 );
 	}
 
 	/**
@@ -580,7 +779,7 @@ class Admin_Init extends Init {
 							break;
 					}
 
-					$data[ $g ] = Bridges\Scripts::decode_entities( $this->s_description( $data[ $g ] ) );
+					$data[ $g ] = $this->s_description( $data[ $g ] );
 					break;
 
 				case 'imageurl':

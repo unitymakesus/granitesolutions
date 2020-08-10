@@ -3,7 +3,7 @@ Contributors: iqcomputing
 Tags: contact-form-7, contact-form-7-recaptcha, recaptcha, spam
 Requires at least: 4.9
 Tested up to: 5.4
-Stable tag: 1.2.6
+Stable tag: 1.2.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -60,12 +60,11 @@ Should the above be correct, at this point it's time to open a support thread fo
 
 == Changelog ==
 
+= 1.2.7 (2020-06-15) =
+* Rearranged the plugin method calls so that inclusion of files is last.
+
 = 1.2.6 (2020-04-22) =
-* Updated reCpatcha Javascript to use the passed event to find the given form. 
+* Updated reCpatcha Javascript to use the passed event to find the given form.
 
 = 1.2.5 (2020-04-20) =
 * Updated WordPress Version to denote support for 5.4+
-
-= 1.2.4 (2019-12-23) =
-* Added extra failsafe should CF7 reCaptcha not be removed.
-* Added PHP constant checks against the Contact Form 7 consts. Future proofing.

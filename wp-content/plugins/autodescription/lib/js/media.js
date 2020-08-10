@@ -94,8 +94,8 @@ window.tsfMedia = function( $ ) {
 			// inputURL = $button.data( 'input-url' ),
 			inputType = $button.data( 'input-type' ),
 			// s_inputURL = escapeKey( inputURL ),
-			inputID = $button.data( 'input-id' ),
-			// s_inputID = escapeKey( inputURL ),
+			inputId = $button.data( 'input-id' ),
+			// s_inputId = escapeKey( inputURL ),
 			frame; // Backbone.js var.
 
 		event.preventDefault();
@@ -158,8 +158,8 @@ window.tsfMedia = function( $ ) {
 				// h = croppedImage.height;
 
 			// Send the attachment id to our hidden input. URL to explicit output.
-			$( '#' + inputID + '-url' ).val( url ).trigger( 'change' );
-			$( '#' + inputID + '-id' ).val( attachmentId ).trigger( 'change' );
+			$( '#' + inputId + '-url' ).val( url ).trigger( 'change' );
+			$( '#' + inputId + '-id' ).val( attachmentId ).trigger( 'change' );
 		};
 		frame.off( 'cropped', onCropped );
 		frame.on( 'cropped', onCropped );
@@ -171,22 +171,18 @@ window.tsfMedia = function( $ ) {
 				// h = selection.get( 'height' );
 
 			// Send the attachment id to our hidden input. URL to explicit output.
-			$( '#' + inputID + '-url' ).val( url ).trigger( 'change' );
-			$( '#' + inputID + '-id' ).val( attachmentId ).trigger( 'change' );
+			$( '#' + inputId + '-url' ).val( url ).trigger( 'change' );
+			$( '#' + inputId + '-id' ).val( attachmentId ).trigger( 'change' );
 		};
 		frame.off( 'skippedcrop', onSkippedCrop );
 		frame.on( 'skippedcrop', onSkippedCrop );
 
 		const onDone = function( imageSelection ) {
-			$( '#' + inputID + '-select' ).text( l10n.labels[ inputType ].imgChange );
-			$( '#' + inputID + '-url' ).prop( 'readonly', true ).css( 'opacity', 0 ).animate(
-				{ 'opacity' : 1 },
-				{ 'queue' : true, 'duration' : 1000 },
-				'swing'
-			);
+			$( '#' + inputId + '-select' ).text( l10n.labels[ inputType ].imgChange );
+			$( '#' + inputId + '-url' ).prop( 'readonly', true );
 
-			_appendRemoveButton( $button, { id: inputID, type: inputType }, true );
-			tsfAys && tsfAys.registerChange();
+			_appendRemoveButton( $button, { id: inputId, type: inputType }, true );
+			'tsfAys' in window && tsfAys.registerChange();
 		};
 		frame.off( 'skippedcrop cropped', onDone );
 		frame.on( 'skippedcrop cropped', onDone );
@@ -246,35 +242,30 @@ window.tsfMedia = function( $ ) {
 	 */
 	const _removeEditorImage = ( event ) => {
 
-		let inputID   = $( event.target ).data( 'input-id' ),
+		let inputId   = $( event.target ).data( 'input-id' ),
 			inputType = $( event.target ).data( 'input-type' );
 
-		if ( $( '#' + inputID + '-select' ).prop( 'disabled' ) )
+		if ( $( '#' + inputId + '-select' ).prop( 'disabled' ) )
 			return;
 
-		$( '#' + inputID + '-select' ).addClass( 'disabled' ).prop( 'disabled', true );
+		$( '#' + inputId + '-select' ).addClass( 'disabled' ).prop( 'disabled', true );
 
-		//* event.target.id === '#' + inputID + '-remove'.
-		$( '#' + inputID + '-remove' ).addClass( 'disabled' ).prop( 'disabled', true ).fadeOut( 500, function() {
+		//* event.target.id === '#' + inputId + '-remove'.
+		$( '#' + inputId + '-remove' ).addClass( 'disabled' ).prop( 'disabled', true ).fadeOut( 250, function() {
 			$( this ).remove();
-			$( '#' + inputID + '-select' ).text( l10n.labels[ inputType ].imgSelect ).removeClass( 'disabled' ).removeProp( 'disabled' );
+			$( '#' + inputId + '-select' ).text( l10n.labels[ inputType ].imgSelect ).removeClass( 'disabled' ).removeProp( 'disabled' );
 		} );
 
-		let $inputUrl = $( '#' + inputID + '-url' );
+		let $inputUrl = $( '#' + inputId + '-url' );
 
 		$inputUrl.val( '' ).trigger( 'change' );
 		if ( ! $inputUrl.data( 'readonly' ) ) {
 			$inputUrl.removeProp( 'readonly' );
 		}
-		$inputUrl.css( 'opacity', 0 ).animate(
-			{ opacity: 1 },
-			{ queue: true, duration: 500 },
-			'swing'
-		);
 
-		$( '#' + inputID + '-id' ).val( '' ).trigger( 'change' );
+		$( '#' + inputId + '-id' ).val( '' ).trigger( 'change' );
 
-		tsfAys && tsfAys.registerChange();
+		'tsfAys' in window && tsfAys.registerChange();
 	}
 
 	/**
@@ -467,7 +458,7 @@ window.tsfMedia = function( $ ) {
 		}
 
 		// Find starting points, I think? Why do we halve this?
-		// This is taken from WordPress' very own '_calculateImageSelectOptions' as-is.
+		// This is taken from WordPress's very own '_calculateImageSelectOptions' as-is.
 		x1 = ( realWidth - xInit ) / 2;
 		y1 = ( realHeight - yInit ) / 2;
 
@@ -532,36 +523,71 @@ window.tsfMedia = function( $ ) {
 	}
 
 	/**
+	 * Updates button text on change.
+	 *
+	 * @since 4.1.0
+	 * @access private
+	 *
+	 * @param {!jQuery.event} event
+	 * @return {undefined}
+	 */
+	const _updateButtonText = event => {
+		let inputId   = event.data.id || false,
+			inputType = event.data.type || false;
+
+		if ( ! inputId || ! inputType ) return;
+
+		let $select = $( '#' + inputId + '-select' );
+
+		// The image remover is probably handling this entry.
+		if ( $select.prop( 'disabled' ) ) return;
+
+		if ( event.target.value.length ) {
+			$( '#' + inputId + '-select' ).text( l10n.labels[ inputType ].imgChange );
+		} else {
+			$( '#' + inputId + '-select' ).text( l10n.labels[ inputType ].imgSelect );
+		}
+	}
+
+	/**
 	 * Checks if input is filled in by image editor.
 	 *
 	 * @since 3.1.0
+	 * @since 4.1.0 Now prepares an input change event.
 	 * @access private
 	 *
 	 * @function
-	 * @return {(undefined|null)}
+	 * @return {undefined}
 	 */
 	const _checkImageEditorInput = () => {
 
 		let $buttons = $( '.tsf-set-image-button' );
 
 		if ( $buttons.length ) {
-			let inputID = '',
+			let inputId   = '',
 				inputType = '',
-				$valID = '';
+				$valId    = '';
 
-			$.each( $buttons, function( index, value ) {
-				inputID   = $( value ).data( 'input-id' );
+			$.each( $buttons, ( index, value ) => {
+				inputId   = $( value ).data( 'input-id' );
 				inputType = $( value ).data( 'input-type' );
-				$valID    = $( '#' + inputID + '-id' );
+				$valId    = $( '#' + inputId + '-id' );
 
-				if ( $valID.length && $valID.val() > 0 ) {
-					$( '#' + inputID + '-url' ).prop( 'readonly', true );
-					_appendRemoveButton( $( value ), { 'id': inputID, 'type': inputType }, false );
+				if ( $valId.length && $valId.val() > 0 ) {
+					$( '#' + inputId + '-url' ).prop( 'readonly', true );
+					_appendRemoveButton(
+						$( value ),
+						{
+							id: inputId,
+							type: inputType
+						},
+						false
+					);
 				}
 
-				if ( $( '#' + inputID + '-url' ).val() ) {
-					$( '#' + inputID + '-select' ).text( l10n.labels[ inputType ].imgChange );
-				}
+				$( '#' + inputId + '-url' )
+					.on( 'change.tsfImageUpdate', null, { id: inputId, type: inputType }, _updateButtonText )
+					.trigger( 'change.tsfImageUpdate' );
 			} );
 		}
 	}
@@ -625,7 +651,7 @@ window.tsfMedia = function( $ ) {
 	 */
 	const _prepareTooltip = () => {
 
-		let _updateToolTipBuffer = [];
+		let _updateToolTipBuffer = {};
 		/**
 		 * Updates the input's parentNode tooltip input.
 		 *
@@ -637,7 +663,10 @@ window.tsfMedia = function( $ ) {
 
 			if ( ! preview ) return;
 
-			clearTimeout( _updateToolTipBuffer[ id ] );
+			( id in _updateToolTipBuffer ) && clearTimeout( _updateToolTipBuffer[ id ] );
+
+			let pageLoaded = preview.dataset.tsfLoaded || false;
+			preview.dataset.tsfLoaded = 1;
 
 			_updateToolTipBuffer[ id ] = setTimeout( () => {
 
@@ -650,7 +679,11 @@ window.tsfMedia = function( $ ) {
 					// We set min-height and width as that will prevent jumping. Also, those are the absolute-minimum for sharing/schema images.
 
 				if ( ! src.length ) {
-					$( preview ).fadeOut( 250 );
+					if ( pageLoaded ) {
+						$( preview ).not( ':hidden' ).fadeOut( 250 );
+					} else {
+						$( preview ).hide();
+					}
 					return;
 				}
 
@@ -668,14 +701,18 @@ window.tsfMedia = function( $ ) {
 				 */
 				preview.dataset.desc = "<img src='" + tsf.escapeString( src ) + "' style=" + style + " />";
 
-				$( preview ).not( ':visible' ).fadeIn( 250 );
+				if ( pageLoaded ) {
+					$( preview ).not( ':visible' ).fadeIn( 250 );
+				} else {
+					$( preview ).show();
+				}
 
 				// Preload image. The same security notes apply as above. Moreover, the Image object escapes:
 				// ( new Image() ).src = '"/><script>alert(\'XSS\');</script>';
 				( new Image() ).src = src;
 
 				tsfTT.triggerUpdate( preview );
-			}, 500 ); // High timeout: Don't DoS the inputted URL.
+			}, pageLoaded ? 500 : 0 ); // High timeout: Don't DoS the inputted URL, plus the delay is quite nice.
 		}
 
 		// Prepare tooltip updates.
@@ -701,16 +738,16 @@ window.tsfMedia = function( $ ) {
 		 */
 		load: () => {
 			// Initialize image uploader button cache.
-			$( document.body ).ready( _setupImageEditorActions );
+			document.body.addEventListener( 'tsf-ready', _setupImageEditorActions );
 
 			// Determine image editor button input states.
-			$( document.body ).ready( _checkImageEditorInput );
+			document.body.addEventListener( 'tsf-ready', _checkImageEditorInput );
 
 			// Prepares image input tooltips.
-			$( document.body ).on( 'tsf-ready', _prepareTooltip );
+			document.body.addEventListener( 'tsf-ready', _prepareTooltip );
 		}
 	}, {}, {
 		l10n
 	} );
 }( jQuery );
-jQuery( window.tsfMedia.load );
+window.tsfMedia.load();

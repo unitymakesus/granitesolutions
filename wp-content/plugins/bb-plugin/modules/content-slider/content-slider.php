@@ -338,6 +338,7 @@ FLBuilder::register_module('FLContentSliderModule', array(
 							'max'  => 10,
 							'step' => .5,
 						),
+						'help'     => __( 'Delay should be greater than the Transition Speed.', 'fl-builder' ),
 					),
 					'transition' => array(
 						'type'    => 'select',
@@ -358,6 +359,7 @@ FLBuilder::register_module('FLContentSliderModule', array(
 							'max'  => 10,
 							'step' => .5,
 						),
+						'help'     => __( 'Transition Speed should be less than the Delay value.', 'fl-builder' ),
 					),
 					'play_pause' => array(
 						'type'    => 'select',

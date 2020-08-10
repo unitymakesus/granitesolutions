@@ -1730,7 +1730,9 @@ final class FLBuilder {
 		}
 
 		// Add srcset attrs to images with the class wp-image-<ID>.
-		if ( function_exists( 'wp_make_content_images_responsive' ) ) {
+		if ( function_exists( 'wp_filter_content_tags' ) ) {
+			$content = wp_filter_content_tags( $content );
+		} else if ( function_exists( 'wp_make_content_images_responsive' ) ) {
 			$content = wp_make_content_images_responsive( $content );
 		}
 

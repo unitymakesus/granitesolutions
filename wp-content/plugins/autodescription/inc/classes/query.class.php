@@ -45,6 +45,7 @@ class Query extends Core {
 
 	/**
 	 * Checks whether $wp_query or $current_screen is set.
+	 * Memoizes the return value once we're sure it won't change.
 	 *
 	 * @since 2.6.1
 	 * @since 2.9.0 Added doing it wrong notice.
@@ -52,7 +53,6 @@ class Query extends Core {
 	 *              2. Now asks for and passes $method.
 	 *              3. Now returns false on WP CLI.
 	 * @since 3.2.2 No longer spits out errors on production websites.
-	 * @staticvar bool $cache Always true once set.
 	 * @global \WP_Query $wp_query
 	 * @global \WP_Screen|null $current_screen
 	 *
@@ -154,10 +154,10 @@ class Query extends Core {
 
 	/**
 	 * Get the real page ID, also from CPT, archives, author, blog, etc.
+	 * Memoizes the return value.
 	 *
 	 * @since 2.5.0
 	 * @since 3.1.0 No longer checks if we can cache the query when $use_cache is false.
-	 * @staticvar int $id the ID.
 	 *
 	 * @param bool $use_cache Whether to use the cache or not.
 	 * @return int|false The ID.
@@ -276,12 +276,12 @@ class Query extends Core {
 
 	/**
 	 * Returns the current taxonomy, if any.
+	 * Memoizes the return value.
 	 *
 	 * @since 3.0.0
 	 * @since 3.1.0 1. Now works in the admin.
 	 *              2. Added caching
 	 * @global \WP_Screen $current_screen
-	 * @staticvar string $cache
 	 *
 	 * @return string The queried taxonomy type.
 	 */
@@ -538,6 +538,7 @@ class Query extends Core {
 	 */
 	public function is_blog_page( $id = 0 ) {
 
+		// When the blog page is the front page, treat it as front instead of blog.
 		if ( ! $this->has_page_on_front() )
 			return false;
 
@@ -617,7 +618,7 @@ class Query extends Core {
 	 * Extends default WordPress is_category() and determines screen in admin.
 	 *
 	 * @since 2.6.0
-	 * @since 3.1.0 No longer guesses category by name. It now only matches WordPress' built-in category.
+	 * @since 3.1.0 No longer guesses category by name. It now only matches WordPress's built-in category.
 	 * @since 4.0.0 Removed caching.
 	 *
 	 * @return bool Post Type is category
@@ -880,7 +881,7 @@ class Query extends Core {
 		&& \is_singular()
 		&& \current_user_can( 'edit_post', \get_the_ID() )
 		&& isset( $_GET['preview_id'], $_GET['preview_nonce'] )
-		&& \wp_verify_nonce( $_GET['preview_nonce'], 'post_preview_' . (int) $_GET['preview_id'] )
+		&& \wp_verify_nonce( $_GET['preview_nonce'], 'post_preview_' . (int) $_GET['preview_id'] ) // WP doesn't check for unslash either; who would've guessed.
 		) {
 			$is_preview = true;
 		}
@@ -1052,7 +1053,7 @@ class Query extends Core {
 	 * Determines if the page is a tag within the admin screen.
 	 *
 	 * @since 2.6.0
-	 * @since 3.1.0 No longer guesses tag by name. It now only matches WordPress' built-in tag.
+	 * @since 3.1.0 No longer guesses tag by name. It now only matches WordPress's built-in tag.
 	 * @since 4.0.0 Removed caching.
 	 *
 	 * @return bool Post Type is tag.
@@ -1246,9 +1247,9 @@ class Query extends Core {
 
 	/**
 	 * Determines if SSL is used.
+	 * Memoizes the return value.
 	 *
 	 * @since 2.8.0
-	 * @staticvar bool $cache
 	 *
 	 * @return bool True if SSL, false otherwise.
 	 */
@@ -1487,10 +1488,10 @@ class Query extends Core {
 
 	/**
 	 * Determines whether we're on The SEO Framework's sitemap or not.
+	 * Memoizes the return value once set.
 	 *
 	 * @since 2.9.2
 	 * @since 4.0.0 Now uses static variables instead of class properties.
-	 * @staticvar bool $doing_sitemap
 	 *
 	 * @param bool $set Whether to set "doing sitemap".
 	 * @return bool
@@ -1519,8 +1520,6 @@ class Query extends Core {
 	 * Handles object cache for the query class.
 	 *
 	 * @since 2.7.0
-	 * @staticvar null|bool $can_cache_query True when this function can run.
-	 * @staticvar mixed     $cache           The cached query values.
 	 * @see $this->set_query_cache(); to set query cache.
 	 *
 	 * @param string $method       The method that wants to cache, used as the key to set or get.
@@ -1557,12 +1556,9 @@ class Query extends Core {
 		}
 
 		if ( isset( $value_to_set ) ) {
-			if ( isset( $cache[ $method ][ $hash ] ) ) {
-				$cache[ $method ][ $hash ] = $value_to_set;
-				return false;
-			}
+			$fresh_set                 = ! isset( $cache[ $method ][ $hash ] );
 			$cache[ $method ][ $hash ] = $value_to_set;
-			return true;
+			return $fresh_set;
 		} else {
 			if ( isset( $cache[ $method ][ $hash ] ) )
 				return $cache[ $method ][ $hash ];

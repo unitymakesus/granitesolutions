@@ -170,8 +170,14 @@ class Init extends Query {
 			//* Add menu links and register $this->seo_settings_page_hook
 			\add_action( 'admin_menu', [ $this, 'add_menu_link' ] );
 
-			//* Set up notices
-			\add_action( 'admin_notices', [ $this, 'notices' ] );
+			//* Set up notices.
+			\add_action( 'admin_notices', [ $this, '_output_notices' ] );
+
+			//* Fallback HTML-only notice dismissal.
+			\add_action( 'admin_init', [ $this, '_dismiss_notice' ] );
+
+			//* Admin AJAX for notice dismissal.
+			\add_action( 'wp_ajax_tsf-dismiss-notice', [ $this, '_wp_ajax_dismiss_notice' ] );
 
 			//* Admin AJAX for counter options.
 			\add_action( 'wp_ajax_the_seo_framework_update_counter', [ $this, '_wp_ajax_update_counter_type' ] );
@@ -220,8 +226,11 @@ class Init extends Query {
 		\remove_action( 'wp_head', 'wp_generator' );
 
 		//* Prepares sitemap or stylesheet output.
-		if ( $this->can_run_sitemap() )
+		if ( $this->can_run_sitemap() ) {
+			// We can use action `set_404` when we support WP 5.5+...?
 			\add_action( 'template_redirect', [ $this, '_init_sitemap' ], 1 );
+			\add_filter( 'wp_sitemaps_enabled', '__return_false' );
+		}
 
 		//* Initialize 301 redirects.
 		\add_action( 'template_redirect', [ $this, '_init_custom_field_redirect' ] );
@@ -238,12 +247,12 @@ class Init extends Query {
 		if ( $this->get_option( 'alter_search_query' ) )
 			$this->init_alter_search_query();
 
-		//* Alter the content feed.
-		\add_filter( 'the_content_feed', [ $this, 'the_content_feed' ], 10, 2 );
-
-		//* Only add the feed link to the excerpt if we're only building excerpts.
-		if ( $this->rss_uses_excerpt() )
-			\add_filter( 'the_excerpt_rss', [ $this, 'the_content_feed' ], 10, 1 );
+		// Modify the feed.
+		if ( $this->get_option( 'excerpt_the_feed' ) || $this->get_option( 'source_the_feed' ) ) {
+			// We could use actions 'do_feed_{$feed}', but I don't trust its variability.
+			// We could use action 'rss_tag_pre', but I don't trust its availability.
+			\add_action( 'template_redirect', [ $this, '_init_feed' ], 1 );
+		}
 
 		/**
 		 * @since 2.9.4
@@ -287,12 +296,12 @@ class Init extends Query {
 			}
 		}
 
-		if ( $this->get_option( 'og_tags' ) ) {
+		if ( $this->get_option( 'og_tags' ) ) { // independent from filter at use_og_tags--let that be deciding later.
 			//* Disable Jetpack's Open Graph tags. But Sybre, compat files? Yes.
 			\add_filter( 'jetpack_enable_open_graph', '__return_false' );
 		}
 
-		if ( $this->get_option( 'twitter_tags' ) ) {
+		if ( $this->get_option( 'twitter_tags' ) ) { // independent from filter at use_twitter_tags--let that be deciding later.
 			//* Disable Jetpack's Twitter Card tags. But Sybre, compat files? Maybe.
 			\add_filter( 'jetpack_disable_twitter_cards', '__return_true' );
 			// Future, maybe. See <https://github.com/Automattic/jetpack/issues/13146#issuecomment-516841698>
@@ -586,6 +595,16 @@ class Init extends Query {
 	}
 
 	/**
+	 * Prepares feed modifications.
+	 *
+	 * @since 4.1.0
+	 * @access private
+	 */
+	public function _init_feed() {
+		\is_feed() and Bridges\Feed::get_instance()->_init();
+	}
+
+	/**
 	 * Edits the robots.txt output.
 	 * Requires the site not to have a robots.txt file in the root directory.
 	 *
@@ -601,11 +620,14 @@ class Init extends Query {
 	 *                2. Improved invalid location test.
 	 *                3. No longer shortcircuits on non-public sites.
 	 *                4. Now marked as private. Will be renamed to `_robots_txt()` in the future.
+	 * @since 4.1.0 Now adds the WordPress Core sitemap URL.
 	 * @uses robots_txt filter located at WP core
 	 * @access private
+	 * @TODO extrapolate the contents without a warning to get_robots_txt(). Forward filter to it.
+	 *       See Monitor extension.
 	 *
 	 * @param string $robots_txt The current robots_txt output. Not used.
-	 * @param string $public The blog_public option value. Not used.
+	 * @param string $public The blog_public option value.
 	 * @return string Robots.txt output.
 	 */
 	public function robots_txt( $robots_txt = '', $public = '' ) {
@@ -658,6 +680,14 @@ class Init extends Query {
 					}
 				}
 				$output .= "\r\n";
+			} elseif ( $this->get_option( 'sitemaps_robots' ) && ! $this->detect_sitemap_plugin() ) {
+				if ( function_exists( '\\wp_sitemaps_get_server' ) ) {
+					$wp_sitemaps_server = \wp_sitemaps_get_server();
+					if ( $wp_sitemaps_server && method_exists( $wp_sitemaps_server, 'add_robots' ) ) {
+						// This method augments the output--it doesn't overwrite it.
+						$output = \wp_sitemaps_get_server()->add_robots( $output, $public );
+					}
+				}
 			}
 
 			$this->use_object_cache and $this->object_cache_set( $cache_key, $output, 86400 );

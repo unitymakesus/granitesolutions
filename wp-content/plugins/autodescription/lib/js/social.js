@@ -47,6 +47,7 @@ window.tsfSocial = function( $ ) {
 	/**
 	 * @since 4.0.0
 	 * @access private
+	 * @todo deprecate; either remove and contain these within the callers, or convert to states. See tsfTitle & tsfDescription.
 	 * @type {(Object<string, *>)} the query state.
 	 */
 	let state = {
@@ -59,6 +60,7 @@ window.tsfSocial = function( $ ) {
 	 *
 	 * @since 4.0.0
 	 * @access public
+	 * @todo deprecate; either remove, or convert to getStateOf. See tsfTitle & tsfDescription.
 	 *
 	 * @param {(string|undefined)} part The part to return. Leave empty to return the whole state.
 	 * @return {(Object<string, *>)|*|undefined}
@@ -72,6 +74,7 @@ window.tsfSocial = function( $ ) {
 	 *
 	 * @since 4.0.0
 	 * @access public
+	 * @todo deprecate; either remove, or convert to updateStateOf. See tsfTitle & tsfDescription.
 	 *
 	 * @param {string} type  The state index to change.
 	 * @param {*}      value The value to set the state to.
@@ -103,6 +106,7 @@ window.tsfSocial = function( $ ) {
 	 * Initializes social titles.
 	 *
 	 * @since 4.0.0
+	 * @since 4.1.0 Now handles the refNa input for the "no additions" values.
 	 * @access public
 	 *
 	 * @function
@@ -111,12 +115,13 @@ window.tsfSocial = function( $ ) {
 	 */
 	const initTitleInputs = ( inputs ) => {
 
-		let $ogTitle   = $( inputs.og ),
-			$twTitle   = $( inputs.tw ),
-			$refTitle  = $( inputs.ref ),
-			$metaTitle = $( inputs.meta );
+		let $ogTitle    = $( inputs.og ),
+			$twTitle    = $( inputs.tw ),
+			$refTitle   = $( inputs.ref ),
+			$refNaTitle = $( inputs.refNa ),
+			$metaTitle  = $( inputs.meta );
 
-		if ( ! $ogTitle.length || ! $twTitle.length || ! $metaTitle.length || ! $refTitle.length )
+		if ( ! $ogTitle.length || ! $twTitle.length || ! $metaTitle.length || ! $refTitle.length || ! $refNaTitle.length )
 			return;
 
 		let ogLocked   = l10n.params.homeLocks.ogTitleLock,
@@ -124,9 +129,10 @@ window.tsfSocial = function( $ ) {
 			twLocked   = l10n.params.homeLocks.twTitleLock,
 			twPHLocked = l10n.params.homeLocks.twTitlePHLock;
 
-		let ogTitleValue  = ogLocked ? $ogTitle.attr( 'placeholder' ) : $ogTitle.val(),
-			twTitleValue  = twLocked ? $twTitle.attr( 'placeholder' ) : $twTitle.val(),
-			refTitleValue = $refTitle.html();
+		let ogTitleValue    = ogLocked ? $ogTitle.attr( 'placeholder' ) : $ogTitle.val(),
+			twTitleValue    = twLocked ? $twTitle.attr( 'placeholder' ) : $twTitle.val(),
+			refTitleNaValue = $refNaTitle.html(),
+			refTitleValue   = $refTitle.html();
 
 		const getActiveValue = ( what ) => {
 			let val = '';
@@ -135,6 +141,7 @@ window.tsfSocial = function( $ ) {
 				case 'twitter':
 					val = twTitleValue;
 					if ( twLocked || twPHLocked ) {
+						// TODO we need to step away from our reliance on placeholders.
 						val = val.length ? val : $twTitle.attr( 'placeholder' );
 						break switchActive;
 					}
@@ -142,27 +149,22 @@ window.tsfSocial = function( $ ) {
 				case 'og':
 					val = val.length ? val : ogTitleValue;
 					if ( ogLocked || ogPHLocked ) {
+						// TODO we need to step away from our reliance on placeholders.
 						val = val.length ? val : $ogTitle.attr( 'placeholder' );
 						break switchActive;
 					}
 					// get next if not set.
 				case 'meta':
-					/**
-					 * Nothing here, all is handled by ref due to the title's complexity.
-					 * Moreover, OG Title and TW Title still contain the BLOGNAME additions by default.
-					 * NOTE this will become optional, see https://github.com/sybrew/the-seo-framework/issues/394
-					 * Then, we will run this switch state conditionally.
-					 *
-					 * e.g.
-					 * if ( l10n.params.useSocialTitleAdditions ) {
-					 *    // do nothing
-					 * } else {
-					 *    val = $metaTitle.val();
-					 * }
-					 */
-					// get next if not set.
+					// All is handled by ref due to the title's complexity.
 				case 'ref':
-					val = val.length ? val : refTitleValue;
+					if ( ! val.length ) {
+						// Tagline = additions = blog name = site title. Well done, Sybre. :) FIXME, noob.
+						if ( tsfTitle.getStateOf( inputs.meta.id, 'useSocialTagline' ) ) {
+							val = refTitleValue;
+						} else {
+							val = refTitleNaValue;
+						}
+					}
 					break;
 			}
 			return val;
@@ -184,7 +186,7 @@ window.tsfSocial = function( $ ) {
 				type:  type,
 			} );
 		};
-		let updateSocialCountersBuffer = 0;
+		let updateSocialCountersBuffer = void 0;
 		const updateSocialCounters = () => {
 			clearTimeout( updateSocialCountersBuffer );
 			updateSocialCountersBuffer = setTimeout( () => {
@@ -192,12 +194,18 @@ window.tsfSocial = function( $ ) {
 				$twTitle.each( ( i, el ) => updateCounter( el, getActiveValue( 'twitter' ), 'twitter' ) );
 			}, 10 );
 		};
+		let updateRefTitleBuffer = void 0;
 		const updateRefTitle = ( event ) => {
-			refTitleValue = $refTitle.html();
-			setPlaceholders();
-			updateSocialCounters();
+			clearTimeout( updateRefTitleBuffer );
+			updateRefTitleBuffer = setTimeout( () => {
+				refTitleValue   = $refTitle.html();
+				refTitleNaValue = $refNaTitle.html();
+				setPlaceholders();
+				updateSocialCounters();
+			}, 10 );
 		};
 		$refTitle.on( 'change.tsfUpdateRefTitle', updateRefTitle );
+		$refNaTitle.on( 'change.tsfUpdateRefTitle', updateRefTitle );
 
 		const updateOgTitle = ( event ) => {
 			if ( ! ogLocked ) {
@@ -255,6 +263,7 @@ window.tsfSocial = function( $ ) {
 				case 'twitter':
 					val = twDescValue;
 					if ( twLocked || twPHLocked ) {
+						// TODO we need to step away from our reliance on placeholders.
 						val = val.length ? val : $twDesc.attr( 'placeholder' );
 						break switchActive;
 					}
@@ -262,6 +271,7 @@ window.tsfSocial = function( $ ) {
 				case 'og':
 					val = val.length ? val : ogDescValue;
 					if ( ogLocked || ogPHLocked ) {
+						// TODO we need to step away from our reliance on placeholders.
 						val = val.length ? val : $ogDesc.attr( 'placeholder' );
 						break switchActive;
 					}
@@ -356,4 +366,4 @@ window.tsfSocial = function( $ ) {
 		l10n
 	} );
 }( jQuery );
-jQuery( window.tsfSocial.load );
+window.tsfSocial.load();

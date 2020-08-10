@@ -37,11 +37,21 @@ defined( 'THE_SEO_FRAMEWORK_PRESENT' ) or die;
  * @since 3.2.4 Applied namspacing to this file. All method names have changed.
  */
 
+\add_action( 'init', __NAMESPACE__ . '\\_do_upgrade', 20 );
+\add_action( 'the_seo_framework_upgraded', __NAMESPACE__ . '\\_prepare_upgrade_notice', 99, 2 );
+\add_action( 'the_seo_framework_upgraded', __NAMESPACE__ . '\\_prepare_upgrade_suggestion', 100, 2 );
+
+/**
+ * @since 4.1.0 Deprecated. We can no longer rely on this from WP 5.5.
+ * @deprecated Use persistent notifications, instead.
+ */
+\add_action( 'admin_notices', __NAMESPACE__ . '\\_output_upgrade_notices' );
+
 /**
  * Returns the default site options.
+ * Memoizes the return value.
  *
  * @since 3.1.0
- * @staticvar array $cache
  *
  * @return array The default site options.
  */
@@ -53,9 +63,9 @@ function _upgrade_default_site_options() {
 _previous_db_version(); // sets cache.
 /**
  * Returns the version set before upgrading began.
+ * Memoizes the return value.
  *
  * @since 3.0.0
- * @staticvar string $cache
  *
  * @return string The prior-to-upgrade TSF db version.
  */
@@ -64,14 +74,14 @@ function _previous_db_version() {
 	return isset( $cache ) ? $cache : $cache = \get_option( 'the_seo_framework_upgraded_db_version', '0' );
 }
 
-\add_action( 'init', __NAMESPACE__ . '\\_do_upgrade', 20 );
 /**
  * Upgrade The SEO Framework to the latest version.
  *
  * Does an iteration of upgrades in order of upgrade appearance.
  * Each called function will upgrade the version by its iteration.
  *
- * @thanks StudioPress for some code.
+ * @TODO run this upgrader in a separate thread (e.g. via cron)? And store all notices as persistent?
+ *
  * @since 2.7.0
  * @since 2.9.4 No longer tests WP version. This file won't be loaded anyway if rendered incompatible.
  * @since 3.0.0 Fewer option calls are now made when version is higher than former checks.
@@ -90,13 +100,13 @@ function _previous_db_version() {
  *              3. No longer runs during AJAX.
  *              4. Added an upgrading lock. Preventing upgrades running simultaneously.
  *                 While this lock is active, the SEO Settings can't be accessed, either.
+ * @since 4.1.0 Now checks whether the lock is successfully set before proceeding. Preventing race conditions.
  */
 function _do_upgrade() {
 
 	$tsf = \the_seo_framework();
 
 	if ( ! $tsf->loaded ) return;
-
 	if ( \wp_doing_ajax() ) return;
 
 	if ( $tsf->is_seo_settings_page( false ) ) {
@@ -105,88 +115,188 @@ function _do_upgrade() {
 		exit;
 	}
 
-	// Check if upgrade is locked. Otherwise, lock it.
-	// TODO send out an admin notice, that informs the user the upgrader is running in the background for X seconds?
-	if ( \get_transient( 'tsf_upgrade_lock' ) ) return;
-
 	$timeout = 5 * MINUTE_IN_SECONDS;
-	\set_transient( 'tsf_upgrade_lock', true, $timeout );
 
-	// Register this AFTER the transient is set. Otherwise, it may clear the transient in another thread.
+	$lock = _set_upgrade_lock( $timeout );
+	// Lock failed to create--probably because it was already locked (or the database failed us).
+	if ( ! $lock ) return;
+
+	// Register this AFTER the lock is set. Otherwise, it may clear the lock in another thread.
+	// This releases the lock when the upgrade crashes or when we forget to unlock it...
+	// ...if the database connection is still valid; otherwise, we'll have to wait for the $timeout to pass.
 	register_shutdown_function( __NAMESPACE__ . '\\_release_upgrade_lock' );
 
 	\wp_raise_memory_limit( 'tsf_upgrade' );
+	// This may lower the default timeout--which is good. Prevents overlap.
 	set_time_limit( $timeout );
 
 	/**
 	 * Clear the cache to prevent an update_option() from saving a stale database version to the cache.
 	 * Not all caching plugins recognize 'flush', so delete the options cache too, just to be safe.
 	 *
-	 * @see WordPress' `.../update-core.php`
+	 * @see WordPress's `.../update-core.php`
 	 * @since 3.1.4
 	 */
 	\wp_cache_flush();
 	\wp_cache_delete( 'alloptions', 'options' );
 
-	$version = _previous_db_version();
+	$previous_version = _previous_db_version();
 
 	if ( ! \get_option( 'the_seo_framework_initial_db_version' ) ) {
 		//* Sets to previous if previous is known. This is a late addition.
-		\update_option( 'the_seo_framework_initial_db_version', $version ?: THE_SEO_FRAMEWORK_DB_VERSION, 'no' );
+		\update_option( 'the_seo_framework_initial_db_version', $previous_version ?: THE_SEO_FRAMEWORK_DB_VERSION, 'no' );
 	}
 
-	if ( $version >= THE_SEO_FRAMEWORK_DB_VERSION ) {
-		_upgrade_to_current();
+	// Don't run the upgrade cycle if the user downgraded.
+	if ( $previous_version > THE_SEO_FRAMEWORK_DB_VERSION ) {
+		// We aren't (currently) expecting issues where downgrading causes mayem. 4051 causes some, though. Just set to current:
+		$current_version = _set_to_current_version();
+
+		/**
+		 * @since 4.1.0
+		 * @internal
+		 * @param string $previous_version The previous version the site downgraded from, if any.
+		 * @param string $current_version  The current version of the site.
+		 */
+		\do_action( 'the_seo_framework_downgraded', $previous_version, $current_version );
 		return;
 	}
 
-	if ( ! $version ) {
+	// Novel idea: Allow webmasters (yes, masters) to register custom upgrades. Maybe later. See file PHPDoc's TODO.
+	// \do_action( 'the_seo_framework_do_upgrade', $previous_version );
+
+	$current_version = _upgrade( $previous_version );
+
+	/**
+	 * @since 2.7.0
+	 * @since 4.1.0 Added first parameter, $previous_version
+	 * @internal
+	 * @param string $previous_version The previous version the site upgraded from, if any.
+	 * @param string $current_version The current version of the site.
+	 */
+	\do_action( 'the_seo_framework_upgraded', (string) $previous_version, (string) $current_version );
+}
+
+/**
+ * Upgrades the plugin's database.
+ *
+ * @since 4.1.0
+ * @TODO detect database transaction failures before continuing the upgrade? WordPress doesn't do their, either.
+ * @see WP Core upgrade_all()
+ *
+ * @param string $previous_version The previous version the site upgraded from, if any.
+ * @return string $current_version The current database version.
+ */
+function _upgrade( $previous_version ) {
+
+	$current_version = $previous_version;
+
+	if ( ! $current_version ) {
 		_do_upgrade_1();
-		$version = '1';
+		$current_version = '1';
 	}
-	if ( $version < '2701' ) {
+	if ( $current_version < '2701' ) {
 		_do_upgrade_2701();
-		$version = '2701';
+		$current_version = '2701';
 	}
-	if ( $version < '2802' ) {
+	if ( $current_version < '2802' ) {
 		_do_upgrade_2802();
-		$version = '2802';
+		$current_version = '2802';
 	}
-	if ( $version < '2900' ) {
+	if ( $current_version < '2900' ) {
 		_do_upgrade_2900();
-		$version = '2900';
+		$current_version = '2900';
 	}
-	if ( $version < '3001' ) {
+	if ( $current_version < '3001' ) {
 		_do_upgrade_3001();
-		$version = '3001';
+		$current_version = '3001';
 	}
-	if ( $version < '3060' ) {
+	if ( $current_version < '3060' ) {
 		_do_upgrade_3060();
-		$version = '3060';
+		$current_version = '3060';
 	}
 
 	//! From here, the upgrade procedures should be backward compatible.
 	//? This means no data may be erased for at least 1 major version, or 1 year, whichever is later.
 	//? We must manually delete settings that are no longer used; we merge them otherwise.
-	if ( $version < '3103' ) {
+
+	if ( $current_version < '3103' ) {
 		_do_upgrade_3103();
-		$version = '3103';
+		$current_version = '3103';
 	}
-
-	if ( $version < '3300' ) {
+	if ( $current_version < '3300' ) {
 		_do_upgrade_3300();
-		$version = '3300';
+		$current_version = '3300';
 	}
-
-	if ( $version < '4051' ) {
+	if ( $current_version < '4051' ) {
 		_do_upgrade_4051();
-		$version = '4051';
+		$current_version = '4051';
+	}
+	if ( $current_version < '4103' ) {
+		_do_upgrade_4103();
+		$current_version = '4103';
 	}
 
-	/**
-	 * @since 2.7.0
-	 */
-	\do_action( 'the_seo_framework_upgraded' );
+	return _set_to_current_version();
+}
+
+/**
+ * Returns the lock name.
+ *
+ * @since 4.1.0
+ *
+ * @return string
+ */
+function _get_lock_option() {
+	return 'tsf_upgrade.lock';
+}
+
+/**
+ * Creates the upgrade lock.
+ *
+ * We don't use WordPress's native locking mechanism because it requires too many dependencies.
+ *
+ * @since 4.1.0
+ * @see WP_Upgrader::create_lock()
+ *
+ * @param int $release_timeout The timeout of the lock.
+ * @return bool False if a lock couldn't be created or if the lock is still valid. True otherwise.
+ */
+function _set_upgrade_lock( $release_timeout ) {
+	global $wpdb;
+
+	$lock_option = _get_lock_option();
+
+	$lock_result = $wpdb->query(
+		$wpdb->prepare(
+			"INSERT IGNORE INTO `$wpdb->options` ( `option_name`, `option_value`, `autoload` ) VALUES (%s, %s, 'no') /* LOCK */",
+			$lock_option,
+			time()
+		)
+	);
+
+	if ( ! $lock_result ) {
+		$lock_result = \get_option( $lock_option );
+
+		// If a lock couldn't be created, and there isn't a lock, bail.
+		if ( ! $lock_result )
+			return false;
+
+		// Check to see if the lock is still valid. If it is, bail.
+		if ( $lock_result > ( time() - $release_timeout ) )
+			return false;
+
+		// There must exist an expired lock, clear it...
+		_release_upgrade_lock();
+
+		// ...and re-gain it.
+		return _set_upgrade_lock( $release_timeout );
+	}
+
+	// Update the lock, as by this point we've definitely got a lock, just need to fire the actions.
+	\update_option( $lock_option, time() );
+
+	return true;
 }
 
 /**
@@ -195,13 +305,12 @@ function _do_upgrade() {
  * When the upgrader halts, timeouts, or crashes for any reason, this will run.
  *
  * @since 4.0.0
- * @TODO add cache flush? @see _upgrade_to_current()
+ * @since 4.1.0 Now uses a controllable option instead of a transient.
  */
 function _release_upgrade_lock() {
-	\delete_transient( 'tsf_upgrade_lock' );
+	\delete_option( _get_lock_option() );
 }
 
-\add_action( 'the_seo_framework_upgraded', __NAMESPACE__ . '\\_upgrade_to_current' );
 /**
  * Upgrades the Database version to the latest version.
  *
@@ -211,119 +320,139 @@ function _release_upgrade_lock() {
  *
  * @since 2.7.0
  * @since 3.1.4 Now flushes the object cache after the setting's updated.
+ * @since 4.1.0 Now also releases the upgrade lock, before flushing the cache.
+ *
+ * @return string The current database version. If set correctly.
  */
-function _upgrade_to_current() {
+function _set_to_current_version() {
 
 	\update_option( 'the_seo_framework_upgraded_db_version', THE_SEO_FRAMEWORK_DB_VERSION );
+
+	_release_upgrade_lock();
 
 	/**
 	 * Clear the cache to prevent a get_option() from retrieving a stale database version to the cache.
 	 * Not all caching plugins recognize 'flush', so delete the options cache too, just to be safe.
 	 *
-	 * @see WordPress' `.../update-core.php`
+	 * @see WordPress's `.../update-core.php`
 	 * @since 3.1.4
 	 */
 	\wp_cache_flush();
 	\wp_cache_delete( 'alloptions', 'options' );
+
+	// The option update might've failed. Try to obtain the latest version.
+	return (string) \get_option( 'the_seo_framework_upgraded_db_version' );
 }
 
-\add_action( 'the_seo_framework_upgraded', __NAMESPACE__ . '\\_prepare_upgrade_notice', 99 );
 /**
  * Prepares a notice when the upgrade is completed.
  *
  * @since 4.0.0
- */
-function _prepare_upgrade_notice() {
-	\add_action( 'admin_notices', __NAMESPACE__ . '\\_do_upgrade_notice' );
-}
-
-/**
- * Outputs "your site has been upgraded" notification to applicable plugin users on upgrade.
- *
- * @since 3.0.6
+ * @since 4.1.0 1. Moved admin notice user capability check here.
+ *              2. Now registers persistent notice for the update version.
  * @TODO Add browser cache flush notice? Or set a pragma/cache-control header?
  *       Users that remove query strings (thanks to YSlow) are to blame, though.
+ *       The authors of the plugin that allowed this to happen are even more to blame.
  * @link <https://wordpress.org/support/topic/4-0-admin-interface-not-loading-correctly/>
+ *
+ * @param string $previous_version The previous version, if any.
+ * @param string $current_version The current version of the site.
  */
-function _do_upgrade_notice() {
+function _prepare_upgrade_notice( $previous_version, $current_version ) {
 
-	if ( ! \current_user_can( 'update_plugins' ) ) return;
+	// phpcs:ignore, WordPress.PHP.StrictComparisons.LooseComparison -- might be mixed types.
+	if ( $previous_version && $previous_version != $current_version ) { // User successfully upgraded.
+		$tsf = \the_seo_framework();
 
-	$tsf = \the_seo_framework();
-
-	if ( _previous_db_version() ) {
-		$tsf->do_dismissible_notice(
+		$tsf->register_dismissible_persistent_notice(
 			$tsf->convert_markdown(
 				sprintf(
 					/* translators: %s = Version number, surrounded in markdown-backticks. */
 					\esc_html__( 'Thank you for updating The SEO Framework! Your website has been upgraded successfully to use The SEO Framework at database version `%s`.', 'autodescription' ),
-					\esc_html( THE_SEO_FRAMEWORK_DB_VERSION )
+					\esc_html( $current_version )
 				),
 				[ 'code' ]
 			),
-			'updated',
-			true,
-			false
+			"thank-you-updated-$current_version",
+			[
+				'type'   => 'updated',
+				'icon'   => true,
+				'escape' => false,
+			],
+			[
+				'screens'      => [],
+				'excl_screens' => [ 'post', 'term', 'upload', 'media', 'plugin-editor', 'plugin-install', 'themes' ],
+				'capability'   => 'update_plugins',
+				'user'         => 0,
+				'count'        => 1,
+				'timeout'      => DAY_IN_SECONDS,
+			]
 		);
-	} else {
-		$tsf->do_dismissible_notice(
-			\esc_html__( 'Thank you for installing The SEO Framework! Your website is now optimized for search and social sharing, automatically. We hope you enjoy our free plugin. Good luck with your site!', 'autodescription' ),
-			'updated',
-			false,
-			false
-		);
-		$tsf->do_dismissible_notice(
+	} elseif ( $current_version ) { // User successfully installed.
+		if ( \current_user_can( 'update_plugins' ) ) {
+			\add_action( 'admin_notices', __NAMESPACE__ . '\\_do_install_notice' );
+		}
+	}
+}
+
+/**
+ * Outputs "your site has been installed" notification to applicable plugin users on upgrade.
+ *
+ * @since 4.1.0
+ */
+function _do_install_notice() {
+
+	$tsf = \the_seo_framework();
+
+	// Make this persistent (2x count, 1 minute timeout)?
+	$tsf->do_dismissible_notice(
+		sprintf(
+			'<p>%s</p><p>%s</p>',
+			\esc_html__( 'The SEO Framework automatically optimizes your website for search engines and social media.', 'autodescription' ),
 			$tsf->convert_markdown(
 				sprintf(
 					/* translators: %s = Link, markdown. */
-					\esc_html__( "The SEO Framework only identifies itself rarely during plugin upgrades. We'd like to use this opportunity to highlight our [plugin setup guide](%s).", 'autodescription' ),
+					\esc_html__( 'To take full advantage of all SEO features, please follow our [5-minute setup guide](%s).', 'autodescription' ),
 					'https://theseoframework.com/docs/seo-plugin-setup/' // Use https://tsf.fyi/docs/setup ? Needless redirection...
 				),
 				[ 'a' ],
 				[ 'a_internal' => false ]
-			),
-			'info',
-			false,
-			false
-		);
-	}
+			)
+		),
+		'info',
+		false,
+		false
+	);
 }
 
-\add_action( 'the_seo_framework_upgraded', __NAMESPACE__ . '\\_prepare_upgrade_suggestion', 100 );
 /**
  * Enqueues and outputs an Extension Manager suggestion.
  *
  * @since 3.1.0
  * @since 3.2.2 No longer suggests when the user is new.
  * @since 3.2.4 Moved upgrade suggestion call to applicable file.
- * @staticvar bool $run
+ * @since 4.1.0 Now also includes the file on the front-end, so it can register the notice.
  *
+ * @param string $previous_version The previous version the site upgraded from, if any.
+ * @param string $current_version The current version of the site.
  * @return void Early when already enqueued
  */
-function _prepare_upgrade_suggestion() {
-	if ( ! \is_admin() ) return;
-	if ( ! _previous_db_version() ) return;
+function _prepare_upgrade_suggestion( $previous_version, $current_version ) {
+	// Don't invoke if the user didn't upgrade.
+	if ( ! $previous_version ) return;
 
-	\add_action( 'admin_init', __NAMESPACE__ . '\\_include_upgrade_suggestion', 20 );
-}
-
-/**
- * Loads plugin suggestion file
- *
- * @since 4.0.0
- */
-function _include_upgrade_suggestion() {
-
+	// Can this even run twice? Let's play it safe to prevent crashes.
 	if ( \The_SEO_Framework\_has_run( __METHOD__ ) ) return;
 
 	require THE_SEO_FRAMEWORK_DIR_PATH_FUNCT . 'upgrade-suggestion.php';
 }
 
 /**
- * Lists and returns upgrade notices to be outputted in admin.
+ * Memoize and returns upgrade notices to be outputted in admin.
  *
  * @since 2.9.0
- * @staticvar array $cache The cached notice strings.
+ * @since 4.1.0 Deprecated. We can no longer rely on this from WP 5.5.
+ * @deprecated Use persistent notifications, instead.
  *
  * @param string $notice The upgrade notice.
  * @param bool   $get    Whether to return the upgrade notices.
@@ -331,6 +460,7 @@ function _include_upgrade_suggestion() {
  */
 function _add_upgrade_notice( $notice = '', $get = false ) {
 
+	// Memoize the strings for a later $get
 	static $cache = [];
 
 	if ( $get )
@@ -339,19 +469,17 @@ function _add_upgrade_notice( $notice = '', $get = false ) {
 	$cache[] = $notice;
 }
 
-\add_action( 'admin_notices', __NAMESPACE__ . '\\_output_upgrade_notices' );
 /**
  * Outputs available upgrade notices.
  *
  * @since 2.9.0
  * @since 3.0.0 Added prefix.
+ * @since 4.1.0 Deprecated. We can no longer rely on this from WP 5.5.
+ * @deprecated Use persistent notifications, instead.
  * @uses _add_upgrade_notice()
  */
 function _output_upgrade_notices() {
-
-	$notices = _add_upgrade_notice( '', true );
-
-	foreach ( $notices as $notice ) {
+	foreach ( _add_upgrade_notice( '', true ) as $notice ) {
 		//* @TODO rtl?
 		\the_seo_framework()->do_dismissible_notice( 'SEO: ' . $notice, 'info' );
 	}
@@ -552,9 +680,9 @@ function _do_upgrade_3103() {
  */
 function _do_upgrade_3300() {
 
-	$tsf = \the_seo_framework();
-
 	if ( \get_option( 'the_seo_framework_initial_db_version' ) < '3300' ) {
+		$tsf = \the_seo_framework();
+
 		// Remove old rewrite rules.
 		unset(
 			$GLOBALS['wp_rewrite']->extra_rules_top['sitemap\.xml$'],
@@ -605,9 +733,9 @@ function _do_upgrade_3300() {
  */
 function _do_upgrade_4051() {
 
-	$tsf = \the_seo_framework();
-
 	if ( \get_option( 'the_seo_framework_initial_db_version' ) < '4051' ) {
+		$tsf = \the_seo_framework();
+
 		$tsf->update_option( 'advanced_query_protection', 0 );
 		$tsf->update_option( 'index_the_feed', 0 );
 		$tsf->update_option( 'baidu_verification', '' );
@@ -618,3 +746,44 @@ function _do_upgrade_4051() {
 
 	\update_option( 'the_seo_framework_upgraded_db_version', '4051' );
 }
+
+/**
+ * Registers the `disabled_taxonomies` option, array.
+ * Registers the `sitemap_logo_url` option, string.
+ * Registers the `sitemap_logo_id` option, int.
+ * Registers the `social_title_rem_additions` option, int. 0 for current users, 1 for new.
+ * Registers and migrates the robots taxonomy options. Sets defaults (['noindex']['post_format'] = 1).
+ *
+ * @since 4.1.0
+ */
+function _do_upgrade_4103() {
+
+	if ( \get_option( 'the_seo_framework_initial_db_version' ) < '4103' ) {
+		$tsf = \the_seo_framework();
+
+		$tsf->update_option( 'disabled_taxonomies', [] );
+		$tsf->update_option( 'sitemap_logo_url', '' );
+		$tsf->update_option( 'sitemap_logo_id', 0 );
+		$tsf->update_option( 'social_title_rem_additions', 0 );
+
+		$defaults = _upgrade_default_site_options();
+		// Transport category_noindex/nofollow/noarchive and tag_noindex/nofollow/noarchive settings.
+		foreach ( [ 'noindex', 'nofollow', 'noarchive' ] as $r ) {
+			$_option = $tsf->get_robots_taxonomy_option_id( $r );
+			if ( isset( $defaults[ $_option ] ) ) {
+				// Set current to default options.
+				$_value = (array) ( $tsf->get_option( $_option, false ) ?: $defaults[ $_option ] );
+
+				// Override those options with settings from before.
+				$_value['category'] = (int) (bool) $tsf->get_option( "category_$r", false );
+				$_value['post_tag'] = (int) (bool) $tsf->get_option( "tag_$r", false );
+
+				$tsf->update_option( $_option, $_value );
+			}
+		}
+	}
+
+	\update_option( 'the_seo_framework_upgraded_db_version', '4103' );
+}
+
+// category_$r and tag_$r must be deleted at 4.2 or 5.0 (whichever comes);

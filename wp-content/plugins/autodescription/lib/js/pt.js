@@ -316,7 +316,7 @@ window.tsfPT = function( $ ) {
 				//? One has been set previously via this script, reselect it.
 				makePrimary( taxonomy, primaries[ taxonomy ] );
 			} else {
-				//? Select one according to WordPress' term list sorting.
+				//? Select one according to WordPress's term list sorting.
 				makeFirstPrimary( taxonomy );
 			}
 		}
@@ -330,7 +330,7 @@ window.tsfPT = function( $ ) {
 				//? One has been saved earlier via this script.
 				makePrimary( taxonomy, taxonomies[ taxonomy ].primary );
 			} else {
-				//? Select one according to WordPress' term list sorting.
+				//? Select one according to WordPress's term list sorting.
 				makeFirstPrimary( taxonomy );
 			}
 		}
@@ -362,7 +362,7 @@ window.tsfPT = function( $ ) {
 		 * @return {undefined}
 		 */
 		load: () => {
-			$( document.body ).on( 'tsf-onload', _initPrimaryTerm );
+			document.body.addEventListener( 'tsf-onload', _initPrimaryTerm );
 		}
 	}, {
 
@@ -370,4 +370,4 @@ window.tsfPT = function( $ ) {
 		l10n
 	} );
 }( jQuery );
-jQuery( window.tsfPT.load );
+window.tsfPT.load();

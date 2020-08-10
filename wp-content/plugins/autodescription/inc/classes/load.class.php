@@ -33,14 +33,15 @@ defined( 'THE_SEO_FRAMEWORK_PRESENT' ) or die;
  *
  * @since 2.8.0
  * @since 4.0.0 No longer implements an interface. It's implied.
+ * @since 4.1.0 Now extends `Cache` instead of `Feed`.
  */
-final class Load extends Feed {
+final class Load extends Cache {
 
 	/**
 	 * @since 2.4.3
 	 * @var bool Enable object caching.
 	 */
-	protected $use_object_cache = true;
+	protected $use_object_cache = false;
 
 	/**
 	 * @since 2.2.9
@@ -101,7 +102,10 @@ final class Load extends Feed {
 		 * @since 2.8.0 : Uses method $this->use_object_cache() as default.
 		 * @param bool $use_object_cache Whether to enable object caching.
 		 */
-		$this->use_object_cache = (bool) \apply_filters( 'the_seo_framework_use_object_cache', $this->use_object_cache() );
+		$this->use_object_cache = (bool) \apply_filters(
+			'the_seo_framework_use_object_cache',
+			\wp_using_ext_object_cache() && $this->get_option( 'cache_object' )
+		);
 
 		//? We always use this, because we need to test whether the sitemap must be outputted.
 		$this->pretty_permalinks = '' !== \get_option( 'permalink_structure' );
@@ -188,11 +192,10 @@ final class Load extends Feed {
 	}
 
 	/**
-	 * Includes compatibility files.
+	 * Includes compatibility files, only once per request.
 	 *
 	 * @since 2.8.0
 	 * @access private
-	 * @staticvar array $included Maintains cache of whether files have been loaded.
 	 *
 	 * @param string $what The vendor/plugin/theme name for the compatibilty.
 	 * @param string $type The compatibility type. Be it 'plugin' or 'theme'.

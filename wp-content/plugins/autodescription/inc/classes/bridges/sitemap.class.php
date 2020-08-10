@@ -80,12 +80,12 @@ final class Sitemap {
 
 	/**
 	 * The constructor. Can't be instantiated externally from this file.
+	 * Kills PHP on subsequent duplicated request. Enforces singleton.
 	 *
-	 * This probably autoloads at action "admin_enqueue_scripts", priority "0".
+	 * This probably autoloads at action "template_redirect", priority "1".
 	 *
 	 * @since 4.0.0
 	 * @access private
-	 * @staticvar int $count Enforces singleton.
 	 * @internal
 	 */
 	public function __construct() {
@@ -101,13 +101,15 @@ final class Sitemap {
 	 * Initializes scripts based on admin query.
 	 *
 	 * @since 4.0.0
-	 * @since 4.0.2 Can now parse non-ASCII URLs. No longer lowercases raw URIs.
+	 * @since 4.0.2 Can now parse non-ASCII URLs. No longer only lowercases raw URIs.
 	 * @access private
 	 * @internal This always runs; build your own loader from the public methods, instead.
 	 */
 	public function _init() {
 
 		// The raw path(+query) of the requested URI.
+		// TODO consider reverse proxies, as WP()->parse_request() seems to do.
+		// @link https://github.com/sybrew/the-seo-framework/issues/529
 		if ( isset( $_SERVER['REQUEST_URI'] ) ) {
 			$raw_uri = rawurldecode(
 				\wp_check_invalid_utf8(

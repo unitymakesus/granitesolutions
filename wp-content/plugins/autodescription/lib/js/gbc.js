@@ -349,7 +349,7 @@ window.tsfGBC = function( $ ) {
 		 * @return {undefined}
 		 */
 		load: () => {
-			$( document.body ).on( 'tsf-onload', _initCompat );
+			document.body.addEventListener( 'tsf-onload', _initCompat );
 		},
 	}, {
 		triggerUpdate,
@@ -357,4 +357,4 @@ window.tsfGBC = function( $ ) {
 		l10n
 	} );
 }( jQuery );
-jQuery( window.tsfGBC.load );
+window.tsfGBC.load();

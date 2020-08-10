@@ -103,7 +103,8 @@ final class SeoBar_Page extends SeoBar {
 						'noarchive' => false,
 					],
 					static::$tsf->robots_meta( [
-						'id' => static::$query['id'],
+						'id'       => static::$query['id'],
+						'taxonomy' => '',
 					] )
 				),
 			],
@@ -158,12 +159,12 @@ final class SeoBar_Page extends SeoBar {
 					),
 					'protected'  => \__( 'A page protection state is added which increases the length.', 'autodescription' ),
 					'branding'   => [
-						'not'       => \__( "It's not branded. Search engines may ignore your title.", 'autodescription' ),
+						'not'       => \__( "It's not branded. Search engines may ignore your title. Consider adding back the site title.", 'autodescription' ),
 						'manual'    => \__( "It's manually branded.", 'autodescription' ),
 						'automatic' => \__( "It's automatically branded.", 'autodescription' ),
 					],
-					'duplicated' => \__( 'The blog name is found multiple times.', 'autodescription' ),
-					'syntax'     => \__( "Markup syntax was found that isn't transformed. Consider replacing it with static input.", 'autodescription' ),
+					'duplicated' => \__( 'The site title is found multiple times.', 'autodescription' ),
+					'syntax'     => \__( "Markup syntax was found that isn't transformed. Consider rewriting the custom title.", 'autodescription' ),
 				],
 				'reason'   => [
 					'incomplete' => \__( 'Incomplete.', 'autodescription' ),
@@ -178,7 +179,7 @@ final class SeoBar_Page extends SeoBar {
 						'status' => \The_SEO_Framework\Interpreters\SeoBar::STATE_GOOD,
 						'reason' => \__( 'Automatically generated.', 'autodescription' ),
 						'assess' => [
-							'base' => \__( "It's built using the page title.", 'autodescription' ),
+							'base' => \__( "It's built from the page title.", 'autodescription' ),
 						],
 					],
 					'custom'    => [
@@ -195,7 +196,8 @@ final class SeoBar_Page extends SeoBar {
 		);
 
 		$title_args = [
-			'id' => static::$query['id'],
+			'id'       => static::$query['id'],
+			'taxonomy' => '',
 		];
 
 		// TODO instead of getting values from the options API, why don't we store the parameters and allow them to be modified?
@@ -227,7 +229,7 @@ final class SeoBar_Page extends SeoBar {
 
 			if ( $this->query_cache['states']['ishome'] ) {
 				// Don't use cache here, only one page can have this state.
-				$item['assess']['base'] = \__( 'The title is built from the blog name.', 'autodescription' );
+				$item['assess']['base'] = \__( "It's built using the site title.", 'autodescription' );
 			}
 
 			$title_part = static::$tsf->get_filtered_raw_generated_title( $title_args, false );
@@ -265,15 +267,16 @@ final class SeoBar_Page extends SeoBar {
 
 			// Absence assertion is done after this.
 			if ( $title === $_title_before ) {
+				// Title didn't change, so no automatic branding was added.
 				$item['assess']['branding'] = $cache['assess']['branding']['manual'];
 			} else {
-				// This is true unless it's the home page and the user passed the blog name exactly.
+				// This is true unless it's the home page and the user passed the site title exactly.
 				$item['assess']['branding'] = $cache['assess']['branding']['automatic'];
 			}
 		} else {
 			// Absence assertion is done after this.
 			if ( $this->query_cache['states']['ishome'] ) {
-				// This is true unless it's the home page and the user passed the blog name exactly.
+				// This is true unless it's the home page and the user passed the site title exactly.
 				$item['assess']['branding'] = $cache['assess']['branding']['automatic'];
 			} else {
 				$item['assess']['branding'] = $cache['assess']['branding']['manual'];
@@ -371,12 +374,12 @@ final class SeoBar_Page extends SeoBar {
 				],
 				'assess'   => [
 					'empty'     => \__( 'There is no usable content, so no description could be generated.', 'autodescription' ),
-					'builder'   => \__( 'A foreign page builder is used, so no description is generated.', 'autodescription' ),
+					'builder'   => \__( 'A page builder is used that renders content dynamically, so no description can be generated for performance and privacy reasons. Consider providing a custom description.', 'autodescription' ),
 					'protected' => \__( 'The page is protected, so no description is generated.', 'autodescription' ),
-					'excerpt'   => \__( "It's built using the excerpt field.", 'autodescription' ),
+					'excerpt'   => \__( "It's built from the page excerpt field.", 'autodescription' ),
 					/* translators: %s = list of duplicated words */
 					'dupes'     => \__( 'Found duplicated words: %s', 'autodescription' ),
-					'syntax'    => \__( "Markup syntax was found that isn't transformed. Consider replacing it with static input.", 'autodescription' ),
+					'syntax'    => \__( "Markup syntax was found that isn't transformed. Consider rewriting the custom description.", 'autodescription' ),
 				],
 				'reason'   => [
 					'empty'         => \__( 'Empty.', 'autodescription' ),
@@ -391,7 +394,7 @@ final class SeoBar_Page extends SeoBar {
 						'status' => \The_SEO_Framework\Interpreters\SeoBar::STATE_GOOD,
 						'reason' => \__( 'Automatically generated.', 'autodescription' ),
 						'assess' => [
-							'base' => \__( "It's built using the page content.", 'autodescription' ),
+							'base' => \__( "It's built from the page content.", 'autodescription' ),
 						],
 					],
 					'emptynoauto' => [
@@ -407,9 +410,9 @@ final class SeoBar_Page extends SeoBar {
 						'symbol' => \_x( 'D', 'Description', 'autodescription' ),
 						'title'  => \__( 'Description', 'autodescription' ),
 						'status' => \The_SEO_Framework\Interpreters\SeoBar::STATE_GOOD,
-						'reason' => \__( 'Obtained from page SEO meta input.', 'autodescription' ),
+						'reason' => \__( 'Obtained from the page SEO meta input.', 'autodescription' ),
 						'assess' => [
-							'base' => \__( "It's built from page SEO meta input.", 'autodescription' ),
+							'base' => \__( "It's built from the page SEO meta input.", 'autodescription' ),
 						],
 					],
 				],
@@ -417,7 +420,8 @@ final class SeoBar_Page extends SeoBar {
 		);
 
 		$desc_args = [
-			'id' => static::$query['id'],
+			'id'       => static::$query['id'],
+			'taxonomy' => '',
 		];
 
 		// TODO instead of getting values from the options API, why don't we store the parameters and allow them to be modified?
@@ -455,18 +459,20 @@ final class SeoBar_Page extends SeoBar {
 			$desc = static::$tsf->get_generated_description( $desc_args, false );
 
 			if ( ! strlen( $desc ) ) {
-				$item['status'] = \The_SEO_Framework\Interpreters\SeoBar::STATE_UNKNOWN;
 				$item['reason'] = $cache['reason']['empty'];
 
 				// This is now inaccurate, purge it.
 				// TODO consider alternative? "It TRIED to build it from...."?
 				unset( $item['assess']['base'] );
 
-				if ( static::$tsf->uses_page_builder( static::$query['id'] ) ) {
+				if ( static::$tsf->uses_non_html_page_builder( static::$query['id'] ) ) {
+					$item['status']          = \The_SEO_Framework\Interpreters\SeoBar::STATE_UNKNOWN;
 					$item['assess']['empty'] = $cache['assess']['builder'];
 				} elseif ( static::$tsf->is_protected( static::$query['id'] ) ) {
+					$item['status']          = \The_SEO_Framework\Interpreters\SeoBar::STATE_UNKNOWN;
 					$item['assess']['empty'] = $cache['assess']['protected'];
 				} else {
+					$item['status']          = \The_SEO_Framework\Interpreters\SeoBar::STATE_UNDEFINED;
 					$item['assess']['empty'] = $cache['assess']['empty'];
 				}
 

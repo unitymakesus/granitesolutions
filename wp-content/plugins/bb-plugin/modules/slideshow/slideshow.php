@@ -140,7 +140,7 @@ class FLSlideshowModule extends FLBuilderModule {
 				$urls .= 'largeURL: "' . $photo->largeURL . '",'; // @codingStandardsIgnoreLine
 				$urls .= 'x3largeURL: "' . $photo->x3largeURL . '",'; // @codingStandardsIgnoreLine
 				$urls     .= 'caption: "' . $caption . '",';
-				$urls     .= 'alt: "' . esc_attr( $photo->alt ) . '"';
+				$urls     .= 'alt: "' . empty( $photo->alt ) ? '' : esc_attr( $photo->alt ) . '"';
 				$urls     .= '}';
 				$objects[] = $urls;
 			}

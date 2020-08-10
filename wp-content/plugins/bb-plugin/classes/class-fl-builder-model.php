@@ -259,6 +259,23 @@ final class FLBuilderModel {
 	}
 
 	/**
+	 * Returns the relative URL for the plugin folder.
+	 *
+	 * @since 2.3
+	 * @return string
+	 */
+	static public function get_relative_plugin_url() {
+		$url = str_ireplace( home_url(), '', FL_BUILDER_URL );
+		$parsed_path = parse_url( FL_BUILDER_URL, PHP_URL_PATH );
+
+		if ( strstr( $url, '://' ) && $parsed_path ) {
+			$url = $parsed_path;
+		}
+
+		return $url;
+	}
+
+	/**
 	 * Returns an array of post data from either $_POST['fl_builder_data']
 	 * or $_POST if that is not set.
 	 *
@@ -4201,6 +4218,9 @@ final class FLBuilderModel {
 				// @codingStandardsIgnoreEnd
 			}
 		}
+
+		// Flush the cache so new meta is returned in wp meta functions.
+		wp_cache_flush();
 
 		// Duplicate post terms.
 		$taxonomies = get_object_taxonomies( $post->post_type );

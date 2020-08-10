@@ -250,7 +250,7 @@ abstract class ListTable {
 	 * Returns a JS script that triggers list updates.
 	 * This is a necessity as WordPress doesn't trigger actions on update.
 	 *
-	 * TODO bind to WordPress' function instead? Didn't we already do that?!
+	 * TODO bind to WordPress's function instead? Didn't we already do that?!
 	 * See: `tsfLe._hijackListeners()`; Although, that doesn't cover "adding" new items.
 	 *
 	 * @since 4.0.5
@@ -276,7 +276,7 @@ abstract class ListTable {
 	abstract public function _add_column( $columns );
 
 	/**
-	 * Outputs the SEO Bar for posts and pages.
+	 * Outputs the contents for a column on post overview screens.
 	 *
 	 * @since 4.0.0
 	 * @access private
@@ -293,7 +293,7 @@ abstract class ListTable {
 	 * @since 4.0.0
 	 * @access private
 	 * @abstract
-	 * @NOTE Unlike _output_seo_bar_for_column(), this is a filter callback.
+	 * @NOTE Unlike _output_column_contents_for_post(), this is a filter callback.
 	 *       Because of this, the first parameter is a useless string, which must be extended.
 	 *       Discrepancy: https://core.trac.wordpress.org/ticket/33521
 	 *       With this, the proper function name should be "_get..." or "_add...", but not "_output.."

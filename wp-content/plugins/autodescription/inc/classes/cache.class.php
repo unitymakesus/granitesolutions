@@ -35,18 +35,6 @@ defined( 'THE_SEO_FRAMEWORK_PRESENT' ) or die;
 class Cache extends Site_Options {
 
 	/**
-	 * Determines whether object cache is being used.
-	 *
-	 * @since 2.8.0
-	 * @see $this->use_object_cache
-	 *
-	 * @return bool
-	 */
-	protected function use_object_cache() {
-		return \wp_using_ext_object_cache() && $this->get_option( 'cache_object' );
-	}
-
-	/**
 	 * Initializes admin caching actions.
 	 *
 	 * @since 2.8.0
@@ -478,7 +466,6 @@ class Cache extends Site_Options {
 	 *
 	 * @since 2.9.1
 	 * @since 3.1.1 : The first parameter is now optional.
-	 * @staticvar array $cached_id : contains cache strings.
 	 * @see $this->generate_cache_key_by_type() to get cache key outside of the query.
 	 *
 	 * @param int|string|bool $page_id  The Taxonomy or Post ID.
@@ -533,11 +520,8 @@ class Cache extends Site_Options {
 						$the_id .= 'day_' . \mysql2date( 'd_m_y', $date, false );
 					}
 				} else {
-					//* Get seconds since UNIX Epoch. This is a failsafe.
-
-					/**
-					 * @staticvar string $unix : Used to maintain a static timestamp for this query.
-					 */
+					// Get seconds since UNIX Epoch. This is a failsafe.
+					// Memoize the timestamp, so that the key stays the same.
 					static $unix = null;
 
 					if ( ! isset( $unix ) )
@@ -632,7 +616,6 @@ class Cache extends Site_Options {
 	 *
 	 * @since 2.9.1
 	 * @since 2.9.2 Now returns false when an incorrect $type is supplied.
-	 * @staticvar array $cached_id : contains cache strings.
 	 * @see $this->generate_cache_key().
 	 * @see $this->generate_cache_key_by_query() to get cache key from the query.
 	 *
@@ -642,7 +625,6 @@ class Cache extends Site_Options {
 	 * @return string|bool String the generated cache key. Bool false on failure.
 	 */
 	public function generate_cache_key_by_type( $page_id, $taxonomy = '', $type = '' ) {
-
 		switch ( $type ) :
 			case 'author':
 				return $this->add_cache_key_suffix( 'author_' . $page_id );
@@ -828,10 +810,11 @@ class Cache extends Site_Options {
 	 * Delete transient for sitemap on requests.
 	 * Also ping search engines.
 	 *
+	 * Can only run once per request.
+	 *
 	 * @since 2.2.9
-	 * @since 2.8.0 : Mow listens to option 'cache_sitemap' before deleting transient.
-	 * @since 2.8.2 : Added cache to prevent duplicated flushes.
-	 * @staticvar bool $run
+	 * @since 2.8.0 Now listens to option 'cache_sitemap' before deleting transient.
+	 * @since 2.8.2 Added cache to prevent duplicated flushes.
 	 *
 	 * @return bool True on success, false on failure.
 	 */
@@ -858,9 +841,10 @@ class Cache extends Site_Options {
 	 * Builds and returns the excluded post IDs transient.
 	 * The transients are autoloaded, as no expiration is set.
 	 *
+	 * Memoizes the database request.
+	 *
 	 * @since 3.0.0
 	 * @since 3.1.0 Now no longer crashes on database errors.
-	 * @staticvar array $cache
 	 *
 	 * @return array : { 'archive', 'search' }
 	 */

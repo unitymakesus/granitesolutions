@@ -42,7 +42,7 @@ class Sitemap_Base extends Sitemap {
 	 * @since 2.9.3 No longer crashes on WordPress sites below WP 4.6.
 	 * @since 3.0.4 No longer outputs empty URL entries.
 	 * @since 3.1.0 1. Removed the WP<4.6 function_exists check.
-	 *              2. Now uses WordPress' built-in memory raiser function, with "context" sitemap.
+	 *              2. Now uses WordPress's built-in memory raiser function, with "context" sitemap.
 	 * @since 4.0.0 1. Now assesses all public post types, in favor of qubit options.
 	 *              2. Improved performance by a factor of two+.
 	 *              3. Renamed method from "generate_sitemap" to abstract extension "build_sitemap".
@@ -116,7 +116,7 @@ class Sitemap_Base extends Sitemap {
 			 * @since 4.0.0
 			 * @param array $args The query arguments.
 			 */
-			$_args = \apply_filters(
+			$_args = (array) \apply_filters(
 				'the_seo_framework_sitemap_hpt_query_args',
 				[
 					'posts_per_page'   => $_hierarchical_posts_limit + count( $_exclude_ids ),
@@ -148,7 +148,7 @@ class Sitemap_Base extends Sitemap {
 			 * @since 4.0.0
 			 * @param array $args The query arguments.
 			 */
-			$_args = \apply_filters(
+			$_args = (array) \apply_filters(
 				'the_seo_framework_sitemap_nhpt_query_args',
 				[
 					'posts_per_page'   => $this->get_sitemap_post_limit( false ),
@@ -169,13 +169,27 @@ class Sitemap_Base extends Sitemap {
 			$non_hierarchical_post_ids = $wp_query->get_posts();
 		}
 
-		// Destroy class.
+		// Destroy query instance.
 		$wp_query = null;
 
-		$_items      = array_merge( $hierarchical_post_ids, $non_hierarchical_post_ids );
+		/**
+		 * @since 4.1.0
+		 * @param int[] $_items                    The post IDs that will be parsed in the sitemap.
+		 *                                         When it totals for more than 49998 items, they'll be spliced.
+		 * @param int[] $hierarchical_post_ids     The post IDs from hierarchical post types.
+		 * @param int[] $non_hierarchical_post_ids The post IDs from non-hierarchical post types.
+		 */
+		$_items      = (array) \apply_filters_ref_array(
+			'the_seo_framework_sitemap_items',
+			[
+				array_merge( $hierarchical_post_ids, $non_hierarchical_post_ids ),
+				$hierarchical_post_ids,
+				$non_hierarchical_post_ids,
+			]
+		);
 		$total_items = count( $_items );
 
-		// 49998 = 50000-2, max sitemap items.
+		// 49998 = 50000-2 (home+blog), max sitemap items.
 		if ( $total_items > 49998 ) array_splice( $_items, 49998 );
 
 		foreach ( $this->generate_url_item_values(
@@ -245,7 +259,12 @@ class Sitemap_Base extends Sitemap {
 
 				// Reset.
 				$_values        = [];
-				$_values['loc'] = static::$tsf->create_canonical_url( [ 'id' => $front_page_id ] );
+				$_values['loc'] = static::$tsf->create_canonical_url(
+					[
+						'id'       => $front_page_id,
+						'taxonomy' => '',
+					]
+				);
 
 				if ( $args['show_modified'] ) {
 					$post               = \get_post( $front_page_id );
@@ -262,7 +281,12 @@ class Sitemap_Base extends Sitemap {
 			if ( $posts_page_id && $this->is_post_included_in_sitemap( $posts_page_id ) ) {
 				// Reset.
 				$_values        = [];
-				$_values['loc'] = static::$tsf->create_canonical_url( [ 'id' => $posts_page_id ] );
+				$_values['loc'] = static::$tsf->create_canonical_url(
+					[
+						'id'       => $posts_page_id,
+						'taxonomy' => '',
+					]
+				);
 
 				if ( $args['show_modified'] ) {
 					$latests_posts = \wp_get_recent_posts(
@@ -354,7 +378,12 @@ class Sitemap_Base extends Sitemap {
 		foreach ( $post_ids as $post_id ) {
 			if ( $this->is_post_included_in_sitemap( $post_id ) ) {
 				$_values        = [];
-				$_values['loc'] = static::$tsf->create_canonical_url( [ 'id' => $post_id ] );
+				$_values['loc'] = static::$tsf->create_canonical_url(
+					[
+						'id'       => $post_id,
+						'taxonomy' => '',
+					]
+				);
 
 				if ( $args['show_modified'] ) {
 					$post = \get_post( $post_id );
@@ -377,7 +406,6 @@ class Sitemap_Base extends Sitemap {
 	 * Builds and returns a sitemap URL item.
 	 *
 	 * @since 4.0.0
-	 * @staticvar string $timestamp_format
 	 *
 	 * @param array $args : {
 	 *   string               $loc      : The item's URI.
@@ -394,6 +422,8 @@ class Sitemap_Base extends Sitemap {
 
 		$timestamp_format = $timestamp_format ?: static::$tsf->get_timestamp_format();
 
+		// sprintf is heavy. Should we parse this as an array, and mark them up later, instead?
+		// @link https://github.com/sybrew/The-SEO-Framework-Extension-Manager/blob/2.4.0/extensions/essentials/articles/trunk/inc/classes/sitemapbuilder.class.php#L268-L292
 		return sprintf(
 			"\t<url>\n%s\t</url>\n",
 			vsprintf(
