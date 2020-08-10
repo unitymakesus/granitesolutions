@@ -373,3 +373,35 @@ add_filter('gform_pre_render_1', __NAMESPACE__.'\\gform_populate_matador_jobs');
 add_filter('gform_pre_validation_1', __NAMESPACE__.'\\gform_populate_matador_jobs');
 add_filter('gform_pre_submission_filter_1', __NAMESPACE__.'\\gform_populate_matador_jobs');
 add_filter('gform_admin_pre_render_1', __NAMESPACE__.'\\gform_populate_matador_jobs');
+
+/**
+ * Add a custom merge tag for Bullhorn Job ID.
+ */
+add_filter('gform_custom_merge_tags', function($merge_tags, $form_id, $fields, $element_id) {
+    $merge_tags[] = [
+        'label' => __('Bullhorn Job ID', 'sage'),
+        'tag'   => '{bullhorn_job_id}',
+    ];
+
+    return $merge_tags;
+}, 10, 4);
+
+/**
+ * Replace {bullhorn_job_info} with Bullhorn Job ID.
+ */
+add_filter('gform_replace_merge_tags', function($text, $form, $entry) {
+    $custom_merge_tag = '{bullhorn_job_id}';
+    $job_id_text = '';
+
+    if (strpos($text, $custom_merge_tag) === false) {
+        return $text;
+    }
+
+    $job_id = rgar($entry, '6');
+    $job_id_text .= __('Bullhorn ID:', 'sage');
+    $job_id_text .= " #{$job_id})";
+
+    $text = str_replace($custom_merge_tag, $job_id_text, $text);
+
+    return $text;
+}, 10, 3);
