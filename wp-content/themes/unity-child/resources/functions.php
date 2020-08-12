@@ -398,6 +398,7 @@ add_filter('gform_replace_merge_tags', function($text, $form, $entry) {
     }
 
     $job_id = rgar($entry, '6');
+    $job_id_text .= '(';
     $job_id_text .= __('Bullhorn ID:', 'sage');
     $job_id_text .= " #{$job_id})";
 
