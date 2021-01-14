@@ -60,6 +60,9 @@ foreach ( $settings->thead_row as $head_row ) {
 			<?php if ( '' !== $head_row->head_bg_color && isset( $head_row->head_bg_color ) ) { ?>
 				background-color: <?php echo esc_attr( ( false === strpos( $head_row->head_bg_color, 'rgb' ) ) ? '#' . $head_row->head_bg_color : $head_row->head_bg_color ); ?>;
 			<?php } ?>
+			<?php if ( isset( $head_row->head_align ) && '' !== $head_row->head_align ) { ?>
+				text-align: <?php echo esc_attr( $head_row->head_align ); ?>;
+			<?php } ?>
 		}
 
 		.fl-node-<?php echo esc_attr( $id ); ?> .uabb-table-header .table-heading-<?php echo esc_attr( $table_header ); ?> .before-icon,
@@ -105,6 +108,9 @@ foreach ( $settings->tbody_row as $body_row ) {
 		.fl-node-<?php echo esc_attr( $id ); ?> .uabb-table-features .table-body-<?php echo esc_attr( $table_body ); ?> {
 			<?php if ( '' !== $body_row->body_bg_color && isset( $body_row->body_bg_color ) ) { ?>
 				background-color: <?php echo esc_attr( ( false === strpos( $body_row->body_bg_color, 'rgb' ) ) ? '#' . $body_row->body_bg_color : $body_row->body_bg_color ); ?>;
+			<?php } ?>
+			<?php if ( isset( $body_row->body_align ) && '' !== $body_row->body_align ) { ?>
+				text-align: <?php echo esc_attr( $body_row->body_align ); ?>;
 			<?php } ?>
 		}
 
@@ -173,7 +179,9 @@ endif;
 }
 
 .fl-node-<?php echo esc_attr( $id ); ?> .table-header-th .before-icon,
-.fl-node-<?php echo esc_attr( $id ); ?> .table-header-th .after-icon {
+.fl-node-<?php echo esc_attr( $id ); ?> .table-header-th .after-icon,
+.fl-node-<?php echo esc_attr( $id ); ?> div.table-header-th .before-icon,
+.fl-node-<?php echo esc_attr( $id ); ?> div.table-header-th .after-icon {
 	<?php if ( '' !== $settings->head_icons_global_color ) : ?>
 		color: <?php echo esc_attr( $settings->head_icons_global_color ); ?>;
 	<?php endif ?>
@@ -194,7 +202,8 @@ endif;
 	<?php endif ?>
 }
 
-.fl-node-<?php echo esc_attr( $id ); ?> .table-header-th .head-content-img {
+.fl-node-<?php echo esc_attr( $id ); ?> .table-header-th .head-content-img,
+.fl-node-<?php echo esc_attr( $id ); ?> div.table-header-th .head-content-img {
 	<?php if ( '' !== $settings->head_image_gloabl_size ) : ?>
 		width: <?php echo esc_attr( $settings->head_image_gloabl_size ); ?>px;
 	<?php endif ?>
@@ -212,7 +221,8 @@ if ( '' === $settings->table_data_border_size ) {
 }
 ?>
 
-.fl-node-<?php echo esc_attr( $id ); ?> .uabb-table-inner-wrap .uabb-table-header .table-header-th {
+.fl-node-<?php echo esc_attr( $id ); ?> .uabb-table-inner-wrap .uabb-table-header .table-header-th,
+.fl-node-<?php echo esc_attr( $id ); ?> div.table-header-th {
 	<?php if ( '' !== $settings->table_data_border_color ) : ?>
 		border: <?php echo esc_attr( $settings->table_data_border_size ); ?>px solid <?php echo esc_attr( $settings->table_data_border_color ); ?>;
 	<?php endif ?>
@@ -280,7 +290,9 @@ if ( '' === $settings->entries_border_size ) {
 }
 
 .fl-node-<?php echo esc_attr( $id ); ?> .uabb-table-header .table-header-th,
-.fl-node-<?php echo esc_attr( $id ); ?> .uabb-table-header .table-header-th .th-style {
+.fl-node-<?php echo esc_attr( $id ); ?> .uabb-table-header .table-header-th .th-style,
+.fl-node-<?php echo esc_attr( $id ); ?> div.table-header-th,
+.fl-node-<?php echo esc_attr( $id ); ?> div.table-header-th .th-style {
 	<?php if ( isset( $settings->row_heading_color ) && '' !== $settings->row_heading_color ) : ?>
 		color: <?php echo esc_attr( $settings->row_heading_color ); ?>;
 	<?php endif; ?>
@@ -294,7 +306,9 @@ if ( '' === $settings->entries_border_size ) {
 
 <?php if ( ! $version_bb_check ) { ?>
 	.fl-node-<?php echo esc_attr( $id ); ?> .uabb-table-header .table-header-th,
-	.fl-node-<?php echo esc_attr( $id ); ?> .uabb-table-header .table-header-th .th-style {
+	.fl-node-<?php echo esc_attr( $id ); ?> .uabb-table-header .table-header-th .th-style,
+	.fl-node-<?php echo esc_attr( $id ); ?> div.table-header-th,
+	.fl-node-<?php echo esc_attr( $id ); ?> div.table-header-th .th-style {
 
 		text-align: <?php echo esc_attr( $settings->headings_align ); ?>;
 
@@ -325,7 +339,7 @@ if ( '' === $settings->entries_border_size ) {
 			array(
 				'settings'     => $settings,
 				'setting_name' => 'heading_typo',
-				'selector'     => ".fl-node-$id .uabb-table-wrapper .table-header-th",
+				'selector'     => ".fl-node-$id .uabb-table-wrapper .table-header-th, .fl-node-$id .uabb-table-wrapper div.table-header-th",
 			)
 		);
 	}
@@ -420,7 +434,8 @@ if ( '' === $settings->entries_border_size ) {
 
 	@media ( max-width: <?php echo esc_attr( $global_settings->medium_breakpoint ); ?>px ) {
 
-		.fl-builder-content .fl-node-<?php echo esc_attr( $id ); ?> .uabb-table-header .table-header-th {
+		.fl-builder-content .fl-node-<?php echo esc_attr( $id ); ?> .uabb-table-header .table-header-th,
+		.fl-builder-content .fl-node-<?php echo esc_attr( $id ); ?> div.table-header-th {
 
 			<?php if ( isset( $settings->heading_typography_font_size_unit_medium ) && '' !== $settings->heading_typography_font_size_unit_medium ) : ?>
 				font-size: <?php echo esc_attr( $settings->heading_typography_font_size_unit_medium ); ?>px;
@@ -459,6 +474,33 @@ if ( '' === $settings->entries_border_size ) {
 
 	@media ( max-width: <?php echo esc_attr( $global_settings->responsive_breakpoint ); ?>px ) {
 
+		<?php if ( isset( $settings->responsive_layout ) && 'stack' === $settings->responsive_layout ) { ?>
+			.fl-node-<?php echo esc_attr( $id ); ?> table thead {
+				display: none;
+			}
+
+			.fl-node-<?php echo esc_attr( $id ); ?> .uabb-table .table-body-td {
+				display: flex;
+			}
+
+			.fl-node-<?php echo esc_attr( $id ); ?> .uabb-table div.table-header-th {
+				display: block;
+				width: 100%;
+				border-top: none;
+				border-left: none;
+				border-bottom: none;
+			}
+
+			.fl-node-<?php echo esc_attr( $id ); ?> .uabb-table .table-body-td .content-text {
+				display: block;
+				width: 100%;
+				padding: <?php echo esc_attr( $settings->body_cell_padding ); ?>px;
+			}
+			.fl-node-<?php echo esc_attr( $id ); ?> .uabb-table-inner-wrap .uabb-table-features .table-body-td {
+				padding: 0px;
+			}
+		<?php } ?>
+
 		.fl-node-<?php echo esc_attr( $id ); ?> .uabb-table {
 			overflow-x:auto;
 		}
@@ -483,7 +525,8 @@ if ( '' === $settings->entries_border_size ) {
 			margin-left: 0;
 		}
 
-		.fl-builder-content .fl-node-<?php echo esc_attr( $id ); ?> .uabb-table-header .table-header-th {
+		.fl-builder-content .fl-node-<?php echo esc_attr( $id ); ?> .uabb-table-header .table-header-th,
+		.fl-builder-content .fl-node-<?php echo esc_attr( $id ); ?> div.table-header-th {
 
 			<?php if ( isset( $settings->heading_typography_font_size_unit_responsive ) && '' !== $settings->heading_typography_font_size_unit_responsive ) : ?>
 					font-size: <?php echo esc_attr( $settings->heading_typography_font_size_unit_responsive ); ?>px;

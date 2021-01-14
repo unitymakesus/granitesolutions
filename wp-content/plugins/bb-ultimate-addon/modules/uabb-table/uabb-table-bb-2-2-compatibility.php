@@ -129,7 +129,7 @@ FLBuilder::register_module(
 		'extra_features' => array(
 			'title'    => __( 'Features', 'uabb' ),
 			'sections' => array(
-				'enable_sort'   => array(
+				'enable_sort'        => array(
 					'title'  => __( 'Sorting', 'uabb' ),
 					'fields' => array(
 						'show_sort' => array(
@@ -145,7 +145,7 @@ FLBuilder::register_module(
 						),
 					),
 				),
-				'enable_search' => array(
+				'enable_search'      => array(
 					'title'  => __( 'Search Field', 'uabb' ),
 					'fields' => array(
 						'show_search'  => array(
@@ -175,7 +175,7 @@ FLBuilder::register_module(
 						),
 					),
 				),
-				'enable_filter' => array(
+				'enable_filter'      => array(
 					'title'  => __( 'Entries Dropdown', 'uabb' ),
 					'fields' => array(
 						'show_entries'           => array(
@@ -209,6 +209,21 @@ FLBuilder::register_module(
 							'default'     => __( 'All', 'uabb' ),
 							'placeholder' => __( 'All', 'uabb' ),
 							'connections' => array( 'string', 'html' ),
+						),
+					),
+				),
+				'responsive_setting' => array(
+					'title'  => __( 'Responsive', 'uabb' ),
+					'fields' => array(
+						'responsive_layout' => array(
+							'type'    => 'select',
+							'label'   => __( 'Responsive Layout', 'uabb' ),
+							'default' => 'scroll',
+							'help'    => __( 'Select table layout for resposive devices.', 'uabb' ),
+							'options' => array(
+								'scroll' => __( 'Scroll', 'uabb' ),
+								'stack'  => __( 'Stacked', 'uabb' ),
+							),
 						),
 					),
 				),
@@ -860,7 +875,7 @@ FLBuilder::register_settings_form(
 								),
 								'toggle'  => array(
 									'yes' => array(
-										'sections' => array( 'head_color_setting', 'col_span_setting', 'row_span_setting', 'head_icon_basic', 'head_link_basic', 'custom_col_width' ),
+										'sections' => array( 'head_color_setting', 'col_span_setting', 'row_span_setting', 'head_icon_basic', 'head_link_basic', 'custom_col_width', 'head_align' ),
 									),
 								),
 							),
@@ -882,6 +897,10 @@ FLBuilder::register_settings_form(
 								'show_reset'  => true,
 								'show_alpha'  => true,
 								'connections' => array( 'color' ),
+							),
+							'head_align'      => array(
+								'type'  => 'align',
+								'label' => __( 'Text Alignment', 'uabb' ),
 							),
 						),
 					),
@@ -1077,7 +1096,7 @@ FLBuilder::register_settings_form(
 								),
 								'toggle'  => array(
 									'yes' => array(
-										'sections' => array( 'body_color_setting', 'body_row_span_setting', 'body_col_span_setting', 'body_icon_basic', 'body_link_basic' ),
+										'sections' => array( 'body_color_setting', 'body_row_span_setting', 'body_col_span_setting', 'body_icon_basic', 'body_link_basic', 'body_align' ),
 									),
 									'no'  => array(),
 								),
@@ -1100,6 +1119,10 @@ FLBuilder::register_settings_form(
 								'show_reset'  => true,
 								'show_alpha'  => true,
 								'connections' => array( 'color' ),
+							),
+							'body_align'      => array(
+								'type'  => 'align',
+								'label' => __( 'Text Alignment', 'uabb' ),
 							),
 						),
 					),

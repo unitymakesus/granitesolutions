@@ -49,13 +49,17 @@ class UABB_Init {
 
 			add_action( 'admin_enqueue_scripts', array( $this, 'load_uabb_admin_notice_js' ) );
 
-			add_action( 'wp_ajax_dismissed_notice_handler', array( $this, 'load_uabb_ajax_notice_handler' ) );
+			if ( current_user_can( 'manage_options' ) ) {
 
-			add_action( 'wp_ajax_dismissed_login_notice_handler', array( $this, 'load_uabb_ajax_login_notice_handler' ) );
+				add_action( 'wp_ajax_dismissed_notice_handler', array( $this, 'load_uabb_ajax_notice_handler' ) );
 
-			add_action( 'wp_ajax_uabb_batch_dismiss_notice', array( $this, 'uabb_batch_dismiss_notice_handler' ) );
+				add_action( 'wp_ajax_dismissed_login_notice_handler', array( $this, 'load_uabb_ajax_login_notice_handler' ) );
 
-			add_action( 'wp_ajax_uabb_batch_dismiss_complete_notice', array( $this, 'uabb_batch_dismiss_complete_notice' ) );
+				add_action( 'wp_ajax_uabb_batch_dismiss_notice', array( $this, 'uabb_batch_dismiss_notice_handler' ) );
+
+				add_action( 'wp_ajax_uabb_batch_dismiss_complete_notice', array( $this, 'uabb_batch_dismiss_complete_notice' ) );
+
+			}
 
 			add_filter( 'fl_builder_style_fields', array( $this, 'uabb_copy_style_fields' ) );
 
@@ -195,6 +199,23 @@ class UABB_Init {
 		require_once BB_ULTIMATE_ADDON_DIR . 'classes/batch-process/class-uabb-batch-process.php';
 		require_once BB_ULTIMATE_ADDON_DIR . 'lib/notices/class-astra-notices.php';
 
+		if ( ! class_exists( 'BSF_Analytics_Loader' ) ) {
+			require_once BB_ULTIMATE_ADDON_DIR . 'admin/bsf-analytics/class-bsf-analytics-loader.php';
+
+			$bsf_analytics = BSF_Analytics_Loader::get_instance();
+
+			$bsf_analytics->set_entity(
+				array(
+					'bsf' => array(
+						'product_name'    => 'Ultimate Addons for Beaver Builder',
+						'path'            => BB_ULTIMATE_ADDON_DIR . 'admin/bsf-analytics',
+						'author'          => 'Brainstorm Force',
+						'time_to_display' => '+24 hours',
+					),
+				)
+			);
+		}
+
 		// Load the appropriate text-domain.
 		$this->load_plugin_textdomain();
 
@@ -329,15 +350,6 @@ class UABB_Init {
 	 * @since x.x.x
 	 */
 	public function load_scripts() {
-
-		$uabb_localize = apply_filters(
-			'uabb_js_localize',
-			array(
-				'ajax_url' => admin_url( 'admin-ajax.php' ),
-			)
-		);
-
-		wp_localize_script( 'jquery', 'uabb', $uabb_localize );
 
 		if ( FLBuilderModel::is_builder_active() ) {
 

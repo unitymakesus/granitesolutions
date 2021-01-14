@@ -72,8 +72,8 @@ $col = ( 'carousel' === $settings->is_carousel ) ? $settings->post_per_grid_desk
  * Render Mansonry Filter Buttons
  */
 
-if ( 'masonary' === $settings->is_carousel ) {
-	$module->render_masonary_filters();
+if ( 'masonary' === $settings->is_carousel || 'grid' === $settings->is_carousel ) {
+	$module->render_masonary_filters( $the_query->posts );
 }
 
 ?>
@@ -87,7 +87,7 @@ if ( 'masonary' === $settings->is_carousel ) {
 		setup_postdata( $the_query->posts[ $i ] );
 		$the_query->the_post();
 
-		if ( 'masonary' === $settings->is_carousel ) {
+		if ( 'masonary' === $settings->is_carousel || 'grid' === $settings->is_carousel ) {
 			$blog_post_type    = ( isset( $settings->post_type ) ) ? $settings->post_type : 'post';
 			$object_taxonomies = get_object_taxonomies( $blog_post_type );
 			if ( ! empty( $object_taxonomies ) ) {
@@ -107,17 +107,17 @@ if ( 'masonary' === $settings->is_carousel ) {
 		}
 
 
-		$top_featured_image_content = $module->render_featured_image( 'top', $the_query->posts[ $i ], $i );
+		$top_featured_image_content = $module->render_featured_image( $the_query->posts[ $i ], $i );
 
-		$left_featured_image_content       = $module->render_featured_image( 'left', $the_query->posts[ $i ], $i );
-		$background_featured_image_content = $module->render_featured_image( 'background', $the_query->posts[ $i ], $i );
-		$right_featured_image_content      = $module->render_featured_image( 'right', $the_query->posts[ $i ], $i );
+		$left_featured_image_content       = $module->render_featured_image( $the_query->posts[ $i ], $i, 'left' );
+		$background_featured_image_content = $module->render_featured_image( $the_query->posts[ $i ], $i, 'background' );
+		$right_featured_image_content      = $module->render_featured_image( $the_query->posts[ $i ], $i, 'right' );
 
 		$left_hide_class = ( '' === $left_featured_image_content && '' === $right_featured_image_content ) ? 'uabb-empty-img' : '';
 
 		do_action( 'uabb_blog_posts_before_post', $the_query->posts[ $i ]->ID, $settings );
 		?>
-	<div class="uabb-blog-posts-col-<?php echo esc_attr( $col ); ?> uabb-post-wrapper <?php echo ( 'masonary' === $settings->is_carousel ) ? ' uabb-blog-posts-masonary-item-' . esc_attr( $module->node ) . ' ' : ''; ?> <?php echo ( 'masonary' === $settings->is_carousel ) ? esc_attr( $class ) : ''; ?>">
+	<div class="uabb-blog-posts-col-<?php echo esc_attr( $col ); ?> uabb-post-wrapper <?php echo ( 'masonary' === $settings->is_carousel ) ? ' uabb-blog-posts-masonary-item-' . esc_attr( $module->node ) . ' ' : ''; ?> <?php echo ( 'masonary' === $settings->is_carousel || 'grid' === $settings->is_carousel ) ? esc_attr( $class ) : ''; ?> <?php echo ( 'grid' === $settings->is_carousel ) ? ' uabb-blog-posts-grid-item-' . esc_attr( $module->node ) . ' ' : ''; ?>">
 		<div class="uabb-blog-posts-shadow clearfix">
 
 			<div class="uabb-blog-post-inner-wrap <?php echo 'uabb-thumbnail-position-' . esc_attr( $settings->blog_image_position ); ?> <?php echo ( 'img,title,meta,content,cta' !== $settings->layout_sort_order ) ? 'uabb-blog-reordered' : ''; ?> <?php echo esc_attr( $left_hide_class ); ?>">
@@ -141,11 +141,14 @@ if ( 'masonary' === $settings->is_carousel ) {
 	}
 
 	?>
+	<?php if ( 'grid' === $settings->is_carousel ) : ?>
+	<div class="uabb-post-grid-sizer"></div>
+	<?php endif; ?>
 </div>
 <?php
 
 /*
- * Render Pagination
+ *  Render Pagination
  */
 
 if ( 'carousel' !== $settings->is_carousel && 'yes' === $show_pagination ) {

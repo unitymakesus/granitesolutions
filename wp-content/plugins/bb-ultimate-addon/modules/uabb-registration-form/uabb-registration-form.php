@@ -131,6 +131,7 @@ class UABBRegistrationFormModule extends FLBuilderModule {
 		$error              = array();
 		$error_flag         = '';
 		$password_generated = '';
+		$allow_register     = get_option( 'users_can_register' );
 
 			$node_id          = isset( $_POST['node_id'] ) ? sanitize_text_field( $_POST['node_id'] ) : false;
 			$template_id      = isset( $_POST['template_id'] ) ? sanitize_text_field( $_POST['template_id'] ) : false;
@@ -150,7 +151,7 @@ class UABBRegistrationFormModule extends FLBuilderModule {
 			}
 		}
 
-		if ( isset( $_POST['data'] ) ) {
+		if ( isset( $_POST['data'] ) && '1' === $allow_register ) {
 
 			$data = $_POST['data'];
 
@@ -233,7 +234,7 @@ class UABBRegistrationFormModule extends FLBuilderModule {
 
 			if ( empty( $data['user_login'] ) ) {
 
-				$data['user_login'] = $this->uabb_create_username( $data['user_email'], '' ); // phpcs:ignore PHPCompatibility.Variables.ForbiddenThisUseContexts.OutsideObjectContext
+				$data['user_login'] = self::uabb_create_username( $data['user_email'], '' ); // phpcs:ignore PHPCompatibility.Variables.ForbiddenThisUseContexts.OutsideObjectContext
 
 			} elseif ( ! validate_username( $data['user_login'] ) ) {
 				$error['user_login'] = __( 'This username is invalid because it uses illegal characters. Please enter a valid username.', 'uabb' );
@@ -258,6 +259,8 @@ class UABBRegistrationFormModule extends FLBuilderModule {
 
 			$last_name = ( isset( $data['last_name'] ) && ! empty( $data['last_name'] ) ) ? sanitize_user( $data['last_name'], true ) : '';
 
+			$phone = ( isset( $data['phone'] ) && ! empty( $data['phone'] ) ) ? sanitize_user( $data['phone'], true ) : '';
+
 			if ( true === $error_flag ) {
 
 				$response['success'] = false;
@@ -275,6 +278,7 @@ class UABBRegistrationFormModule extends FLBuilderModule {
 						'user_email'      => isset( $user_email ) ? $user_email : '',
 						'first_name'      => isset( $first_name ) ? $first_name : '',
 						'last_name'       => isset( $last_name ) ? $last_name : '',
+						'phone'           => isset( $phone ) ? $phone : '',
 						'user_registered' => gmdate( 'Y-m-d H:i:s' ),
 						'role'            => $user_role,
 					)
@@ -370,14 +374,17 @@ class UABBRegistrationFormModule extends FLBuilderModule {
 				<label for="uabb-name" class="uabb-label-mark"> <?php echo $label; //phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?></label>
 			<?php } ?>
 			<div class="uabb-form-outter">
-				<input type="<?php echo esc_attr( $type ); ?>" name="uabb_<?php echo esc_attr( $field_name ); ?>" value="" class="uabb-registration-form-requried-<?php echo esc_attr( $error_class ); ?>" placeholder="<?php echo esc_attr( $placeholder ); ?>">
+				<input type="<?php echo esc_attr( $type ); ?>" aria-label="<?php echo esc_attr( $field_name ); ?>" name="uabb_<?php echo esc_attr( $field_name ); ?>" value="" class="uabb-registration-form-requried-<?php echo esc_attr( $error_class ); ?>" placeholder="<?php echo esc_attr( $placeholder ); ?>">
 				<?php if ( 'email' === $type ) { ?>
 					<div class="uabb-registration_form-error-message uabb-registration_form-error-message-required"><span class="uabb-registration-form-invalid-field"></div>
 				<?php } else { ?>
 					<div class="uabb-registration_form-error-message uabb-registration_form-error-message-required"></div>
 				<?php } ?>
-				<?php if ( 'password' === $type && 'confirm_password' !== $field_name ) { ?>
+				<?php if ( 'password' === $type && 'confirm_pass' !== $field_name ) { ?>
 					<div class="uabb-registration-form-pass-verify"></div>
+				<?php } ?>
+				<?php if ( 'password' === $type && 'confirm_pass' === $field_name ) { ?>
+					<div class="uabb-registration-form-pass-match"></div>
 				<?php } ?>
 			</div>
 		</div>
@@ -445,6 +452,14 @@ class UABBRegistrationFormModule extends FLBuilderModule {
 						'responsive' => $item->field_width_responsive,
 					);
 					$this->create_field( $item->field_type, 'text', $item->field_label, $item->field_required, $field_width, $item->field_placeholder );
+					break;
+				case 'phone':
+					$field_width = array(
+						'desktop'    => $item->field_width,
+						'medium'     => $item->field_width_medium,
+						'responsive' => $item->field_width_responsive,
+					);
+					$this->create_field( $item->field_type, 'tel', $item->field_label, $item->field_required, $field_width, $item->field_placeholder );
 					break;
 				default:
 					break;
@@ -547,7 +562,7 @@ class UABBRegistrationFormModule extends FLBuilderModule {
 		$current_url = 'http://' . $host . strtok( $_SERVER['REQUEST_URI'], '?' );
 
 		$default_template_reg = sprintf(
-			/* translators: %1$s: search term, translators: %2$s: search term */ __(
+			/* translators: %1$s: search term, translators: %2$s: search term */            __(
 				'Dear User,
 
 You have successfully created your "%1$s" account. Thank you for registering with us!

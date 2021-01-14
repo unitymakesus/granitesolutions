@@ -1281,6 +1281,8 @@ class BlogPostsModule extends FLBuilderModule {
 	public function enqueue_scripts() {
 
 		$this->add_js( 'jquery-infinitescroll' );
+		$this->add_js( 'imagesloaded' );
+		$this->add_js( 'jquery-throttle' );
 		$this->add_js( 'jquery-mosaicflow' );
 		$this->add_js( 'isotope', BB_ULTIMATE_ADDON_URL . 'assets/js/global-scripts/jquery-masonary.js', array( 'jquery' ), '', true );
 		$this->add_js( 'carousel', BB_ULTIMATE_ADDON_URL . 'assets/js/global-scripts/jquery-carousel.js', array( 'jquery' ), '', true );
@@ -1741,10 +1743,11 @@ class BlogPostsModule extends FLBuilderModule {
 		if ( -1 !== $id && '' !== $id ) {
 			if ( 'custom' !== $size ) {
 				$temp  = wp_get_attachment_image_src( $id, $size );
-				$image = $temp[0];
+				$image = ( isset( $temp[0] ) ) ? $temp[0] : null;
 			} else {
 				$temp  = wp_get_attachment_image_src( $id, 'full' );
-				$image = $this->crop( $i, $temp[0], $this->settings->featured_image_size_width, $this->settings->featured_image_size_height );
+				$img   = ( isset( $temp[0] ) ) ? $temp[0] : null;
+				$image = $this->crop( $i, $img, $this->settings->featured_image_size_width, $this->settings->featured_image_size_height );
 			}
 		} else {
 			$return_array = array(
@@ -1766,14 +1769,22 @@ class BlogPostsModule extends FLBuilderModule {
 	 * Function that renders Mansonry Filters
 	 *
 	 * @method render_masonary_filters
+	 * @param array $query_posts gets array of posts.
 	 */
-	public function render_masonary_filters() {
+	public function render_masonary_filters( $query_posts ) {
 
 		$post_type = ( isset( $this->settings->post_type ) ) ? $this->settings->post_type : 'post';
 
 		// Get taxonomies for given custom/default post type.
 		$taxonomies = get_object_taxonomies( $post_type, 'objects' );
 		$data       = array();
+
+		$post_ids = array_map(
+			function( $arr ) {
+				return $arr->ID;
+			},
+			$query_posts
+		);
 
 		foreach ( $taxonomies as $tax_slug => $tax ) {
 
@@ -1811,7 +1822,7 @@ class BlogPostsModule extends FLBuilderModule {
 
 				if ( ! empty( $object_taxonomies ) ) {
 
-					$category_detail = get_terms( $this->settings->$cat );
+					$category_detail = get_terms( $this->settings->$cat, array( 'object_ids' => $post_ids ) );
 
 					if ( count( $category_detail ) > 0 ) {
 
@@ -1881,11 +1892,11 @@ class BlogPostsModule extends FLBuilderModule {
 	 * Function that renders Featured Image
 	 *
 	 * @method render_featured_image
-	 * @param string $pos gets the string for the position of the Image.
 	 * @param object $obj gets the blogs object.
 	 * @param array  $i   gets the values for the Blog content.
+	 * @param string $pos gets the string for the position of the Image.
 	 */
-	public function render_featured_image( $pos = 'top', $obj, $i ) {
+	public function render_featured_image( $obj, $i, $pos = 'top' ) {
 		$html = '';
 		// Match current Image position.
 		if ( $pos === $this->settings->blog_image_position ) {
@@ -2095,7 +2106,7 @@ class BlogPostsModule extends FLBuilderModule {
 		if ( 'yes' === $show_author ) {
 			?>
 			<?php esc_attr_e( 'By', 'uabb' ); ?>
-			<span class="uabb-posted-by"> <a class="url fn n" href="<?php echo esc_url( get_author_posts_url( $obj->post_author ) ); ?>">
+			<span class="uabb-posted-by"> <i aria-hidden="true" class="<?php echo esc_attr( $this->settings->author_icon ); ?>"></i><a class="url fn n" href="<?php echo esc_url( get_author_posts_url( $obj->post_author ) ); ?>">
 					<?php
 
 						$author = ( get_the_author_meta( 'display_name', $obj->post_author ) !== '' ) ? get_the_author_meta( 'display_name', $obj->post_author ) : get_the_author_meta( 'user_nicename', $obj->post_author );
@@ -2129,6 +2140,7 @@ class BlogPostsModule extends FLBuilderModule {
 		if ( 'yes' === $show_date ) {
 			?>
 			<span class="uabb-meta-date">
+				<i aria-hidden="true" class="<?php echo esc_attr( $this->settings->date_icon ); ?>"></i>
 			<?php
 
 			echo wp_kses_post( date_i18n( $date_format, strtotime( $obj->post_date ) ) );
@@ -2154,6 +2166,7 @@ class BlogPostsModule extends FLBuilderModule {
 		$show_categories = ( isset( $this->settings->show_categories ) ) ? $this->settings->show_categories : 'no';
 		$show_tags       = ( isset( $this->settings->show_tags ) ) ? $this->settings->show_tags : 'no';
 		$category_detail = array();
+		$meta_separator  = $this->settings->seprator_meta;
 
 		ob_start();
 
@@ -2161,14 +2174,17 @@ class BlogPostsModule extends FLBuilderModule {
 			$post_type         = ( isset( $this->settings->post_type ) ) ? $this->settings->post_type : 'post';
 			$object_taxonomies = get_object_taxonomies( $post_type );
 			if ( ! empty( $object_taxonomies ) ) {
-				$category_detail = wp_get_post_terms( $obj->ID, $object_taxonomies[0] );
+				$taxonomy        = ( 'product' === $this->settings->post_type && isset( $object_taxonomies[2] ) ) ? $object_taxonomies[2] : $object_taxonomies[0];
+				$category_detail = wp_get_post_terms( $obj->ID, $taxonomy );
 
 				if ( count( $category_detail ) > 0 ) {
-
+					?>
+					<i aria-hidden="true" class="<?php echo esc_attr( $this->settings->cat_icon ); ?>"></i>
+					<?php
 					$count = count( $category_detail );
 					for ( $j = 0; $j < $count; $j++ ) {
 						?>
-				<span class="uabb-cat-links"><a href="<?php echo wp_kses_post( get_term_link( $category_detail[ $j ]->term_id ) ); ?>" rel="category tag"><?php echo esc_attr( $category_detail[ $j ]->name ); ?></a></span><?php echo wp_kses_post( ( count( $category_detail ) !== $j + 1 ) ? trim( ',&nbsp;' ) : '' ); // @codingStandardsIgnoreLine.
+				<span class="uabb-cat-links <?php echo wp_kses_post( ( $count === $j + 1 ) ? 'uabb-last-cat' : '' ); ?>"><a href="<?php echo wp_kses_post( get_term_link( $category_detail[ $j ]->term_id ) ); ?>" rel="category tag"><?php echo esc_attr( $category_detail[ $j ]->name ); ?></a></span><?php echo wp_kses_post( ( count( $category_detail ) !== $j + 1 ) ? trim( ',&nbsp;' ) : '' ); // @codingStandardsIgnoreLine.
 					}
 				}
 			}
@@ -2178,11 +2194,14 @@ class BlogPostsModule extends FLBuilderModule {
 
 			$tag_detail = get_the_tags( $obj->ID );
 			if ( ! empty( $tag_detail ) ) {
-				echo ( count( $category_detail ) > 0 ) ? ', ' : '';
+				echo ( count( $category_detail ) > 0 ) ? esc_attr( $meta_separator ) : '';
+				?>
+				<i aria-hidden="true" class="<?php echo esc_attr( $this->settings->tag_icon ); ?>"></i>
+				<?php
 				$count = count( $tag_detail );
 				for ( $k = 0; $k < $count; $k++ ) {
 					?>
-			<span class="uabb-tag-links"><a href="<?php echo wp_kses_post( get_tag_link( $tag_detail[ $k ]->term_id ) ); ?>" rel="category tag"><?php echo esc_attr( $tag_detail[ $k ]->name ); ?></a></span><?php echo wp_kses_post( ( count( $tag_detail ) !== $k + 1 ) ? trim( ',&nbsp;' ) : '' ); // @codingStandardsIgnoreLine.
+			<span class="uabb-tag-links <?php echo wp_kses_post( ( $count === $j + 1 ) ? 'uabb-last-tag' : '' ); ?>"><a href="<?php echo wp_kses_post( get_tag_link( $tag_detail[ $k ]->term_id ) ); ?>" rel="category tag"><?php echo esc_attr( $tag_detail[ $k ]->name ); ?></a></span><?php echo wp_kses_post( ( count( $tag_detail ) !== $k + 1 ) ? trim( ',&nbsp;' ) : '' ); // @codingStandardsIgnoreLine.
 				}
 			}
 		}
@@ -2208,7 +2227,7 @@ class BlogPostsModule extends FLBuilderModule {
 
 			if ( $obj->comment_count > 0 ) {
 				?>
-			<span class="uabb-comments-link"><a href="
+			<span class="uabb-comments-link"><i aria-hidden="true" class="<?php echo esc_attr( $this->settings->comments_icon ); ?>"></i><a href="
 				<?php
 				echo esc_url( get_permalink( $obj->ID ) );
 				?>
@@ -2239,7 +2258,8 @@ class BlogPostsModule extends FLBuilderModule {
 		$show_comments   = ( isset( $this->settings->show_comments ) ) ? $this->settings->show_comments : 'no';
 		$show_date       = ( isset( $this->settings->show_date ) ) ? $this->settings->show_date : 'yes';
 
-		$output = '';
+		$output         = '';
+		$meta_separator = $this->settings->seprator_meta;
 
 		if ( 'yes' === $show_meta ) {
 			if ( 'yes' === $show_author || 'yes' === $show_categories || 'yes' === $show_tags || 'yes' === $show_comments || 'yes' === $show_date ) {
@@ -2272,13 +2292,61 @@ class BlogPostsModule extends FLBuilderModule {
 					}
 					$output_array[] = $output;
 				}
-					$meta_html = implode( ' | ', array_filter( $output_array ) );
+					$meta_html = implode( $meta_separator, array_filter( $output_array ) );
 					echo wp_kses_post( $meta_html );
 				?>
 				</<?php echo esc_attr( $this->settings->meta_tag_selection ); ?>>
 				<?php
 			}
 		}
+	}
+
+	/**
+	 * Get post related terms.
+	 *
+	 * Returns the post related terms HTML wrap.
+	 *
+	 * @since x.x.x
+	 * @access public
+	 * @param object $obj gets the blogs object.
+	 */
+	public function render_terms( $obj ) {
+
+		$settings   = $this->settings;
+		$terms_show = '';
+
+		$terms_show = $settings->terms_to_show;
+
+		$terms = wp_get_post_terms( $obj->ID, $terms_show );
+
+		if ( empty( $terms ) || is_wp_error( $terms ) ) {
+			return;
+		}
+
+		$num = $settings->max_terms;
+
+		if ( '' !== $num ) {
+			$terms = array_slice( $terms, 0, $num );
+		}
+
+		$terms = apply_filters( 'uabb_posts_tax_filter', $terms );
+
+		$result = '';
+
+		if ( ! empty( $settings->term_icon ) ) {
+			$result .= '<i class="' . $settings->term_icon . '" aria-hidden="true"></i>';
+		}
+
+		foreach ( $terms as $term ) {
+			$result .= sprintf( '<a href="%2$s" class="uabb-listing__terms-link">%1$s</a>', $term->name, get_term_link( (int) $term->term_id ) );
+		}
+		do_action( 'uabb_single_post_before_terms', $obj->ID, $settings );
+
+		$terms_content = apply_filters( 'uabb_posts_terms_content', '<div class="uabb-post__terms-wrap"><span class="uabb-post__terms">' . $result . '</span></div>', $obj->ID, $settings );
+
+		printf( $terms_content );//phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+
+		do_action( 'uabb_single_post_after_terms', $obj->ID, $settings );
 	}
 
 	/**
@@ -2307,20 +2375,23 @@ class BlogPostsModule extends FLBuilderModule {
 		}
 		$img_html = '';
 		if ( substr( $this->settings->layout_sort_order, 0, 3 ) !== 'img' && substr( $this->settings->layout_sort_order, -3 ) !== 'img' ) {
-			$img_html = $this->render_featured_image( 'top', $obj, $i );
+			$img_html = $this->render_featured_image( $obj, $i );
 		}
 
 		if ( 'yes' === $show_title || 'yes' === $show_excerpt || 'none' !== $this->settings->cta_type || $meta_flag || '' !== $img_html ) {
 			?>
 		<div class="uabb-blog-post-content">
 			<?php
+			if ( 'enable' === $this->settings->taxonomy_badge ) {
+				$this->render_terms( $obj );
+			}
 			$layout_sequence = explode( ',', $this->settings->layout_sort_order );
 
 			foreach ( $layout_sequence as $sq ) {
 				switch ( $sq ) {
 					case 'img':
 						if ( substr( $this->settings->layout_sort_order, 0, 3 ) !== 'img' && substr( $this->settings->layout_sort_order, -3 ) !== 'img' ) {
-							echo wp_kses_post( $this->render_featured_image( 'top', $obj, $i ) );
+							echo wp_kses_post( $this->render_featured_image( $obj, $i ) );
 						}
 						break;
 					case 'title':

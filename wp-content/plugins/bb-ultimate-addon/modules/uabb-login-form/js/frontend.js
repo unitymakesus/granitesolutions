@@ -43,14 +43,26 @@
 		uabb_facebook_app_id 				    = this.uabb_social_facebook_app_id;
 		uabb_social_google_client_id			= this.uabb_social_google_client_id;
 		uabb_lf_nonce							= this.uabb_lf_nonce;
-		
+		button_text                             = node_module.find( '.uabb-login-form-button-text' );
+		form_wrap                               = node_module.find( '.uabb-lf-login-form' );
 		this._init();
 
 	}
 	UABBLoginForm.prototype = {
 
+
 		_init: function()
 		{	
+			$(".toggle-password").click(function() {
+			  $(this).toggleClass("fa-eye fa-eye-slash");
+			  var input = $($(this).attr("toggle"));
+			  if (input.attr("type") == "password") {
+			    input.attr("type", "text");
+			  } else {
+			    input.attr("type", "password");
+			  }
+			});
+
 			$( this.nodeClass + ' .uabb-google-login' ).click( $.proxy( this._googleClick, this ) );
 			$( this.nodeClass + ' .uabb-lf-submit-button' ).click( $.proxy( this._submit, this ) );
 			$( this.nodeClass + ' .uabb-facebook-content-wrapper' ).click( $.proxy( this._fbClick, this ) );
@@ -112,6 +124,10 @@
 							if( is_google_button_clicked === true ) {
 								
 								$.post( ajaxurl, data, function( response ) {
+
+								google_button_text = node_module.find( '.uabb-google-text' );
+
+								google_button_text.find( '.uabb-login-form-loader' ).remove();
 								
 								$( location ).attr( 'href', uabb_lf_google_redirect_login_url );
 								
@@ -135,6 +151,14 @@
 		{ 
 			FB.login( function( response ) {
 
+				fb_button_text = node_module.find( '.uabb-facebook-text' );
+
+				form_wrap.animate({
+					opacity: '0.45'
+				}, 500 ).addClass( 'uabb-form-waiting' );
+
+				fb_button_text.append( '<span class="uabb-login-form-loader"></span>' );
+
 				if ( response.status === 'connected' ) {
 					 FB.api( '/me', { fields: 'id, email, name , first_name, last_name,link, gender, locale, picture' },
 					    function ( response ) {
@@ -155,6 +179,8 @@
 							};
 
 					  	$.post( ajaxurl, fb_data, function( response ) {
+
+					  		fb_button_text.find( '.uabb-login-form-loader' ).remove();
 					
 							$( location ).attr( 'href', uabb_lf_facebook_redirect_login_url );
 						
@@ -172,7 +198,15 @@
 		},
 		_googleClick: function()
 		{
+			google_button_text = node_module.find( '.uabb-google-text' );
+
 			is_google_button_clicked = true;
+
+			form_wrap.animate({
+					opacity: '0.45'
+				}, 500 ).addClass( 'uabb-form-waiting' );
+
+			google_button_text.append( '<span class="uabb-login-form-loader"></span>' );
 		},
 		_submit: function( event )
 		{
@@ -201,11 +235,23 @@
 					'nonce' : this.uabb_lf_nonce,
 				};
 				
+				form_wrap.animate({
+					opacity: '0.45'
+				}, 500 ).addClass( 'uabb-form-waiting' );
+
+				button_text.append( '<span class="uabb-login-form-loader"></span>' );
+
 				$.post( this.uabb_lf_ajaxurl, data, $.proxy( this._submitComplete, this ) );
 			}
 		},
 		_submitComplete: function ( response )
 		{
+				button_text.find( '.uabb-login-form-loader' ).remove();
+
+				form_wrap.animate({
+					opacity: '1'
+				}, 100 ).removeClass( 'uabb-form-waiting' );
+
 				if ( true === response.success ) {
 
 					if ( 'default' === this.uabb_lf_wp_form_redirect_toggle ) {
@@ -222,8 +268,9 @@
 					this.errormessage.text( this.uabb_lf_username_invalid_err_msg );
 					
 				}
-		},		
+		},
 	}
+
 })(jQuery);
 
 

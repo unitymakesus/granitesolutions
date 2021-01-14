@@ -11,6 +11,15 @@
 
 $version_bb_check = UABB_Compatibility::$version_bb_check;
 $converted        = UABB_Compatibility::$uabb_migration;
+if ( method_exists( 'FLBuilder', 'fa5_pro_enabled' ) ) {
+	if ( FLBuilder::fa5_pro_enabled() ) {
+		$font_family = 'Font Awesome 5 Pro';
+	} else {
+		$font_family = 'Font Awesome 5 Free';
+	}
+} else {
+	$font_family = 'Font Awesome 5 Free';
+}
 
 if ( isset( $settings->creative_submenu_shadow_color_opc ) && '' === $settings->creative_submenu_shadow_color_opc ) {
 	$settings->creative_submenu_shadow_color_opc = '100';
@@ -273,7 +282,7 @@ if ( 'right' === $settings->creative_menu_alignment ) {
 	.fl-node-<?php echo esc_attr( $id ); ?> .uabb-creative-menu.full-screen .uabb-menu-overlay .uabb-menu-toggle:before,
 	.fl-node-<?php echo esc_attr( $id ); ?> .uabb-creative-menu.full-screen .uabb-menu-overlay .sub-menu .uabb-menu-toggle:before {
 		content: '\f107';
-		font-family: 'Font Awesome 5 Free';
+		font-family: '<?php echo esc_attr( $font_family ); ?>';
 		z-index: 1;
 		font-size: inherit;
 		line-height: 0;
@@ -289,7 +298,7 @@ if ( 'right' === $settings->creative_menu_alignment ) {
 	.fl-node-<?php echo esc_attr( $id ); ?> .uabb-creative-menu.full-screen .uabb-menu-overlay .uabb-menu-toggle:before,
 	.fl-node-<?php echo esc_attr( $id ); ?> .uabb-creative-menu.full-screen .uabb-menu-overlay .sub-menu .uabb-menu-toggle:before {
 		content: '\f067';
-		font-family: 'Font Awesome 5 Free';
+		font-family: '<?php echo esc_attr( $font_family ); ?>';
 		font-size: 0.7em;
 		z-index: 1;
 		font-weight: 900;
@@ -306,7 +315,7 @@ if ( ( ( 'horizontal' === $settings->creative_menu_layout || 'vertical' === $set
 	?>
 	.fl-node-<?php echo esc_attr( $id ); ?> .uabb-creative-menu .uabb-menu-toggle:before {
 		content: '\f107';
-		font-family: 'Font Awesome 5 Free';
+		font-family: '<?php echo esc_attr( $font_family ); ?>';
 		z-index: 1;
 		font-size: inherit;
 		line-height: 0;
@@ -319,7 +328,7 @@ if ( ( ( 'horizontal' === $settings->creative_menu_layout || 'vertical' === $set
 	?>
 	.fl-node-<?php echo esc_attr( $id ); ?> .uabb-creative-menu .uabb-menu-toggle:before {
 		content: '\f067';
-		font-family: 'Font Awesome 5 Free';
+		font-family: '<?php echo esc_attr( $font_family ); ?>';
 		font-size: 0.7em;
 		z-index: 1;
 		font-weight: 900;
@@ -426,7 +435,7 @@ if ( $global_settings->responsive_enabled ) {
 	<?php /* Below Row Layout CSS ends here */ ?>
 
 	<?php if ( 'always' !== $module->media_breakpoint() ) { ?>
-		@media only screen and ( min-width: <?php echo esc_attr( ( $module->media_breakpoint() ) + 1 ); ?>px ) {
+		@media only screen and ( min-width: <?php echo esc_attr( ( (int) $module->media_breakpoint() ) + 1 ); ?>px ) {
 
 		<?php // Horizontal Menu. ?>
 		<?php if ( 'horizontal' === $settings->creative_menu_layout ) { ?>
@@ -478,13 +487,15 @@ if ( $global_settings->responsive_enabled ) {
 
 			.fl-node-<?php echo esc_attr( $id ); ?> .uabb-creative-menu .uabb-has-submenu:hover > .sub-menu,
 			.fl-node-<?php echo esc_attr( $id ); ?> .uabb-creative-menu .uabb-has-submenu:focus > .sub-menu {
+				visibility: visible;
+				opacity: 1;
 				display: block;
 			}
 
-			.fl-node-<?php echo esc_attr( $id ); ?> .uabb-creative-menu .uabb-has-submenu:hover > .sub-menu,
-			.fl-node-<?php echo esc_attr( $id ); ?> .uabb-creative-menu .uabb-has-submenu:focus > .sub-menu {
+			.fl-node-<?php echo esc_attr( $id ); ?> .uabb-creative-menu .uabb-has-submenu:focus-within > .sub-menu {
 				visibility: visible;
 				opacity: 1;
+				display: block;
 			}
 
 			.fl-node-<?php echo esc_attr( $id ); ?> .menu .uabb-has-submenu.uabb-menu-submenu-right .sub-menu {
@@ -1019,6 +1030,18 @@ if ( ! empty( $settings->creative_menu_background_hover_color ) || $settings->cr
 			);
 		}
 	}
+}
+
+if ( class_exists( 'FLBuilderCSS' ) ) {
+	FLBuilderCSS::responsive_rule(
+		array(
+			'settings'     => $settings,
+			'setting_name' => 'hamburger_icon_size',
+			'selector'     => ".fl-node-$id .uabb-creative-menu-mobile-toggle.hamburger",
+			'prop'         => 'font-size',
+			'unit'         => 'px',
+		)
+	);
 }
 
 if ( ! $version_bb_check ) {
@@ -1954,6 +1977,12 @@ if ( ! $version_bb_check ) {
 	}
 <?php } ?>
 
+/***************************** Accordion **********************************/
+<?php if ( 'default' === $settings->creative_mobile_menu_type && isset( $settings->collapse_menu ) && 'yes' === $settings->collapse_menu ) { ?>
+	.fl-node-<?php echo esc_attr( $id ); ?> .uabb-creative-menu .menu {
+		display: none;
+	}
+<?php } ?>
 
 /***************************** Off Canvas **********************************/
 <?php if ( 'off-canvas' === $settings->creative_mobile_menu_type ) { ?>

@@ -46,18 +46,19 @@ jQuery(document).ready(function() {
 		}
 	}
 
-	jQuery('.uabb-tabs').find( ' > .uabb-tabs-nav > ul > li' ).on( 'click', function() {
+	jQuery('.uabb-tabs').find( ' > .uabb-tabs-nav > ul > li' ).on( 'click keypress ', function(e) {
 
+		e.preventDefault();
 		var current_li = jQuery(this),
 			current_li_index = current_li.index(),
 			adv_node = current_li.closest('.fl-module').attr('data-node'),
 			parent_uabb_tabs = current_li.closest('.uabb-tabs');
 
-		current_li.siblings().removeClass('uabb-tab-current');
-		current_li.addClass('uabb-tab-current');
+		current_li.siblings().removeClass('uabb-tab-current').attr('aria-current', 'false').attr('aria-expanded', 'false');
+		current_li.addClass('uabb-tab-current').attr('aria-current', 'true').attr('aria-expanded', 'true');
 
-		parent_uabb_tabs.find(' > .uabb-content-wrap > .section').removeClass('uabb-content-current');	
-		parent_uabb_tabs.find(' > .uabb-content-wrap > .section:eq('+ current_li_index +')').addClass('uabb-content-current');
+		parent_uabb_tabs.find(' > .uabb-content-wrap > .section').removeClass('uabb-content-current').attr('aria-current', 'false').attr('aria-expanded', 'false');	
+		parent_uabb_tabs.find(' > .uabb-content-wrap > .section:eq('+ current_li_index +')').addClass('uabb-content-current').attr('aria-current', 'true').attr('aria-expanded', 'true');
 
 		parent_uabb_tabs.find(' > .uabb-content-wrap > .uabb-content-current > .uabb-tab-acc-title.uabb-acc-'+ current_li_index ).trigger('click');
 		
@@ -68,7 +69,7 @@ jQuery(document).ready(function() {
 
 
 	/* Click for Accordion on Responsive */
-	jQuery( '.uabb-tabs' ).find( ' > .uabb-content-wrap > .section > .uabb-tab-acc-title' ).on( 'click', function( e ) {
+	jQuery( '.uabb-tabs' ).find( ' > .uabb-content-wrap > .section > .uabb-tab-acc-title' ).on( 'click keypress', function( e ) {
 
 		var current_tab_acc = jQuery(this),
 			adv_node = current_tab_acc.closest('.fl-module').attr('data-node'),
@@ -77,8 +78,8 @@ jQuery(document).ready(function() {
 			win  		= jQuery( window );
 		
 
-		parent_uabb_tabs.find(' > .uabb-tabs-nav > ul > li').removeClass('uabb-tab-current');
-		parent_uabb_tabs.find(' > .uabb-tabs-nav > ul > li:eq(' + current_tab_acc_index + ')').addClass( 'uabb-tab-current' );
+		parent_uabb_tabs.find(' > .uabb-tabs-nav > ul > li').removeClass('uabb-tab-current').attr('aria-current', 'false').attr('aria-expanded', 'false');
+		parent_uabb_tabs.find(' > .uabb-tabs-nav > ul > li:eq(' + current_tab_acc_index + ')').addClass( 'uabb-tab-current' ).attr('aria-current', 'true').attr('aria-expanded', 'true');
 
 		if ( e.originalEvent !== undefined ) {
 			current_tab_acc.parent().siblings().find(' > .uabb-tab-acc-content:lt(1)').slideUp(300);
@@ -99,8 +100,8 @@ jQuery(document).ready(function() {
 			current_tab_acc.siblings('.uabb-tab-acc-content').css('display','block');
 		}
 
-		current_tab_acc.parent().siblings().removeClass('uabb-content-current');
-		current_tab_acc.parent().addClass('uabb-content-current');
+		current_tab_acc.parent().siblings().removeClass('uabb-content-current').attr('aria-current', 'false').attr('aria-expanded', 'false');
+		current_tab_acc.parent().addClass('uabb-content-current').attr('aria-current', 'true').attr('aria-expanded', 'true');
 
 		var trigger_args = '.fl-node-'+ adv_node + ' .uabb-content-current';
 		// Trigger the Adv Tab Click trigger.
@@ -128,6 +129,7 @@ jQuery(document).ready(function() {
 		_init: function()
 		{
 			this._initAnchorLinks();
+			this._resizeContent();
 		},
 
 		/**
@@ -181,6 +183,18 @@ jQuery(document).ready(function() {
 					catch( e ) {}
 				}
 			}
+		},
+		_resizeContent: function()
+		{
+			$(this.nodeClass + ' .uabb-tabs-layout-vertical').each($.proxy(this._resizeVertical, this));
+		},
+		_resizeVertical: function(e)
+		{
+			var wrap    = $(this.nodeClass + ' .uabb-tabs-layout-vertical'),
+				labels  = wrap.find('.uabb-tabs-nav'),
+				panels  = wrap.find('.uabb-tab-acc-content');
+
+			panels.css('min-height', labels.height() + 'px');
 		},
 
 		/**
