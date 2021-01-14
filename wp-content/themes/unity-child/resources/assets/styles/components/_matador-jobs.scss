@@ -41,9 +41,10 @@
   }
 }
 
-.matador-search-submit {
+.matador-search-submit.matador-button {
   @extend .btn-secondary;
 
+  color: $color-purple;
   cursor: pointer;
 }
 
@@ -79,6 +80,7 @@
     transition: all 0.3s;
     cursor: pointer;
     border: 1px solid $color-purple;
+    text-decoration: none;
 
     &:hover,
     &:focus {
