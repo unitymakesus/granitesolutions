@@ -406,3 +406,10 @@ add_filter('gform_replace_merge_tags', function($text, $form, $entry) {
 
     return $text;
 }, 10, 3);
+
+/**
+ * Remove dashboard widgets.
+ */
+add_action('wp_dashboard_setup', function () {
+    remove_meta_box('dashboard_site_health', 'dashboard', 'normal');
+});
