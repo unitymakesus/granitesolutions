@@ -1,16 +1,13 @@
 <?php
 /**
- * Matador / Admin Notices
- *
- * Manages admin notices.
+ * Matador / Job Listing Post Type
  *
  * @link        http://matadorjobs.com/
  * @since       3.0.0
  *
  * @package     Matador Jobs Board
- * @subpackage  Admin
  * @author      Jeremy Scott, Paul Bearne
- * @copyright   Copyright (c) 2017, Jeremy Scott, Paul Bearne
+ * @copyright   Copyright (c) 2017 - 2020, Jeremy Scott, Paul Bearne
  *
  * @license     http://opensource.org/licenses/gpl-3.0.php GNU Public License
  */
@@ -32,18 +29,22 @@ class Job_Listing {
 	 */
 	public function __construct() {
 		add_action( 'init', array( $this, 'create_post_type' ) );
+
+		add_action( 'pre_get_posts', array( __CLASS__, 'job_id_url_support' ), 10, 1 );
+
 		add_action( 'current_screen', array( __CLASS__, 'current_screen' ) );
 		add_action( 'admin_menu', array( $this, 'remove_add_new_from_submenu' ) );
 		add_filter( 'the_content', array( __CLASS__, 'the_content' ) );
-		//add_filter( 'post_updated_messages', array( $this, 'update_admin_messages' ) );
-		//add_action( 'admin_head', array( $this, 'add_help_tab' ) );
 
 		add_filter( 'comments_open', array( $this, 'close_comments' ), 10, 2 );
 
 		add_filter( 'matador_job_application_content', array( __CLASS__, 'job_application_content_default' ), 5 );
 		add_filter( 'matador_job_detail_content', array( __CLASS__, 'job_detail_content_default' ), 5 );
 
-		add_filter( 'wp_head', array( __CLASS__, 'get_jsonld' ), 5 );
+		// Loads JSON LD into WP Head
+		add_filter( 'wp_head', array( __CLASS__, 'jsonld' ), 5 );
+		// If WPSEO (Yoast) in Installed, this Filter Will Call, Which Unhooks Filter Above
+		add_filter( 'wpseo_schema_graph_pieces', array( __CLASS__, 'wpseo_schema_graph_pieces' ), 5, 2 );
 
 		add_filter( 'manage_' . self::key() . '_posts_columns', array( $this, 'columns_add' ) );
 		add_filter( 'manage_edit-' . self::key() . '_sortable_columns', array( $this, 'columns_sortable' ) );
@@ -63,6 +64,9 @@ class Job_Listing {
 
 		// @todo: write our own metabox/document data so this isn't necessary issue #228
 		add_action( 'current_screen', array( __CLASS__, 'override_acf_hidden_meta' ) );
+
+		// manual job sync
+		add_action( 'wp_ajax_matador_api_job_sync', array( $this, 'matador_api_job_sync' ) );
 	}
 
 	/**
@@ -86,6 +90,144 @@ class Job_Listing {
 
 		if ( class_exists( 'ACF' ) && self::key() === $screen->post_type ) {
 			add_filter( 'acf/settings/remove_wp_meta_box', '__return_false' );
+		}
+	}
+
+	/**
+	 * Job ID URL Support
+	 *
+	 * A need of some users is the ability to have a remote job id be an option in the URL scheme, primarily
+	 * when they are supporting advertising via Indeed.
+	 *
+	 * @see Endpoints::add_query_vars() where query vars 'xid' and 'xsource' are registered
+	 *
+	 * @access public
+	 * @static
+	 * @since 3.6.0
+	 *
+	 * @param $query
+	 *
+	 * @return void
+	 */
+	public static function job_id_url_support( $query ) {
+
+		if ( ! $query->is_main_query() ) {
+			return;
+		}
+
+		if ( ! (
+			( ! empty( $query->query['post_type'] ) && self::key() === $query->query['post_type'] )
+			|| ! empty( $query->query[ self::key() ] )
+		) ) {
+			return;
+		}
+
+		$external_id = 0;
+
+		if ( isset( $query->query[ self::key() ] ) && is_numeric( $query->query[ self::key() ] ) ) {
+			$external_id = absint( $query->query[ self::key() ] );
+		} elseif ( empty( $query->query[ self::key() ] ) && get_query_var( 'xid', false ) ) {
+			$external_id = absint( get_query_var( 'xid' ) );
+		}
+
+		$external_source = '';
+
+		if ( get_query_var( 'xsource', false ) ) {
+			$external_source = sanitize_key( get_query_var( 'xsource' ) );
+		}
+
+		if ( ! $external_id ) {
+
+			return;
+		}
+
+		if ( $external_source && 'bullhorn' !== $external_source ) {
+
+			return;
+		}
+
+		// Instantiate Variables
+		global $wpdb;
+		$job  = null;
+		$loop = isset( $_REQUEST['loop'] ) ? (int) $_REQUEST['loop'] : 0;
+		$sql  = $wpdb->prepare( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = %s AND meta_value = %s", '_matador_source_id', $external_id );
+
+		if ( count( $wpdb->get_col( $sql ) ) > 0 ) {
+
+			foreach ( $wpdb->get_col( $sql ) as $found_id ) {
+
+				if ( $external_source && get_post_meta( $found_id, '_matador_source', true ) !== $external_source ) {
+					continue;
+				}
+
+				if ( 'publish' === get_post_status( $found_id ) && self::key() === get_post_type( $found_id ) ) {
+					$job = $found_id;
+					break;
+				}
+			}
+		}
+
+		if ( empty( $job ) ) {
+
+			if ( get_transient( Matador::variable( 'doing_sync', 'transients' ) ) ) {
+				if ( $loop < 6 ) {
+					Logger::add( 'info', 'request_external_id_during_sync', __( 'A user or agent requested a job page via an external id, which was not found, while a sync was running. Will hold request and redirect back.', 'matador-jobs' ) );
+					sleep( 5 );
+					wp_safe_redirect( add_query_arg( 'loop', ++ $loop ) );
+					exit();
+				} else {
+					Logger::add( 'info', 'request_external_id_during_sync_fail', __( 'A user or agent requested a job page via an external id, which was not found, while a sync was running. Maximum number of loops allowed.', 'matador-jobs' ) );
+
+					return;
+				}
+			}
+
+			Logger::add( 'info', 'request_external_id_start_sync', __( 'A user or agent requested a job page via an external id, which was not found, and we will run a sync to find the role.', 'matador-jobs' ) );
+
+			add_filter( 'matador_bullhorn_import_the_job_where', function ( $where ) use ( &$external_id ) {
+				return $where . ' AND id=' . (int) $external_id;
+			} );
+
+			add_filter( 'matador_bullhorn_delete_missing_job_on_import', '__return_false' );
+
+			// when sync a job by ID we don't what to allow it to be skipped
+			remove_all_filters( 'matador_bullhorn_import_skip_job_on_update' );
+
+			$bullhorn = new Bullhorn_Import();
+
+			try {
+				$bullhorn->sync();
+			} catch ( Exception $exception ) {
+				Logger::add( 'info', 'request_external_id_sync_failed', __( 'A user or agent requested a job page via an external id, which was not found, and sync failed.', 'matador-jobs' ) );
+
+				return;
+			}
+
+			if ( count( $wpdb->get_col( $sql ) ) > 0 ) {
+
+				foreach ( $wpdb->get_col( $sql ) as $found_id ) {
+
+					if ( $external_source && get_post_meta( $found_id, '_matador_source', true ) !== $external_source ) {
+						continue;
+					}
+
+					if ( 'publish' === get_post_status( $found_id ) && self::key() === get_post_type( $found_id ) ) {
+						Logger::add( 'info', 'request_external_id_sync_success', __( 'A user or agent requested a job page via an external id, which was not found, but sync located.', 'matador-jobs' ) );
+						$job = $found_id;
+						break;
+					}
+				}
+			}
+		}
+
+		if ( $job ) {
+
+			$query->set( 'p', (int) $job );
+			$query->set( 'post_type', null );
+
+		} else {
+
+			return;
 		}
 	}
 
@@ -156,7 +298,7 @@ class Job_Listing {
 		 * @since   1.0.0
 		 */
 		$labels = apply_filters( 'matador_post_type_labels_jobs', array(
-			'name'               => esc_html_x( 'Jobs Listings', 'Jobs Post Type General Name', 'matador-jobs' ),
+			'name'               => esc_html_x( 'Job Listings', 'Jobs Post Type General Name', 'matador-jobs' ),
 			'singular_name'      => esc_html_x( 'Job Listing', 'Jobs Post Type Singular Name', 'matador-jobs' ),
 			'add_new'            => esc_html__( 'Add New', 'matador-jobs' ),
 			'add_new_item'       => esc_html__( 'Add New Job', 'matador-jobs' ),
@@ -489,32 +631,64 @@ class Job_Listing {
 	}
 
 	/**
-	 * Get JSON+LD
+	 * JSON+LD
+	 *
+	 * Wraps the JSON+LD in a script tag for inclusion in WP Head
 	 *
 	 * @access public
 	 * @static
-	 * @since 3.0.0
-	 * @since 3.1.0 added jsonld_disabled check
-	 * @since 3.4.0 jsonld_disabled changed to jsonld_enabled
+	 *
+	 * @since 3.6.0
 	 *
 	 * @param int  $id    The WordPress post ID. Default null.
 	 * @param bool $echo  Whether to echo or return the JSON+LD
 	 *
 	 * @return null|string
 	 */
-	public static function get_jsonld( $id = null, $echo = true ) {
+	public static function jsonld( $id = null, $echo = true ) {
+
+		$return = '<script type="application/ld+json">' . self::get_jsonld( $id ) . '</script>';
+
+		if ( $echo ) {
+
+			if ( null === $id && ! is_singular( Matador::variable( 'post_type_key_job_listing' ) ) ) {
+
+				return;
+			}
+
+			echo $return;
+		}
+
+		return $return;
+	}
+
+	/**
+	 * Get JSON+LD
+	 *
+	 * Gets the JSON+LD object from the DB
+	 *
+	 * @access public
+	 * @static
+	 * @since 3.0.0
+	 * @since 3.1.0 added jsonld_disabled check
+	 * @since 3.4.0 jsonld_disabled changed to jsonld_enabled
+	 * @since 3.6.0 Function was rebuilt to only provide the object, does not output with script tag, returns only, deprecated $echo param
+	 *
+	 * @param int  $id         The WordPress post ID. Default null.
+	 * @param bool $depracated @deprecated 3.6.0
+	 *
+	 * @return null|string
+	 */
+	public static function get_jsonld( $id = null, $depracated = null ) {
+
+		unset( $depracated );
+
 		if ( ! Matador::setting( 'jsonld_enabled' ) ) {
 
 			return;
 		}
 
-		if ( null === $id && ! is_singular( Matador::variable( 'post_type_key_job_listing' ) ) ) {
-
-			return;
-		}
-
-		$job_type = get_post_type( $id );
-		if ( Matador::variable( 'post_type_key_job_listing' ) !== $job_type ) {
+		if ( Matador::variable( 'post_type_key_job_listing' ) !== get_post_type( $id ) ) {
 
 			return;
 		}
@@ -523,16 +697,39 @@ class Job_Listing {
 
 		$depth   = apply_filters( 'bullhorn_json_ld_depth', 1024 );
 		$options = apply_filters( 'bullhorn_json_ld_options', JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+
 		if ( defined( 'SCRIPT_DEBUG' ) && true === SCRIPT_DEBUG ) {
 			$options = $options | JSON_PRETTY_PRINT;
 		}
-		$jsonld = apply_filters( 'bullhorn_json_ld_full_array', $jsonld );
-		$return = sprintf( '<script type="application/ld+json">%s</script>', wp_json_encode( $jsonld, $options, $depth ) );
-		if ( $echo ) {
-			echo $return;
-		}
 
-		return $return;
+		$jsonld = apply_filters( 'bullhorn_json_ld_full_array', $jsonld );
+
+		return wp_json_encode( $jsonld, $options, $depth );
+	}
+
+	/**
+	 * Attaches JSON+LD to WPSEO Graph
+	 *
+	 * @access public
+	 * @static
+	 *
+	 * @since 3.6.0
+	 *
+	 * @param array $pieces The current generated Graph by WPSEO
+	 * @param string $context The context of the JSON being provided
+	 *
+	 * @return array
+	 */
+	public static function wpseo_schema_graph_pieces( $pieces, $context ){
+
+		// Since this function is called, it means WPSEO is running, and therefore we
+		// disable our JSON+LD rendering and instead attach our JSON+LD to the WPSEO
+		// graph object
+		remove_filter( 'wp_head', array( __CLASS__, 'jsonld' ), 5 );
+
+		$pieces[] = new Json_Schema_Job_Posting( $context );
+
+		return $pieces;
 	}
 
 
@@ -557,11 +754,11 @@ class Job_Listing {
 			case 'matador-bullhorn-id':
 
 				$bullhorn_server_url = Helper::get_client_cluster_url();
-				if( false !== $bullhorn_server_url ){
+				if ( false !== $bullhorn_server_url ) {
 					printf( '<a href="%1$sBullhornSTAFFING/OpenWindow.cfm?Entity=JobOrder&id=%2$s" target="_blank" title="%3$s">%2$s</a>',
-						esc_url($bullhorn_server_url),
+						esc_url( $bullhorn_server_url ),
 						absint( get_post_meta( $post_id, '_matador_source_id', true ) ),
-						esc_html__('Open in Bullhorn', 'matador-jons' )
+						esc_html__( 'Open in Bullhorn', 'matador-jobs' )
 					);
 				} else {
 					echo esc_html( get_post_meta( $post_id, '_matador_source_id', true ) );
@@ -597,15 +794,19 @@ class Job_Listing {
 		 * @var bool
 		 */
 		if ( apply_filters( 'matador_bullhorn_doing_jobs_sync', false ) ) {
+
 			return;
 		}
 
 		$current_json = get_post_meta( $post_id, 'jsonld', true );
 
-		$current_json['description'] = $post->post_content;
-		$current_json['title']       = $post->post_title;
+		if( is_array( $current_json ) ){
+			$current_json['description'] = $post->post_content;
+			$current_json['title']       = $post->post_title;
 
-		update_post_meta( $post_id, 'jsonld', $current_json );
+			update_post_meta( $post_id, 'jsonld', $current_json );
+		}
+
 	}
 
 	/**
@@ -622,6 +823,16 @@ class Job_Listing {
 					absint( $bullhorn_id ),
 					esc_html__( 'Open in Bullhorn', 'matador-jobs' ),
 					esc_html__( 'Edit the Job in Bullhorn', 'matador-jobs' )
+				);
+			}
+			// The filter can remove a user's ability to sync jobs. We cannot test for the
+			// filter's output, should it have been applied conditionally, due to the there
+			// not being access to the Bullhorn Job object at this time.
+			if ( ! has_filter( 'matador_bullhorn_import_skip_job_on_update' ) ) {
+				printf( '<button id="matador-sync-job" data-bhid="%1$s" data-nonce="%3$s" title="%2$s" class="button"><img src="https://app.bullhornstaffing.com/assets/images/circle-bull.png" height="16px" style="margin-top: -4px; height: 16px" /> %2$s</button>',
+					absint( $bullhorn_id ),
+					esc_html__( 'Sync this Job', 'matador-jobs' ),
+					wp_create_nonce( "matador_api_test" )
 				);
 			}
 		}
@@ -810,5 +1021,38 @@ class Job_Listing {
 		 * @param int $post_id The local (WordPress) ID of the Job Listing being deleted.
 		 */
 		do_action( 'matador_delete_job', $post_id );
+	}
+
+	/**
+	 * AJAX Single Job Sync
+	 *
+	 * Run the job import directly. If BHID in $request just one job is synced
+	 *
+	 * @since 3.6.0
+	 *
+	 * @return void
+	 */
+	public function matador_api_job_sync() {
+		// Handle request then generate response using WP_Ajax_Response
+		check_ajax_referer( 'matador_api_test', 'nonce' );
+
+		if ( isset( $_REQUEST['bhid'] ) && ! empty( absint( $_REQUEST['bhid'] ) )  && 0 < absint( $_REQUEST['bhid'] ) ) {
+			add_filter( 'matador_bullhorn_import_the_job_where', function ( $where ){
+				$where .= 'AND id=' . absint( $_REQUEST['bhid'] );
+				return $where;
+			} );
+			add_filter( 'matador_bullhorn_delete_missing_job_on_import', '__return_false' );
+			// when sync a job by ID we don't what to allow it to be skipped
+			remove_all_filters('matador_bullhorn_import_skip_job_on_update' );
+		}
+
+		$bullhorn = new Bullhorn_Import();
+		try {
+			$bullhorn->sync();
+		} catch ( Exception $exception ) {
+			wp_die();
+		}
+		// Don't forget to stop execution afterward.
+		wp_die();
 	}
 }

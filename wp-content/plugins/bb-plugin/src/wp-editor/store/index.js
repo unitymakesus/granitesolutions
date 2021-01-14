@@ -22,8 +22,8 @@ const selectors = {
 registerStore( 'fl-builder', {
 	reducer( state = DEFAULT_STATE, action ) {
 		switch ( action.type ) {
-			case 'SET_LAUNCHING':
-				state.launching = action.launching
+		case 'SET_LAUNCHING':
+			state.launching = action.launching
 		}
 
 		return state

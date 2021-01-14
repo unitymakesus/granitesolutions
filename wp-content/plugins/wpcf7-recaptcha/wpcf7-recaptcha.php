@@ -2,7 +2,7 @@
 /**
  * Plugin Name: ReCaptcha v2 for Contact Form 7
  * Description: ReCaptcha v2 Fix for Contact Form 7 5.1 and later.
- * Version: 1.2.7
+ * Version: 1.3.0
  * Author: IQComputing
  * Author URI: http://www.iqcomputing.com/
  * License: GPL2
@@ -24,7 +24,7 @@ Class IQFix_WPCF7_Deity {
 	 * 
 	 * @var String
 	 */
-	public static $version = '1.2.7';
+	public static $version = '1.3.0';
 
 
 	/**
@@ -288,7 +288,7 @@ Class IQFix_WPCF7_Deity {
 						<h2><?php esc_html__( 'Network Wide Settings', 'wpcf7-recaptcha' ); ?></h2>
 						
 						<p><strong><?php _e( 'Please read all of the below before committing to these changes.', 'wpcf7-recaptcha' ); ?></strong></p>
-						<p><?php _e( 'You may set Network wide API keys below. Please ensure that every network site is whitelisted in the Google API Console. ReCaptcha keys can still be set ( or unset ) on a per site basis if necessary.', 'wpcf7-recaptcha' ); ?></p>
+						<p><?php _e( 'You may set Network wide API keys below. Please ensure that every network site is on the domain list in the Google API Consolefor this API key. ReCaptcha keys can still be set ( or unset ) on a per site basis if necessary.', 'wpcf7-recaptcha' ); ?></p>
 						<p><?php
 							/* translators: Care for HTML in string used for emphasis. */
 							_e( 'Do note that these keys will automatically apply to all network websites upon save <strong>if keys are not detected</strong>. If some network websites use reCaptcha v3 please <u>do not use this option</u> and set it on a per site level.', 'wpcf7-recaptcha' );

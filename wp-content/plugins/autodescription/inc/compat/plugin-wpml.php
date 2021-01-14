@@ -6,7 +6,7 @@
 
 namespace The_SEO_Framework;
 
-defined( 'THE_SEO_FRAMEWORK_PRESENT' ) and $_this = \the_seo_framework_class() and $this instanceof $_this or die;
+\defined( 'THE_SEO_FRAMEWORK_PRESENT' ) and \the_seo_framework()->_verify_include_secret( $_secret ) or die;
 
 /**
  * Warns homepage global title and description about receiving input.
@@ -32,6 +32,8 @@ function _wpml_do_current_screen_action() {
 
 /**
  * Removes "All languages" option from WPML admin switcher.
+ *
+ * FIXME: Why did we do this again? Does it even affect the settings? Does it fix the home query? Remove me?
  *
  * @since 2.8.0
  * @access private

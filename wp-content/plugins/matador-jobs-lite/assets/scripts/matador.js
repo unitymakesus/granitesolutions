@@ -26,6 +26,11 @@
   }, $.validator.format("Please enter a value with a valid extension."));
   $('#matador-application-form').validate({
     submitHandler: function submitHandler(form) {
+      if (typeof grecaptcha !== 'undefined' && !grecaptcha.getResponse()) {
+        alert('Please mark the reCAPTCHA checkbox.');
+        return false;
+      }
+
       $("[name='submit']").attr("disabled", true).addClass('madator-disabled');
       $('#matador-upload-overlay').show();
       return true;

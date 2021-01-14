@@ -21,6 +21,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+use matador\MatadorJobs\Email\ApplicationApplicantMessage,
+	matador\MatadorJobs\Email\ApplicationRecruiterMessage;
+
 class Application_Handler {
 
 	/**
@@ -69,13 +72,16 @@ class Application_Handler {
 	 *
 	 * Sets up an instance of the class for use in processing a form.
 	 *
+	 * @since  1.0.0
 	 * @access public
-	 * @since 1.0.0
 	 *
-	 * @var array $application
+	 * @param array $application
 	 *
+	 * @return null
 	 */
 	public function __construct( $application = null ) {
+        new ApplicationRecruiterMessage();
+        new ApplicationApplicantMessage();
 
 		if ( ! $application ) {
 
@@ -134,9 +140,7 @@ class Application_Handler {
 			 * @var array $application_data
 			 */
 			$this->request = apply_filters( 'matador_application_data_raw', $application );
-
 		}
-		add_action( 'matador_new_job_application', array( 'matador\Email', 'application_notification' ), 10, 2 );
 	}
 
 	/**
@@ -147,11 +151,11 @@ class Application_Handler {
 	 * into usable pieces that are then saved to the Application post type in the local
 	 * database.
 	 *
+	 * @since  1.0.0
+	 *
 	 * @access public
 	 *
 	 * @return integer $application_id
-	 *
-	 * @since 1.0.0
 	 */
 	public function apply() {
 
@@ -162,9 +166,10 @@ class Application_Handler {
 
 		// @todo fix checkbox problem and remove this hacky solution
 		if (
-			Matador::setting( 'application_privacy_field' )
-			&& ! ( isset( $this->request['privacy_policy_opt_in'] )
-				&& in_array( 1, $this->request['privacy_policy_opt_in'] )
+			'1' === Matador::setting( 'application_privacy_field' )
+			&& ! (
+				isset( $this->request['privacy_policy_opt_in'] )
+				&& in_array( 1, array_map( 'intval', array_values( $this->request['privacy_policy_opt_in'] ) ) )
 			)
 		) {
 
@@ -284,10 +289,16 @@ class Application_Handler {
 
 		if ( ! is_wp_error( $wp_id ) || 0 !== $wp_id ) {
 			do_action( 'matador_new_job_application', $wp_id, $application['application'] );
+
 		} else {
-			Logger::add( 'error', 'matador-app-candidate-save-failed', esc_html__( 'The save of a new application failed. The data is: ', 'matador-jobs' ) . ' ' . print_r( $application, true )  );
-			Email::admin_error_notification( esc_html__( 'The save of a new application failed. The data is: ' , 'matador-jobs' ) . print_r( $application, true ) );
-			Email::application_notification( $wp_id, $application['application'] );
+			Logger::add( 'error', 'matador-app-candidate-save-failed', esc_html__( 'The save of a new application failed. The data is: ', 'matador-jobs' ) . print_r( $application, true )  );
+
+			do_action( 'matador_new_job_application_failed', $insert_post_args );
+
+			AdminNoticeGeneralMessage::message( esc_html__( 'A candidate application could not be saved to WordPress for an unknown reason. The data is: ' , 'matador-jobs' ) . print_r( $application, true ) );
+
+            ApplicationRecruiterMessage::message( $application['application'] );
+            ApplicationApplicantMessage::message( $application['application'] );
 		}
 
 		return $wp_id;
@@ -373,27 +384,27 @@ class Application_Handler {
 
 			if ( ! empty( $submitted['namePrefix'] ) ) {
 
-				$name['namePrefix'] = esc_attr( $submitted['namePrefix'] );
+				$name['namePrefix'] = sanitize_text_field( $submitted['namePrefix'] );
 			}
 			if ( ! empty( $submitted['firstName'] ) ) {
 
-				$name['firstName'] = esc_attr( $submitted['firstName'] );
+				$name['firstName'] = sanitize_text_field( $submitted['firstName'] );
 			}
 			if ( ! empty( $submitted['middleName'] ) ) {
 
-				$name['middleName'] = esc_attr( $submitted['middleName'] );
+				$name['middleName'] = sanitize_text_field( $submitted['middleName'] );
 			}
 			if ( ! empty( $submitted['lastName'] ) ) {
 
-				$name['lastName'] = esc_attr( $submitted['lastName'] );
+				$name['lastName'] = sanitize_text_field( $submitted['lastName'] );
 			}
 			if ( ! empty( $submitted['nameSuffix'] ) ) {
 
-				$name['nameSuffix'] = esc_attr( $submitted['nameSuffix'] );
+				$name['nameSuffix'] = sanitize_text_field( $submitted['nameSuffix'] );
 			}
 
 			if ( ! empty( $name ) ) {
-				$name['fullName'] = implode( ' ', $name );
+				$name['fullName'] = trim( implode( ' ', array_filter( $name ) ) );
 			}
 		}
 
@@ -432,7 +443,7 @@ class Application_Handler {
 		}
 
 		// clean for extra white spaces
-		$raw_name = trim( preg_replace( '/\s\s+/', ' ', $raw_name ) );
+		$raw_name = preg_replace( '/\s\s+/', ' ', sanitize_text_field( $raw_name ) );
 
 		$all_parts  = explode( ', ', trim( esc_attr( $raw_name ) ) );
 		$name_parts = explode( ' ', trim( $all_parts[0] ) );
@@ -463,7 +474,7 @@ class Application_Handler {
 			}
 		}
 
-		$name['fullName'] = implode( ' ', $name );
+		$name['fullName'] = trim( implode( ' ', array_filter( $name ) ) );
 
 		return $name;
 	}
@@ -530,6 +541,12 @@ class Application_Handler {
 					$application['application'][ $key ] = array_map( 'sanitize_text_field', $submitted[ $key ] );
 
 					$submit_text = implode( ', ', $labels );
+				} elseif ( 'email' === $submitted[ $key ] ) {
+
+					$submit_text = apply_filters( 'matador_application_content_line_item', $submitted[ $key ], $key, $submitted[ $key ] );
+
+					$application['application'][ $key ] = sanitize_email( $submitted[ $key ] );
+
 				} else {
 
 					$submit_text = apply_filters( 'matador_application_content_line_item', $submitted[ $key ], $key, $submitted[ $key ] );
@@ -538,7 +555,7 @@ class Application_Handler {
 
 				}
 
-				$application['post_content']       .= ucfirst( $key ) . ': ' . $submit_text . PHP_EOL . PHP_EOL;
+				$application['post_content'] .= ucfirst( $key ) . ': ' . $submit_text . PHP_EOL . PHP_EOL;
 			}
 		}
 
@@ -692,7 +709,7 @@ class Application_Handler {
 			 * @param  string $label the text that comes before the "Message" field on a form response.
 			 * @return string $label
 			 */
-			$label = apply_filters( 'matador_submit_candidate_notes_message_label', __( 'Message: ', 'matador-jobs' ) );
+			$label   = apply_filters( 'matador_submit_candidate_notes_message_label', __( 'Message: ', 'matador-jobs' ) );
 			$notes[] = $label . esc_html( wp_strip_all_tags( $submitted['message'] ) );
 			$this->add_used_fields( 'message' );
 		}
@@ -745,7 +762,7 @@ class Application_Handler {
 			 *
 			 * @param array $notes
 			 */
-			$application['application']['message'] = '</p> <p>' . implode( ".</p> <p>", apply_filters( 'matador_application_note_content', $notes ) ) . '.';
+			$application['application']['message'] = '</p> <p>' . implode( '.</p> <p>', apply_filters( 'matador_application_note_content', $notes ) ) . '.';
 			$application['post_content']          .= implode( ". \n" . PHP_EOL, $notes ) . PHP_EOL;
 		}
 
@@ -797,7 +814,7 @@ class Application_Handler {
 					);
 
 					$application['application']['files'][ $key ] = $file;
-					$application['post_content']                .=  PHP_EOL . esc_html( ucwords( $key ) ) . ' ' . esc_html__( 'File', 'matador-jobs' ) . ': ' . sprintf( '<a href="%s">%s</a>', esc_url( $url ), esc_html( $name ) ) . PHP_EOL . PHP_EOL;
+					$application['post_content']                .= PHP_EOL . esc_html( ucwords( $key ) ) . ' ' . esc_html__( 'File', 'matador-jobs' ) . ': ' . sprintf( '<a href="%s">%s</a>', esc_url( $url ), esc_html( $name ) ) . PHP_EOL . PHP_EOL;
 
 				} else {
 
@@ -850,7 +867,7 @@ class Application_Handler {
 		}
 
 		// Get the original file name as uploaded
-		$name = sanitize_file_name( strtolower( substr( $prefix . date( 'YmdHis' ) , -29 ) . '-' . substr( $file['name'], -70 ) ) );
+		$name = sanitize_file_name( strtolower( substr( $prefix . date( 'YmdHis' ), -29 ) . '-' . substr( $file['name'], -70 ) ) );
 
 		// Determine the server location for the file to be stored.
 		$location = trailingslashit( Matador::variable( 'uploads_cv_dir' ) ) . $name;
@@ -1249,6 +1266,7 @@ class Application_Handler {
 			'state'                 => array(
 				'type'  => 'text',
 				'label' => esc_html__( 'State/Province', 'matador-jobs' ) . $colon,
+
 			),
 			'zip'                   => array(
 				'type'  => 'text',
@@ -1330,16 +1348,15 @@ class Application_Handler {
 				'type'        => 'checkbox',
 				'label'       => null,
 				'options'     => array(
-					'1' => esc_html__(
-						'By submitting this application, you give us permission to store your personal
+					'1' => esc_html__('By submitting this application, you give us permission to store your personal
 						information, and use it in the consideration of your fitness for the position,
 						including sharing it with the hiring firm.', 'matador-jobs' ),
 				),
 				'description' => ( ( function_exists( 'get_privacy_policy_url' ) && get_privacy_policy_url() ) || Matador::setting( 'privacy_policy_page' ) ) ? sprintf( '<a href="%s" target="_blank">' . esc_html__( 'Review our Privacy Policy for more information.', 'matador-jobs' ) . '</a>', function_exists( 'get_privacy_policy_url' ) ? get_privacy_policy_url() : get_page_link( Matador::setting( 'privacy_policy_page' ) ) ) : null,
 				'attributes'  => array(
-					'required'  => 'required',
+					'required'          => 'required',
 					'data-msg-required' => __( 'You must agree to our Privacy Policy.', 'matador-jobs' ),
-					'minlength' => 1,
+					'minlength'         => 1,
 				),
 			),
 		) );

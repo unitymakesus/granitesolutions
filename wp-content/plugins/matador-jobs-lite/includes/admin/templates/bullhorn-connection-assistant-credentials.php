@@ -71,7 +71,7 @@ namespace matador;
 		After you advance to the next step, we\'ll first check that you provided a valid 
 		Client ID. If not, we\'ll bring you back here and let you know. If your Client ID
 		is valid, we\'ll advance and use these credentials to test if your callback URI
-		is properly whitelisted. Your browser may take up to 30 seconds to complete this
+		is properly registered. Your browser may take up to 30 seconds to complete this
 		check.
 		', 'matador-jobs' );
 		?>

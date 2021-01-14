@@ -23,7 +23,7 @@ namespace The_SEO_Framework\Bridges;
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-defined( 'THE_SEO_FRAMEWORK_PRESENT' ) or die;
+\defined( 'THE_SEO_FRAMEWORK_PRESENT' ) or die;
 
 /**
  * Prepares the SEO Settings page interface.
@@ -36,7 +36,6 @@ defined( 'THE_SEO_FRAMEWORK_PRESENT' ) or die;
  * @final Can't be extended.
  */
 final class SeoSettings {
-	use \The_SEO_Framework\Traits\Enclose_Stray_Private;
 
 	/**
 	 * Registers meta boxes on the Site SEO Settings page.
@@ -66,7 +65,7 @@ final class SeoSettings {
 
 		$settings_page_hook = \the_seo_framework()->seo_settings_page_hook;
 
-		//* General Meta Box
+		// General Meta Box
 		if ( $general )
 			\add_meta_box(
 				'autodescription-general-settings',
@@ -77,7 +76,7 @@ final class SeoSettings {
 				[]
 			);
 
-		//* Title Meta Box
+		// Title Meta Box
 		if ( $title )
 			\add_meta_box(
 				'autodescription-title-settings',
@@ -88,7 +87,7 @@ final class SeoSettings {
 				[]
 			);
 
-		//* Description Meta Box
+		// Description Meta Box
 		if ( $description )
 			\add_meta_box(
 				'autodescription-description-settings',
@@ -99,7 +98,7 @@ final class SeoSettings {
 				[]
 			);
 
-		//* Homepage Meta Box
+		// Homepage Meta Box
 		if ( $home )
 			\add_meta_box(
 				'autodescription-homepage-settings',
@@ -110,7 +109,7 @@ final class SeoSettings {
 				[]
 			);
 
-		//* Social Meta Box
+		// Social Meta Box
 		if ( $social )
 			\add_meta_box(
 				'autodescription-social-settings',
@@ -121,7 +120,7 @@ final class SeoSettings {
 				[]
 			);
 
-		//* Schema Meta Box
+		// Schema Meta Box
 		if ( $schema )
 			\add_meta_box(
 				'autodescription-schema-settings',
@@ -132,7 +131,7 @@ final class SeoSettings {
 				[]
 			);
 
-		//* Robots Meta Box
+		// Robots Meta Box
 		if ( $robots )
 			\add_meta_box(
 				'autodescription-robots-settings',
@@ -143,7 +142,7 @@ final class SeoSettings {
 				[]
 			);
 
-		//* Webmaster Meta Box
+		// Webmaster Meta Box
 		if ( $webmaster )
 			\add_meta_box(
 				'autodescription-webmaster-settings',
@@ -154,7 +153,7 @@ final class SeoSettings {
 				[]
 			);
 
-		//* Sitemaps Meta Box
+		// Sitemaps Meta Box
 		if ( $sitemap )
 			\add_meta_box(
 				'autodescription-sitemap-settings',
@@ -165,7 +164,7 @@ final class SeoSettings {
 				[]
 			);
 
-		//* Feed Meta Box
+		// Feed Meta Box
 		if ( $feed )
 			\add_meta_box(
 				'autodescription-feed-settings',
@@ -196,7 +195,7 @@ final class SeoSettings {
 	 * }
 	 * @param bool   $use_tabs Whether to output tabs, only works when $tabs count is greater than 1.
 	 */
-	public static function _nav_tab_wrapper( $id, $tabs = [], $use_tabs = true ) {
+	public static function _nav_tab_wrapper( $id, $tabs = [], $use_tabs = true ) { // phpcs:ignore,VariableAnalysis
 		\the_seo_framework()->get_view( 'admin/wrap-nav', get_defined_vars() );
 		\the_seo_framework()->get_view( 'admin/wrap-content', get_defined_vars() );
 	}

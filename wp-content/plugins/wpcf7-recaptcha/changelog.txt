@@ -2,6 +2,45 @@
 
 This is to keep track of all changes the plugin undertakes. The readme.txt should only contain the most recent 3.
 
+= 1.3.0 =
+
+Release Date: December 21, 2020
+
+* Overview
+	* Updated WordPress version to show 5.6 support.
+
+= 1.2.9 =
+
+Release Date: August 26, 2020
+
+* Overview
+	* Some users reported issues with reCaptcha displaying, likely based on enqueue method
+	
+* Code Changes
+	* Removed `iqfix_wpcf7_recaptcha_callback_script()` function
+	* Enqueued reCaptcha controls based on whether google reCaptcha is enqueued.
+		* See recaptcha-v2.php LN 72
+
+= 1.2.8 =
+
+Release Date: August 19, 2020
+
+* Overview
+	* Changed support to v5.5
+	* Removed instances of "whitelist" from translations in favor of "domain list".
+	* Inline footer script now moved to an enqueued file.
+	* Updated spam check JS to look for the correct element.
+
+* Code Changes
+	* iqfix_wpcf7_recaptcha_callback_script now enqueues instead of adds an inline script.
+	* iqfix_wpcf7_recaptcha_callback_script Priority updated from 40 to 2
+	* iqfix_wpcf7_recaptcha_enqueue_scripts localizes new Response Error string for the off chance the response element cannot be found.
+	* New File assets\js\wpcf7-recaptcha-controls.js
+		* Script content previously in iqfix_wpcf7_recaptcha_callback_script
+		* wpcf7spam Event Listener now looks for textarea[name="g-recaptcha-response"] instead of input[name="g-recaptcha-response"]
+			* Thanks @fuadyp ( https://wordpress.org/support/topic/not-valid-tip-error/ )
+		* wpcf7spam Event Listener now console logs an error in the off chance a response element cannot be found.
+
 = 1.2.7 =
 
 Release Date: June 15, 2020

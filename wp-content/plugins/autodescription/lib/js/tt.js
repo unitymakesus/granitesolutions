@@ -100,26 +100,32 @@ window.tsfTT = function( $ ) {
 
 			unset = unset || false;
 
-			let touchEvents = 'pointerdown.tsfTT touchstart.tsfTT click.tsfTT',
-				$target     = $( target );
+			let events = {
+				mousemove:  mouseMove,
+				mouseleave: mouseLeave,
+				mouseout:   mouseLeave,
+				blur:       mouseLeave,
+			};
+			let touchEvents = [ 'pointerdown', 'touchstart', 'click' ];
 
 			if ( unset ) {
-				$target.off( 'mousemove.tsfTT mouseleave.tsfTT mouseout.tsfTT blur.tsfTT' );
-				$( document.body ).off( touchEvents );
-			} else {
-				$target.on( {
-					'mousemove.tsfTT':  mouseMove,
-					'mouseleave.tsfTT': mouseLeave,
-					'mouseout.tsfTT':   mouseLeave,
-					'blur.tsfTT'    :   mouseLeave,
+				for ( const [ event, callBack ] of Object.entries( events ) ) {
+					target.removeEventListener( event, callBack );
+				}
+				touchEvents.forEach( event => {
+					document.body.removeEventListener( event, touchRemove );
 				} );
-				$( document.body ).off( touchEvents ).on( touchEvents, touchRemove );
+			} else {
+				for ( const [ event, callBack ] of Object.entries( events ) ) {
+					target.addEventListener( event, callBack );
+				}
+				touchEvents.forEach( event => {
+					document.body.addEventListener( event, touchRemove );
+				} );
 			}
 
 			//= Always set this, as the events may be reintroduced via other code.
-			$target
-				.off( 'tsf-tooltip-update' )
-				.on( 'tsf-tooltip-update', updateDesc );
+			target.addEventListener( 'tsf-tooltip-update', updateDesc );
 		}
 		const unsetEvents = target => setEvents( target, true );
 		const updateDesc = event => {
@@ -127,7 +133,7 @@ window.tsfTT = function( $ ) {
 				let tooltipText = event.target.querySelector( '.tsf-tooltip-text' );
 				if ( tooltipText instanceof Element ) {
 					tooltipText.innerHTML = event.target.dataset.desc;
-					$( event.target ).trigger( 'mousemove.tsfTT' ); // performance: .3ms
+					event.target.dispatchEvent( new Event( 'mousemove' ) ); // performance: <.3ms
 				}
 			}
 		}
@@ -215,10 +221,10 @@ window.tsfTT = function( $ ) {
 			}
 
 			if ( mousex <= arrowBoundary ) {
-				//* Overflown left.
+				// Overflown left.
 				activeTooltipElements.arrow.style.left = arrowBoundary + "px";
 			} else if ( mousex >= boundaryRight ) {
-				//* Overflown right.
+				// Overflown right.
 				activeTooltipElements.arrow.style.left = boundaryRight + "px";
 			} else {
 				//= Somewhere in the middle.
@@ -414,7 +420,7 @@ window.tsfTT = function( $ ) {
 			}, 25 ); // Increase this for slow computers? Or allow the loop to be broken from the outside?
 		}
 		init();
-		$( window ).on( 'tsf-tooltip-reset', init );
+		window.addEventListener( 'tsf-tooltip-reset', init );
 
 		addBoundary( '#wpwrap' ); //! All pages, but Gutenberg destroys the boundaries.. @see tsfGBC
 	}
@@ -601,8 +607,9 @@ window.tsfTT = function( $ ) {
 			if ( input ) input.dataset.preventedClick = 1;
 		}
 		if ( element instanceof HTMLInputElement && element.id ) {
-			let labels = document.querySelectorAll( `label[for="${element.id}"]` );
-			if ( labels ) labels.forEach( la => la.dataset.preventedClick = 1 );
+			document.querySelectorAll( `label[for="${element.id}"]` ).forEach(
+				la => { la.dataset.preventedClick = 1; }
+			);
 		}
 	}
 	/**
@@ -625,8 +632,9 @@ window.tsfTT = function( $ ) {
 			if ( input ) delete input.dataset.preventedClick;
 		}
 		if ( element instanceof HTMLInputElement && element.id ) {
-			let labels = document.querySelectorAll( `label[for="${element.id}"]` );
-			if ( labels ) labels.forEach( la => delete la.dataset.preventedClick );
+			document.querySelectorAll( `label[for="${element.id}"]` ).forEach(
+				la => { delete la.dataset.preventedClick; }
+			);
 		}
 	}
 	/**
@@ -651,9 +659,7 @@ window.tsfTT = function( $ ) {
 	 * @param {!jQuery|Element|string} element The jQuery element, DOM Element or query selector.
 	 * @return {undefined}
 	 */
-	const addBoundary = element => {
-		$( element ).addClass( 'tsf-tooltip-boundary' );
-	}
+	const addBoundary = element => element instanceof Element && element.classList.add( 'tsf-tooltip-boundary' );
 
 	/**
 	 * Removes the description balloon and arrow from element.
@@ -698,7 +704,7 @@ window.tsfTT = function( $ ) {
 	 * @access public
 	 *
 	 * @function
-	 * @return {(undefined|null)}
+	 * @return {undefined}
 	 */
 	const triggerReset = () => {
 		window.dispatchEvent( new CustomEvent( 'tsf-tooltip-reset' ) );
@@ -711,11 +717,23 @@ window.tsfTT = function( $ ) {
 	 * @access public
 	 *
 	 * @function
-	 * @param {HTMLElement} item
-	 * @return {(undefined|null)}
+	 * @param {{HTMLElement|undefined}} element
+	 * @return {undefined}
 	 */
-	const triggerUpdate = item => {
-		$( item || toolTipItemSelector ).trigger( 'tsf-tooltip-update' );
+	const triggerUpdate = element => {
+
+		if ( ! element || ! ( element instanceof Element ) )
+			element = document.querySelectorAll( toolTipItemSelector );
+
+		if ( ! element ) return;
+
+		const updateEvent = new CustomEvent( 'tsf-tooltip-update' );
+
+		if ( element instanceof Element ) {
+			element.dispatchEvent( updateEvent );
+		} else if ( element instanceof Nodelist ) {
+			element.forEach( el => el.dispatchEvent( updateEvent ) );
+		}
 	}
 
 	return Object.assign( {
@@ -740,12 +758,12 @@ window.tsfTT = function( $ ) {
 		 * @since 3.1.0
 		 * @access public
 		 */
- 		doTooltip,
- 		removeTooltip,
- 		getTooltip,
- 		addBoundary,
- 		triggerReset,
- 		triggerUpdate,
+		doTooltip,
+		removeTooltip,
+		getTooltip,
+		addBoundary,
+		triggerReset,
+		triggerUpdate,
 	} );
 }( jQuery );
 window.tsfTT.load();

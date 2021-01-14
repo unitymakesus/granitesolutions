@@ -6,7 +6,7 @@
 
 namespace The_SEO_Framework;
 
-defined( 'THE_SEO_FRAMEWORK_PRESENT' ) or die;
+\defined( 'THE_SEO_FRAMEWORK_PRESENT' ) or die;
 
 /**
  * The SEO Framework plugin
@@ -276,7 +276,7 @@ class Post_Data extends Detect {
 		foreach ( (array) $data as $field => $value ) {
 			// Save $value, or delete if the $value is empty.
 			// We can safely assume no one-zero/qubit options pass through here thanks to sanitization earlier--alleviating database weight.
-			if ( $value || ( is_string( $value ) && strlen( $value ) ) ) {
+			if ( $value || ( \is_string( $value ) && \strlen( $value ) ) ) {
 				\update_post_meta( $post->ID, $field, $value );
 			} else {
 				// This is fine for as long as we merge the getter values with the defaults.
@@ -359,14 +359,14 @@ class Post_Data extends Detect {
 		$nonce_name   = $this->inpost_nonce_name;
 		$nonce_action = $this->inpost_nonce_field;
 
-		//* Check that the user is allowed to edit the post
+		// Check that the user is allowed to edit the post
 		if ( ! \current_user_can( 'edit_post', $post->ID ) ) return;
 		if ( ! isset( $_POST[ $nonce_name ] ) ) return;
 		if ( ! \wp_verify_nonce( $_POST[ $nonce_name ], $nonce_action ) ) return;
 
 		$data = (array) $_POST['autodescription'];
 
-		//* Perform nonce check and save fields.
+		// Perform nonce check and save fields.
 		$this->save_post_meta( $post, $data );
 	}
 
@@ -386,7 +386,7 @@ class Post_Data extends Detect {
 
 		if ( empty( $post->ID ) ) return;
 
-		//* Check again against ambiguous injection...
+		// Check again against ambiguous injection...
 		// Note, however: function wp_ajax_inline_save() already performs all these checks for us before firing this callback's action.
 		if ( ! \current_user_can( 'edit_post', $post->ID ) ) return;
 		if ( ! \check_ajax_referer( 'inlineeditnonce', '_inline_edit', false ) ) return;
@@ -444,7 +444,7 @@ class Post_Data extends Detect {
 
 		if ( empty( $post->ID ) ) return;
 
-		//* Check again against ambiguous injection...
+		// Check again against ambiguous injection...
 		// Note, however: function bulk_edit_posts() already performs all these checks for us before firing this callback's action.
 		if ( ! \current_user_can( 'edit_post', $post->ID ) ) return;
 
@@ -462,12 +462,11 @@ class Post_Data extends Detect {
 
 			// This is sent via GET. Keep using $_REQUEST for future-compatibility.
 			foreach ( (array) $_REQUEST['autodescription-bulk'] as $key => $value ) :
-				if ( 'nochange' === $value ) continue;
-
 				switch ( $key ) :
 					case 'noindex':
 					case 'nofollow':
 					case 'noarchive':
+						if ( 'nochange' === $value ) continue 2;
 						$new_data[ "_genesis_$key" ] = $value;
 						break;
 
@@ -519,7 +518,7 @@ class Post_Data extends Detect {
 		if ( \wp_is_post_autosave( $post ) ) return;
 		if ( \wp_is_post_revision( $post ) ) return;
 
-		//* Check that the user is allowed to edit the post. Nonce checks are done in bulk later.
+		// Check that the user is allowed to edit the post. Nonce checks are done in bulk later.
 		if ( ! \current_user_can( 'edit_post', $post->ID ) ) return;
 
 		$post_type = \get_post_type( $post ) ?: false;
@@ -548,7 +547,7 @@ class Post_Data extends Detect {
 	}
 
 	/**
-	 * Fetch latest public post ID.
+	 * Fetch latest public post/page ID.
 	 * Memoizes the return value.
 	 *
 	 * @since 2.4.3
@@ -627,7 +626,7 @@ class Post_Data extends Detect {
 		 */
 		$detected = \apply_filters( 'the_seo_framework_detect_page_builder', null, $post_id, $meta );
 
-		if ( is_bool( $detected ) )
+		if ( \is_bool( $detected ) )
 			return $detected;
 
 		if ( ! $this->detect_page_builder() )
@@ -636,20 +635,20 @@ class Post_Data extends Detect {
 		if ( empty( $meta ) )
 			return false;
 
-		if ( isset( $meta['_elementor_edit_mode'][0] ) && '' !== $meta['_elementor_edit_mode'][0] && defined( 'ELEMENTOR_VERSION' ) ) :
-			//* Elementor by Elementor LTD
+		if ( isset( $meta['_elementor_edit_mode'][0] ) && '' !== $meta['_elementor_edit_mode'][0] && \defined( 'ELEMENTOR_VERSION' ) ) :
+			// Elementor by Elementor LTD
 			return true;
-		elseif ( isset( $meta['_et_pb_use_builder'][0] ) && 'on' === $meta['_et_pb_use_builder'][0] && defined( 'ET_BUILDER_VERSION' ) ) :
-			//* Divi Builder by Elegant Themes
+		elseif ( isset( $meta['_et_pb_use_builder'][0] ) && 'on' === $meta['_et_pb_use_builder'][0] && \defined( 'ET_BUILDER_VERSION' ) ) :
+			// Divi Builder by Elegant Themes
 			return true;
-		elseif ( isset( $meta['_wpb_vc_js_status'][0] ) && 'true' === $meta['_wpb_vc_js_status'][0] && defined( 'WPB_VC_VERSION' ) ) :
-			//* Visual Composer by WPBakery
+		elseif ( isset( $meta['_wpb_vc_js_status'][0] ) && 'true' === $meta['_wpb_vc_js_status'][0] && \defined( 'WPB_VC_VERSION' ) ) :
+			// Visual Composer by WPBakery
 			return true;
-		elseif ( isset( $meta['panels_data'][0] ) && '' !== $meta['panels_data'][0] && defined( 'SITEORIGIN_PANELS_VERSION' ) ) :
-			//* Page Builder by SiteOrigin
+		elseif ( isset( $meta['panels_data'][0] ) && '' !== $meta['panels_data'][0] && \defined( 'SITEORIGIN_PANELS_VERSION' ) ) :
+			// Page Builder by SiteOrigin
 			return true;
-		elseif ( isset( $meta['_fl_builder_enabled'][0] ) && '1' === $meta['_fl_builder_enabled'][0] && defined( 'FL_BUILDER_VERSION' ) ) :
-			//* Beaver Builder by Fastline Media...
+		elseif ( isset( $meta['_fl_builder_enabled'][0] ) && '1' === $meta['_fl_builder_enabled'][0] && \defined( 'FL_BUILDER_VERSION' ) ) :
+			// Beaver Builder by Fastline Media...
 			return true;
 		endif;
 
@@ -681,7 +680,7 @@ class Post_Data extends Detect {
 		 */
 		$detected = \apply_filters( 'the_seo_framework_detect_non_html_page_builder', null, $post_id, $meta );
 
-		if ( is_bool( $detected ) )
+		if ( \is_bool( $detected ) )
 			return $detected;
 
 		if ( ! $this->detect_non_html_page_builder() )
@@ -690,11 +689,11 @@ class Post_Data extends Detect {
 		if ( empty( $meta ) )
 			return false;
 
-		if ( isset( $meta['_et_pb_use_builder'][0] ) && 'on' === $meta['_et_pb_use_builder'][0] && defined( 'ET_BUILDER_VERSION' ) ) :
-			//* Divi Builder by Elegant Themes
+		if ( isset( $meta['_et_pb_use_builder'][0] ) && 'on' === $meta['_et_pb_use_builder'][0] && \defined( 'ET_BUILDER_VERSION' ) ) :
+			// Divi Builder by Elegant Themes
 			return true;
-		elseif ( isset( $meta['_wpb_vc_js_status'][0] ) && 'true' === $meta['_wpb_vc_js_status'][0] && defined( 'WPB_VC_VERSION' ) ) :
-			//* Visual Composer by WPBakery
+		elseif ( isset( $meta['_wpb_vc_js_status'][0] ) && 'true' === $meta['_wpb_vc_js_status'][0] && \defined( 'WPB_VC_VERSION' ) ) :
+			// Visual Composer by WPBakery
 			return true;
 		endif;
 
@@ -754,7 +753,7 @@ class Post_Data extends Detect {
 	 */
 	public function is_draft( $post = null ) {
 		$post = \get_post( $post );
-		return isset( $post->post_status ) && in_array( $post->post_status, [ 'draft', 'auto-draft', 'pending' ], true );
+		return isset( $post->post_status ) && \in_array( $post->post_status, [ 'draft', 'auto-draft', 'pending' ], true );
 	}
 
 	/**

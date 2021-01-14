@@ -4,13 +4,14 @@
  * @subpackage The_SEO_Framework\Admin\Settings
  */
 
-use The_SEO_Framework\Bridges\SeoSettings;
-
-defined( 'THE_SEO_FRAMEWORK_PRESENT' ) and $_this = the_seo_framework_class() and $this instanceof $_this or die;
-
+// phpcs:disable, VariableAnalysis.CodeAnalysis.VariableAnalysis.UndefinedVariable -- includes.
 // phpcs:disable, WordPress.WP.GlobalVariablesOverride -- This isn't the global scope.
 
-//* Fetch the required instance within this file.
+use The_SEO_Framework\Bridges\SeoSettings;
+
+defined( 'THE_SEO_FRAMEWORK_PRESENT' ) and the_seo_framework()->_verify_include_secret( $_secret ) or die;
+
+// Fetch the required instance within this file.
 $instance = $this->get_view_instance( 'the_seo_framework_robots_metabox', $instance );
 
 switch ( $instance ) :
@@ -37,7 +38,7 @@ switch ( $instance ) :
 		$post_types = $this->get_public_post_types();
 		$taxonomies = $this->get_public_taxonomies();
 
-		//* Robots i18n
+		// Robots i18n
 		$robots = [
 			'noindex'   => [
 				'value' => 'noindex',
@@ -331,6 +332,7 @@ switch ( $instance ) :
 		foreach ( $post_types as $post_type ) {
 			$checkboxes[] = $this->make_checkbox_array( [
 				'id'       => $pt_option_id,
+				'class'    => 'tsf-robots-post-types',
 				'index'    => $post_type,
 				'label'    => sprintf(
 					// RTL supported: Because the post types are Roman, browsers enforce the order.
@@ -342,6 +344,9 @@ switch ( $instance ) :
 				'disabled' => false,
 				'default'  => ! empty( $default_options[ $pt_option_id ][ $post_type ] ),
 				'warned'   => ! empty( $warned_options[ $pt_option_id ][ $post_type ] ),
+				'data'     => [
+					'robots' => $ro_value,
+				],
 			] );
 		}
 
@@ -362,6 +367,7 @@ switch ( $instance ) :
 		foreach ( $taxonomies as $taxonomy ) {
 			$checkboxes[] = $this->make_checkbox_array( [
 				'id'       => $tax_option_id,
+				'class'    => 'tsf-robots-taxonomies',
 				'index'    => $taxonomy,
 				'label'    => sprintf(
 					// RTL supported: Because the post types are Roman, browsers enforce the order.
@@ -375,6 +381,7 @@ switch ( $instance ) :
 				'warned'   => ! empty( $warned_options[ $tax_option_id ][ $taxonomy ] ),
 				'data'     => [
 					'postTypes' => $this->get_post_types_from_taxonomy( $taxonomy ),
+					'robots'    => $ro_value,
 				],
 			] );
 		}
@@ -399,7 +406,7 @@ switch ( $instance ) :
 
 			$id = $this->s_field_id( $type . '_' . $ro_value );
 
-			//* Add warning if it's 'site'.
+			// Add warning if it's 'site'.
 			if ( 'site' === $type ) {
 				$checkboxes .= '<hr class="tsf-option-spacer">';
 

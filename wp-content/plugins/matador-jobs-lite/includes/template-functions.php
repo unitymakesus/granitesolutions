@@ -938,6 +938,38 @@ function matador_build_attributes( $attributes_array = array(), $echo = false ) 
 }
 
 /**
+ * Matador Button Classes
+ *
+ * Most themes use pure html, in most cases, and thus Matador is great at adopting theme conventions like for forms,
+ * text, and more. But when it comes to button styles, themes use many class names, often depending on the underlying
+ * CSS framework. In Matador, button or button-like objects are dynamically assigned class names, making it easy for
+ * developers to use theme button class names via our matador_template_button_classes filter.
+ *
+ * @since  3.6.0
+ *
+ * @param string|array $classes A string or array of strings or array of strings of classes.
+ * @param string $context The context of the button, either primary, secondary, or tertiary.
+ *
+ * @return string Escaped string of classes, space-separated.
+ */
+function matador_button_classes( $classes = 'matator-button', $context = 'primary' ) {
+
+	$classes = matador\Template_Support::button_classes( $classes, $context );
+
+	/**
+	 * Filter Matador Template Button Classes
+	 *
+	 * @since 3.6.0
+	 *
+	 * @param string $classes Space-separated string of classes for a button
+	 * @param string $context Button context, for filtering purposes, either 'primary', 'secondary', or 'tertiary'
+	 *
+	 * @return string
+	 */
+	echo esc_attr( apply_filters( 'matador_template_button_classes', $classes, $context ) );
+}
+
+/**
  * Matador Build Classes
  *
  * Takes an unlimited number of arguments of strings or arrays

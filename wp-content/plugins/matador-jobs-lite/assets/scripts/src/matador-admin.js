@@ -113,4 +113,18 @@
 
     });
 
+    $('#matador-sync-job').on("click", function (event) {
+        event.preventDefault();
+        jQuery('#matador-sync-job img').addClass('spin');
+        var data = {
+            'action': 'matador_api_job_sync',
+            'nonce': jQuery( this ).data('nonce'),
+            'bhid': jQuery( this ).data('bhid'),
+        };
+        // since 2.8 ajaxurl is always defined in the admin header and points to admin-ajax.php
+        jQuery.post(ajaxurl, data, function (response) {
+           jQuery('#matador-sync-job img').removeClass('spin');
+           window.location.reload(true);
+        });
+    });
 })(jQuery);

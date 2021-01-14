@@ -83,10 +83,8 @@ window.tsf = function( $ ) {
 	const _canUseDOMParser = () => {
 		if ( void 0 === _canUseDOMParserTest ) {
 			try {
-				if ( ( new DOMParser() ).parseFromString( '', 'text/html' ) ) {
-					// text/html parsing is natively supported
-					_canUseDOMParserTest = true;
-				}
+				// text/html parsing is natively supported when true.
+				_canUseDOMParserTest = !! ( new DOMParser() ).parseFromString( '', 'text/html' );
 			} catch ( e ) { }
 
 			_canUseDOMParserTest = !! _canUseDOMParserTest;
@@ -95,6 +93,7 @@ window.tsf = function( $ ) {
 		return _canUseDOMParserTest;
 	}
 
+	let _decodeEntitiesDOMParser = void 0;
 	/**
 	 * Decodes string entities securely.
 	 *
@@ -107,7 +106,7 @@ window.tsf = function( $ ) {
 	 * @access public
 	 *
 	 * @credit <https://stackoverflow.com/questions/1912501/unescape-html-entities-in-javascript/34064434#34064434>
-	 * Modified to allow <, >, and \ entities.
+	 * Modified to allow <, >, and \ entities, and cached the parser.
 	 *
 	 * @param {String} str The text to decode.
 	 * @return {String} The decoded text.
@@ -125,11 +124,12 @@ window.tsf = function( $ ) {
 		str = str.replace( /[<>\\]/g, m => map[ m ] );
 
 		if ( _canUseDOMParser() ) {
-			str = ( new DOMParser() ).parseFromString( str, 'text/html' ).documentElement.textContent;
+			_decodeEntitiesDOMParser = _decodeEntitiesDOMParser || new DOMParser();
+			str = _decodeEntitiesDOMParser.parseFromString( str, 'text/html' ).documentElement.textContent;
 		} else {
-			let el = document.createElement( 'span' );
-			el.innerHTML = str;
-			str = ampHTMLtoText( el.textContent );
+			_decodeEntitiesDOMParser = _decodeEntitiesDOMParser || document.createElement( 'span' );
+			_decodeEntitiesDOMParser.innerHTML = str;
+			str = ampHTMLtoText( _decodeEntitiesDOMParser.textContent );
 		}
 
 		return str;
@@ -291,46 +291,6 @@ window.tsf = function( $ ) {
 	}
 
 	/**
-	 * Dismissible notices that use notice wrapper class .tsf-notice.
-	 *
-	 * @since 2.6.0
-	 * @since 2.9.3 Now correctly removes the node from DOM.
-	 * @since 4.1.0 1. Now is more in line with how WordPress dismisses notices.
-	 *              2. Now also handles dismissible persistent notices.
-	 * @access private
-	 *
-	 * @function
-	 * @param {!jQuery.Event} event
-	 * @return {undefined}
-	 */
-	const _dismissNotice = ( event ) => {
-
-		let $notice = $( event.target ).parents( '.tsf-notice' ).first(),
-			key     = event.target.dataset && event.target.dataset.key || void 0,
-			nonce   = event.target.dataset && event.target.dataset.nonce || void 0;
-
-		if ( $notice ) {
-			$notice.fadeTo( 100, 0, () => {
-				$notice.slideUp( 100, () => {
-					$notice.remove();
-				} );
-			} );
-		}
-		if ( key && nonce ) {
-			// The notice is removed regardless of this being completed.
-			// Do not inform the user of its completion--it adds a lot to the annoyance.
-			// Instead, rely on keeping the 'count' low!
-			wp.ajax.post(
-				'tsf-dismiss-notice',
-				{
-					'tsf-dismiss-key': key,
-					'tsf-dismiss-nonce': nonce,
-				}
-			);
-		}
-	}
-
-	/**
 	 * Visualizes AJAX loading time through target class change.
 	 *
 	 * @since 2.7.0
@@ -462,7 +422,114 @@ window.tsf = function( $ ) {
 	}
 
 	/**
-	 * Sets tsf-ready action.
+	 * Prepares notice dismissal listeners.
+	 *
+	 * @since 4.1.2
+	 * @access private
+	 *
+	 * @function
+	 */
+	const _initNotices = () => {
+
+		/**
+		 * Dismissible notices that use notice wrapper class .tsf-notice.
+		 *
+		 * @since 2.6.0
+		 * @since 2.9.3 Now correctly removes the node from DOM.
+		 * @since 4.1.0 1. Now is more in line with how WordPress dismisses notices.
+		 *              2. Now also handles dismissible persistent notices.
+		 * @since 4.1.2 Moved inside other method.
+		 *
+		 * @function
+		 * @param {Event} event
+		 * @return {undefined}
+		 */
+		const dismissNotice = event => {
+
+			let $notice = $( event.target ).parents( '.tsf-notice' ).first(),
+				key     = event.target.dataset && event.target.dataset.key || void 0,
+				nonce   = event.target.dataset && event.target.dataset.nonce || void 0;
+
+			$notice.fadeTo( 100, 0, () => {
+				$notice.slideUp( 100, () => {
+					$notice.remove();
+				} );
+			} );
+
+			if ( key && nonce ) {
+				// The notice is removed regardless of this being completed.
+				// Do not inform the user of its completion--it adds a lot to the annoyance.
+				// Instead, rely on keeping the 'count' low!
+				wp.ajax.post(
+					'tsf-dismiss-notice',
+					{
+						'tsf-dismiss-key': key,
+						'tsf-dismiss-nonce': nonce,
+					}
+				);
+			}
+		}
+
+		const reset = () => {
+			// Enable dismissal of PHP-inserted notices.
+			document.querySelectorAll( '.tsf-dismiss' ).forEach( el => el.addEventListener( 'click', dismissNotice ) );
+		}
+		/**
+		 * @access private Use triggerNoticeReset() instead.
+		 */
+		document.body.addEventListener( 'tsf-reset-notice-listeners', reset );
+		reset();
+	}
+
+	let _debounceNoticeReset = void 0;
+	/**
+	 * Invokes notice dismissal listener reset.
+	 *
+	 * @since 4.1.2
+	 * @access public
+	 *
+	 * @function
+	 */
+	const triggerNoticeReset = () => {
+		clearTimeout( _debounceNoticeReset );
+		_debounceNoticeReset = setTimeout(
+			() => document.body.dispatchEvent( new CustomEvent( 'tsf-reset-notice-listeners' ) ),
+			100
+		);
+	}
+
+	let isInteractive = false;
+	/**
+	 * Dispatches tsf-interactive event.
+	 *
+	 * This fires as soon as all TSF script are done loading. A few more may load here that rely on user interaction.
+	 * Use case: User is expected to interact confidently with the page. (This obviously isn't true, since WP is slow, but one day...)
+	 *
+	 * Feel free to asynchronously do things at this point.
+	 *
+	 * Example: jQuery( document.body ).on( 'tsf-interactive', myFunc );
+	 * Or:      document.body.addEventListener( 'tsf-interactive', myFunc );
+	 *
+	 * @since 4.1.1
+	 * @access private
+	 *
+	 * @function
+	 */
+	const _triggerInteractive = () => {
+		if ( ! isInteractive ) {
+			isInteractive = true;
+			document.body.dispatchEvent( new CustomEvent( 'tsf-interactive' ) );
+		}
+	}
+
+	/**
+	 * Dispatches tsf-ready event.
+	 *
+	 * This fires as soon as all TSF scripts have registered their interactions.
+	 * Use case: User may still see elements painting.
+	 *
+	 * You should not work asynchronously here.
+	 * ...yet we do by triggering "enqueueTriggerInput" events. We need to fix that.
 	 *
 	 * Example: jQuery( document.body ).on( 'tsf-ready', myFunc );
 	 * Or:      document.body.addEventListener( 'tsf-ready', myFunc );
@@ -477,7 +544,12 @@ window.tsf = function( $ ) {
 	}
 
 	/**
-	 * Sets 'tsf-onload' action.
+	 * Dispatches 'tsf-onload' event.
+	 *
+	 * This fires as soon as all TSF scripts are loaded.
+	 * Use case: User still sees a white screen, window has yet to be painted.
+	 *
+	 * You should not work asynchronously here.
 	 *
 	 * Example: jQuery( document.body ).on( 'tsf-onload, myFunc );
 	 * Or:      document.body.addEventListener( 'tsf-onload', myFunc );
@@ -513,13 +585,17 @@ window.tsf = function( $ ) {
 		// Sets postbox toggles on load.
 		_initPostboxToggle();
 
-		// Enable dismissal of notices.
-		$( '.tsf-dismiss' ).on( 'click', _dismissNotice );
+		// Initializes notices
+		_initNotices();
 
 		// Trigger tsf-ready event.
 		_triggerReady();
 
 		_isReady = true;
+
+		// Trigger tsf-interactive event. 'load' might be too late 'cause images are loading (slow 3G...)
+		document.addEventListener( 'load', _triggerInteractive );
+		setTimeout( _triggerInteractive, 100 );
 	}
 
 	return Object.assign( {
@@ -548,7 +624,9 @@ window.tsf = function( $ ) {
 			/**
 			 * The code below isn't affected by the above mentioned issues; albeit not as smoothly executed as we'd like...
 			 * such as any page on theseoframework.com; which benefit from considering load order & inline scripts, making for seamless rendering.
-			 * WordPress admin always forces us to load JS assets last--at least, when we do things by their book.
+			 *
+			 * WordPress admin always forces us to load JS assets last--at least, when we do things by their book. We should
+			 * honor this, at the expense of extra layout shifts and delayed rendering of critical markup.
 			 *
 			 * @source jQuery 3.5.1
 			 */
@@ -574,6 +652,7 @@ window.tsf = function( $ ) {
 		unsetAjaxLoader,
 		resetAjaxLoader,
 		deprecatedFunc,
+		triggerNoticeReset,
 	}, {
 		l10n
 	} );

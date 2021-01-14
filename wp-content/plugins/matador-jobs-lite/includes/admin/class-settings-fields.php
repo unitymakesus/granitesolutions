@@ -212,28 +212,41 @@ class Settings_Fields {
 					 *
 					 * Use to add fields to a section.`
 					 *
+					 * @since   3.6.0
+					 */
+					'email_options'         => apply_filters( 'matador_options_fields_general_email', array(
+						esc_html_x( 'Email Settings', 'Email Settings Section Name', 'matador-jobs' ),
+						'email_from_name'    => array(
+							'type'       => 'text',
+							'label'      => esc_html__( 'Email Default From Name', 'matador-jobs' ),
+							'default'    => get_bloginfo( 'name' ),
+							'sanitize'   => 'text',
+							'attributes' => array(
+								'placeholder' => get_bloginfo( 'name' ),
+							),
+							'supports'   => array( 'settings', 'wp_job_manager' ),
+						),
+						'email_from_address' => array(
+							'type'       => 'text',
+							'label'      => esc_html__( 'Email Default From Address', 'matador-jobs' ),
+							'default'    => get_bloginfo( 'admin_email' ),
+							'sanitize'   => 'email_list',
+							'attributes' => array(
+								'placeholder' => get_bloginfo( 'admin_email' ),
+							),
+							'supports'   => array( 'settings', 'wp_job_manager' ),
+						),
+					) ),
+					/**
+					 * Filter: Options fields in the Notifications Tab, All Settings Section
+					 *
+					 * Use to add fields to a section.`
+					 *
 					 * @since   1.0.0
 					 */
 					'general_notifications' => apply_filters( 'matador_options_fields_general_notification', array(
-						esc_html_x( 'Admin Notifications', 'Admin Notifications Section Name', 'matador-jobs' ),
-						'notify_admin' => array(
-							'type'        => 'toggle',
-							'label'       => esc_html__( 'Email Admin Alerts', 'matador-jobs' ),
-							'description' => esc_html__( 'Send an administrator an email when Matador Jobs has a major error that requires user intervention.', 'matador-jobs' ),
-							'default'     => '1',
-							'supports'    => array( 'settings', 'wp_job_manager' ),
-						),
-						'admin_email'  => array(
-							'type'     => 'text',
-							'label'    => esc_html__( 'Administrator Email Address', 'matador-jobs' ),
-							'default'  => get_bloginfo( 'admin_email' ),
-							'sanitize' => 'email_list',
-							'supports' => array( 'settings' ),
-						),
-					) ),
-					'general_logger'        => apply_filters( 'matador_options_fields_general_logs', array(
-						esc_html_x( 'Process and Error Logging', 'Logging Settings Section Name', 'matador-jobs' ),
-						'logging' => array(
+						esc_html_x( 'Logging & Error Handling', 'Admin Notifications Section Name', 'matador-jobs' ),
+						'logging'      => array(
 							'type'        => 'select',
 							'label'       => esc_html__( 'Matador Logging', 'matador-jobs' ),
 							// Translators: %1$s is the path to the folder with log information.
@@ -254,6 +267,24 @@ class Settings_Fields {
 								'30' => esc_html__( '30 Days', 'matador-jobs' ),
 							),
 							'default'     => '2',
+							'supports'    => array( 'settings', 'wp_job_manager' ),
+						),
+						'notify_admin' => array(
+							'type'        => 'toggle',
+							'label'       => esc_html__( 'Send Admin Email Alerts', 'matador-jobs' ),
+							'description' => esc_html__( 'Send an administrator an email when Matador Jobs has a major error that requires user intervention.', 'matador-jobs' ),
+							'default'     => '1',
+							'supports'    => array( 'settings', 'wp_job_manager' ),
+						),
+						'admin_email'  => array(
+							'type'        => 'text',
+							'label'       => esc_html__( 'Admin Email Address(es)', 'matador-jobs' ),
+							'description' => __( 'Separate each email with a comma. You may use the "John Smith &lt;john@website.com&gt;" format or just "john@website.com" format.', 'matador-jobs' ) . ' ' . esc_html__( 'Emails may be filtered by email security protocols unless your site has email validation systems in place like DKIM. If you\'re not sure, use an email address from outside your domain (like at MSN, Yahoo, or Gmail).', 'matador-jobs' ),
+							'default'     => get_bloginfo( 'admin_email' ),
+							'sanitize'    => 'email_list',
+							'attributes'  => array(
+								'placeholder' => get_bloginfo( 'admin_email' ),
+							),
 							'supports'    => array( 'settings', 'wp_job_manager' ),
 						),
 					) ),
@@ -310,15 +341,30 @@ class Settings_Fields {
 							'default'     => 'submitted',
 							'supports'    => array( 'settings', 'wp_job_manager' ),
 						),
-						'bullhorn_category_field' => array(
+						'bullhorn_category_field'    => array(
 							'type'        => 'select',
 							'label'       => esc_html__( 'Category Field', 'matador-jobs' ),
 							'description' => esc_html__( 'Choose to categorize jobs by either the single "Published Category" set during Publishing or by the (one or many) "Job Categories" defined in the Job Order.', 'matador-jobs' ),
 							'options'     => array(
-								'categories'       => esc_html__( 'Job Categories (multiple)', 'matador-jobs' ),
+								'categories'        => esc_html__( 'Job Categories (multiple)', 'matador-jobs' ),
 								'publishedCategory' => esc_html__( 'Published Category (single)', 'matador-jobs' ),
 							),
 							'default'     => 'categories',
+							'supports'    => array( 'settings', 'wp_job_manager' ),
+						),
+						'bullhorn_date_field' => array(
+							'type'        => 'select',
+							'label'       => esc_html__( 'Job Date Field', 'matador-jobs' ),
+							'description' => esc_html__( 'Choose the date field that will be used as the "Published" date for your job.', 'matador-jobs' ),
+							'options'     => array(
+								// Translators: Placeholder keeps the key name for the API field.
+								'date_added'          => esc_html( sprintf( __( 'Date Added (%s)', 'matador-jobs' ), 'dateAdded' ) ),
+								// Translators: Placeholder keeps the key name for the API field.
+								'date_last_modified'  => esc_html( sprintf( __( 'Date Last Updated (%s)', 'matador-jobs' ), 'dateLastModified' ) ),
+								// Translators: Placeholder keeps the key name for the API field.
+								'date_last_published' => esc_html( sprintf( __( 'Date Last Published (%s)', 'matador-jobs' ), 'dateLastPublished' ) ),
+							),
+							'default'     => 'date_added',
 							'supports'    => array( 'settings', 'wp_job_manager' ),
 						),
 						'show_job_meta'              => array(
@@ -617,35 +663,48 @@ class Settings_Fields {
 					 */
 					'applications_notifications' => apply_filters( 'matador_options_fields_applications_notifications', array(
 						esc_html_x( 'Email Settings', 'Email Settings Section Name', 'matador-jobs' ),
-						'notify_applicant' => array(
+						'notify_applicant'      => array(
 							'type'        => 'toggle',
 							'label'       => esc_html__( 'Send Applicant Confirmation', 'matador-jobs' ),
-							'description' => esc_html__( 'Send the applicant an email confirmation of their application and confirm it was received.', 'matador-jobs' ),
+							'description' => esc_html__( 'Send the applicant an email confirmation of their application.', 'matador-jobs' ),
 							'default'     => '0',
 							'supports'    => array( 'settings', 'wp_job_manager', 'wp_job_manager_apps', 'wp_job_manager_resume' ),
 						),
-						'notify_recruiter' => array(
+						'notify_recruiter'      => array(
+							'type'     => 'toggle',
+							'label'    => esc_html__( 'Send Notice to Recruiter', 'matador-jobs' ),
+							'default'  => '0',
+							'supports' => array( 'settings', 'wp_job_manager', 'wp_job_manager_apps', 'wp_job_manager_resume' ),
+						),
+						'notify_recruiter_when' => array(
 							'type'        => 'toggle',
-							'label'       => esc_html__( 'Send Notice to Recruiter', 'matador-jobs' ),
-							'description' => esc_html__( 'Notify the recruiters selected below by email when an application is received', 'matador-jobs' ),
+							'label'       => esc_html__( 'Send Recruiter Notification After Sync', 'matador-jobs' ),
 							'default'     => '0',
+							'description' => esc_html__( 'If set to Off, recruiter notification will be sent immediately after submission by the candidate. If set to On, recruiter notification will be sent after the application is saved to Bullhorn. When On, email templates can show extra data like the Bullhorn ID of the candidate and include a link to the Bullhorn record, but if there is a disconnection or error no email will be sent at all.', 'matador-jobs' ),
 							'supports'    => array( 'settings', 'wp_job_manager', 'wp_job_manager_apps', 'wp_job_manager_resume' ),
 						),
-						'notify_type'      => array(
+						'notify_type'           => array(
 							'type'        => 'checkbox',
-							'label'       => esc_html__( 'Recruiter(s) to Notify', 'matador-jobs' ),
-							'description' => esc_html__( 'Notify the Bullhorn users with these assigned roles for the job', 'matador-jobs' ),
+							'label'       => esc_html__( 'Recruiter Type(s) to Notify', 'matador-jobs' ),
+							'description' => esc_html__( 'Recruiter notifications are sent to the recruiters assigned to the job in Bullhorn. Select which types of assigned user(s) should be notified.', 'matador-jobs' ),
 							'options'     => array(
 								'owner'         => esc_html__( 'Job Owner', 'matador-jobs' ),
 								'assignedUsers' => esc_html__( 'Assigned User(s)', 'matador-jobs' ),
-								'responseUser' => esc_html__( 'Published Contact Recruiter', 'matador-jobs' ),
+								'responseUser'  => esc_html__( 'Published Contact Recruiter', 'matador-jobs' ),
 							),
 							'supports'    => array( 'settings', 'wp_job_manager', 'wp_job_manager_apps', 'wp_job_manager_resume' ),
 						),
-						'recruiter_email'  => array(
+						'recruiter_no_email'    => array(
 							'type'        => 'text',
-							'label'       => esc_html__( 'Additional Email Address(es) to Notify', 'matador-jobs' ),
-							'description' => esc_html__( 'Send additional copies of the Recruiter Notification to these email address(es). Separate each email with a comma.', 'matador-jobs' ),
+							'label'       => esc_html__( 'Default Recruiter', 'matador-jobs' ),
+							'description' => esc_html__( 'If assigned recruiters of the selected types are not found or the applicant is applying to no role via the general application, Matador can send the notification to a default recruiter. Okay to leave unset if "Additional Recruiters" are defined below or you do not want emails sent when no recruiter is assigned.', 'matador-jobs' ) . ' ' . __( 'Separate each email with a comma. You may use the "John Smith &lt;john@website.com&gt;" format or just "john@website.com" format.', 'matador-jobs' ),
+							'sanitize'    => 'email_list',
+							'supports'    => array( 'settings', 'wp_job_manager', 'wp_job_manager_apps', 'wp_job_manager_resume' ),
+						),
+						'recruiter_email'       => array(
+							'type'        => 'text',
+							'label'       => esc_html__( 'Additional Recruiter(s)', 'matador-jobs' ),
+							'description' => esc_html__( 'Optionally, also send copies of all applications to these email address(es).', 'matador-jobs' ) . ' ' . __( 'Separate each email with a comma. You may use the "John Smith &lt;john@website.com&gt;" format or just "john@website.com" format.', 'matador-jobs' ),
 							'sanitize'    => 'email_list',
 							'supports'    => array( 'settings', 'wp_job_manager', 'wp_job_manager_apps', 'wp_job_manager_resume' ),
 						),

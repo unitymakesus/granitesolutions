@@ -21,6 +21,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+use matador\MatadorJobs\Email\AdminNoticeDisconnectedMessage;
+
 class Bullhorn_Connection {
 
 	/**
@@ -804,7 +806,7 @@ class Bullhorn_Connection {
 		// Before we attempt login, check that we have authorized the site.
 		if ( ! $this->is_authorized() ) {
 			Logger::add( 'error', 'bullhorn-login-not-authorized', esc_html__( 'Site is not authorized to connect with Bullhorn. User intervention is required.', 'matador-jobs' ) );
-			Email::admin_error_notification( esc_html__( 'Site is not authorized to connect with Bullhorn. User intervention is required.', 'matador-jobs' ) );
+			AdminNoticeDisconnectedMessage::message( [ 'error' => esc_html__( 'Site is not authorized to connect with Bullhorn. User intervention is required.', 'matador-jobs' ) ] );
 
 			return false;
 		}
@@ -988,12 +990,8 @@ class Bullhorn_Connection {
 		// Add to the params array file format;
 		$params['format'] = $format;
 
-
-
 		// Create a boundary. We'll need it as we build the payload.
 		$boundary = md5( time() . $ext );
-
-
 
 		// End of Line
 		$eol = "\r\n";
@@ -1021,5 +1019,117 @@ class Bullhorn_Connection {
 
 		// Call the standard request function and return it.
 		return $this->request( $api_method, $params, $http_method, $payload, $args );
+	}
+
+    /**
+     * Get Consent Object Name
+     *
+     * Fetches the object name for the Bullhorn Custom Object for GDPR Consent Tracking
+     *
+     * @since 3.6.0
+     *
+     * @return string|false $name
+     *
+     * @throws
+     */
+	public function get_consent_object_name() {
+
+		$name = get_transient( Matador::variable( 'consent_object', 'transients' ) );
+
+		/**
+		 * Bullhorn Candidate Consent Custom Object Name
+		 *
+		 * Manually set the Bullhorn Candidate Consent Object custom object name. When present, will never result in a
+		 * call out to Bullhorn while never relying on easy-to-remove transients to hold the object. Optional.
+		 *
+		 * @since 3.6.3
+		 *
+		 * @param string $name Default: false for no transient, 0 for object not found, or name of object as discovered
+		 *
+		 * @return mixed
+		 */
+		$name = apply_filters( 'matador-bullhorn-candidate-consent-object-name', $name );
+
+		if ( false === $name ) {
+
+			// create array of customObject1s to customObject10s
+			$i = 0;
+			$fields = array();
+			while ( $i < 10 ) {
+				$fields[] = 'customObject' . ++$i . 's';
+			}
+
+			// Login to Bullhorn
+			$this->login();
+
+			// Call the endpoint for the fields
+			$meta = $this->request( 'meta/Candidate', array( 'fields' => implode( ',', $fields ) ) );
+
+			// Loop through the fields looking for the object
+			foreach ( $meta->fields as $field ) {
+				if ( property_exists( $field, 'associatedEntity' ) && property_exists( $field->associatedEntity, 'staticTemplateName' ) && 'consentMgmt' === $field->associatedEntity->staticTemplateName ) {
+					set_transient( Matador::variable( 'consent_object', 'transients' ), $field->name );
+					return $field->name;
+				}
+			}
+
+			set_transient( Matador::variable( 'consent_object', 'transients' ), 0, DAY_IN_SECONDS );
+			return 0;
+		}
+
+		return $name;
+	}
+
+	/**
+	 * User has Private Candidate Entitlement
+	 *
+	 * @since 3.6.3
+	 *
+	 * @return bool
+	 * @throws Exception
+	 */
+	public function has_private_candidate_entitlement() {
+
+		return $this->get_entitlement( 'ALLOW_PRIVATE', 'Candidate' );
+	}
+
+	/**
+	 * Get Bullhorn User Entitlement for Entity
+	 *
+	 * @since 3.6.3
+	 *
+	 * @param string $entitlement
+	 * @param string $entity
+	 *
+	 * @return bool
+	 * @throws Exception
+	 */
+	public function get_entitlement( $entitlement = '', $entity = 'Candidate' ) {
+
+		if ( empty( $entitlement ) || ! is_string( $entitlement ) || empty( $entity ) || ! is_string( $entity ) ) {
+
+			return false;
+		}
+
+		$entitlements = get_transient( Matador::variable( 'bullhorn_entitlements', 'transients' ) );
+
+		if ( false === $entitlements || empty( $entitlements[ strtolower( $entity ) ] ) ) {
+
+			// Call the endpoint for the fields
+			$entity_entitlements = $this->request( 'entitlements/' . ucfirst( strtolower( $entity ) ) );
+
+			$entity_entitlements = array_values( $entity_entitlements );
+
+			if ( false === $entitlements ) {
+				$entitlements = array();
+			}
+
+			$entitlements[ strtolower( $entity ) ] = $entity_entitlements;
+
+			set_transient( Matador::variable( 'bullhorn_entitlements', 'transients' ), $entitlements, DAY_IN_SECONDS );
+
+		}
+
+		return in_array( strtoupper( $entitlement ), $entitlements[ strtolower( $entity ) ], true );
 	}
 }

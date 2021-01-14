@@ -19,6 +19,7 @@ namespace matador;
 
 use WP_Query;
 use WP_Term;
+use WP_Error;
 
 final class Template_Support {
 
@@ -1006,7 +1007,7 @@ final class Template_Support {
 	 *                                          contextual navigation to the job and/or application. Defaults
 	 *                                          to array( 'title' => 'Title', 'content' => 'Description', 'link' =>
 	 *                                          'Apply' ).
-	 *      @type string|string  $content_limit Limit the length of the 'content' field output. Accepts 'full' for the
+	 *      @type string|int     $content_limit Limit the length of the 'content' field output. Accepts 'full' for the
 	 *                                          full content, 'excerpt' for the default excerpt only, and any positive
 	 *                                          integer to limit the content by number of words. Ignored when $as is
 	 *                                          'list' or 'select'. Default is 240.
@@ -1114,7 +1115,7 @@ final class Template_Support {
 		if ( ! empty( $args['as'] ) && in_array( esc_attr( strtolower( $args['as'] ) ), $allowed_as, true ) ) {
 			$args['as'] = esc_attr( strtolower( $args['as'] ) );
 		} else {
-			unset( $args['as'] );
+			$args['as'] = false;
 		}
 
 		//
@@ -1131,9 +1132,7 @@ final class Template_Support {
 		} else {
 			unset( $args['fields'] );
 		}
-		if ( ! empty( $args['fields'] ) && is_array( $args['fields'] )
-			&& ! empty( $args['as'] ) && 'table' === $args['as']
-		) {
+		if ( ! empty( $args['fields'] ) && is_array( $args['fields'] ) && 'table' === $args['as'] ) {
 			unset( $args['fields']['info'] );
 		}
 
@@ -1291,7 +1290,7 @@ final class Template_Support {
 		//
 		// 'selected' parameter
 		//
-		if ( ! empty( $args['as'] ) && 'select' === $args['as'] ) {
+		if ( 'select' === $args['as'] ) {
 			if ( ! empty( $args['selected'] ) ) {
 				if ( is_array( $args['selected'] ) ) {
 					// @todo, should verify that input is a valid, active job
@@ -1327,7 +1326,7 @@ final class Template_Support {
 		//
 		// 'multi' parameter
 		//
-		if ( ! empty( $args['as'] ) && 'select' === $args['as'] ) {
+		if ( 'select' === $args['as'] ) {
 			if ( ! empty( $args['multi'] ) ) {
 				$args['multi'] = 'false' !== $args['multi'] ? (bool) $args['multi'] : false;
 			} else {
@@ -1343,7 +1342,7 @@ final class Template_Support {
 		if ( ! empty( $args['id'] ) ) {
 			$args['id'] = esc_attr( $args['id'] );
 		}
-		if ( ! empty( $args['as'] ) && 'select' === $args['as'] ) {
+		if ( 'select' === $args['as'] ) {
 			$args['id'] = 'jobs';
 		}
 
@@ -1377,12 +1376,19 @@ final class Template_Support {
 			'class'         => null,
 			'index'         => 1, // don't set this. Used in the template.
 		);
-		if ( isset( $args['as'] ) && 'listing' === $args['as'] ) {
+		if ( 'listing' === $args['as'] ) {
 			$defaults['fields']['content'] = __( 'Description', 'matador-jobs' );
 			$defaults['fields']['info']    = __( 'Job Info', 'matador-jobs' );
 		}
 		foreach ( Matador::variable( 'job_taxonomies' ) as $taxonomy => $tax_args ) {
 			$defaults[ $tax_args['key'] ] = null;
+		}
+
+		// All the way at the top, we set 'as' to false if we got a value that was not in a list of approved
+		// values. So that it can be updated to the default, we now unset it. We didn't initially unset it
+		// because it is used to sanitize/clean the query in several places.
+		if ( ! $args['as'] ) {
+			unset( $args['as'] );
 		}
 
 		/**
@@ -1862,6 +1868,10 @@ final class Template_Support {
 			$args['method'] = 'link';
 		}
 
+		if ( 'select' === $args['as'] && in_array( $args['method'], array( 'link', 'filter' ), true ) ) {
+			wp_enqueue_script( 'matador_javascript' );
+		}
+
 		// "Show All" Option Handling
 		// Convert all forms of true/false to (bool) true/false
 		if ( isset( $args['show_all_option'] ) ) {
@@ -2008,7 +2018,7 @@ final class Template_Support {
 	 * @param string  $method
 	 * @param bool    $multi
 	 *
-	 * @return string|\WP_Error
+	 * @return string|WP_Error
 	 */
 	public static function get_term_link( $term, $tax, $method = 'link', $multi = false ) {
 		if ( ! $term || ! $tax ) {
@@ -2203,9 +2213,13 @@ final class Template_Support {
 
 		unset( $args['require'] );
 
+		if ( empty( $args['wpid'] ) && ! empty( $_REQUEST['wpid'] ) ) {
+			$args['wpid'] = intval( $_REQUEST['wpid'] );
+		}
+
 		if ( ! empty( $args['wpid'] ) ) {
 			$exists = get_post( intval( $args['wpid'] ) );
-			if ( ! $exists || Matador::variable( 'post_type_key_job_listings' ) !== $exists->post_type ) {
+			if ( ! $exists || Matador::variable( 'post_type_key_job_listing' ) !== $exists->post_type ) {
 				unset( $args['wpid'] );
 			} else {
 				$args['wpid']  = intval( $args['wpid'] );
@@ -2217,6 +2231,10 @@ final class Template_Support {
 			}
 		} else {
 			unset( $args['wpid'] );
+		}
+
+		if ( empty( $args['bhid'] ) && ! empty( $_REQUEST['bhid'] ) ) {
+			$args['bhid'] = intval( $_REQUEST['bhid'] );
 		}
 
 		if ( ! empty( $args['bhid'] ) && empty( $args['wpid'] ) ) {
@@ -2241,6 +2259,7 @@ final class Template_Support {
 		}
 
 		wp_enqueue_script( 'matador_javascript' );
+
 		/*
 		 * Filter to adjust the args passed into the template for applications
 		 *
@@ -2298,6 +2317,34 @@ final class Template_Support {
 			return false;
 		}
 	}
+
+
+    /**
+     * Matador Button Classes
+     *
+     * Returns the button class for the proper context.
+     *
+     * @since  3.6.0
+     *
+     * @static
+     * @param string|array $classes
+     * @param string $context
+     * @return string
+     */
+    public static function button_classes( $classes = 'matador-button', $context = 'primary' ) {
+
+    	if ( empty( $classes ) ) {
+    		if ( 'tertiary' === $context ) {
+    			$classes = [ 'matador-button', 'matador-button-tertiary' ];
+		    } elseif ( 'secondary' === $context ) {
+    			$classes = [ 'matador-button', 'matador-button-secondary' ];
+		    } else {
+    			$classes = 'matador-button';
+		    }
+	    }
+
+        return self::build_classes( $classes );
+    }
 
 	/**
 	 * Build Classes String

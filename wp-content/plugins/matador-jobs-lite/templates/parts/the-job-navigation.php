@@ -126,8 +126,20 @@ do_action( 'matador_template_job_navigation_before', $buttons, $rule, $context, 
 
 			<?php if ( ! empty( $url ) ) : ?>
 
+				<?php
+				$i = isset( $i ) ? $i : 0;
+				if ( 0 === $i++ ) {
+					$button_class   = 'matador-button';
+					$button_context = 'primary';
+				} else {
+					$button_class   = 'matador-button matador-button-secondary';
+					$button_context = 'secondary';
+				}
+				?>
+
 				<li>
-					<a href="<?php echo esc_url( $url ); ?>"
+					<a href="<?php echo esc_url( $url );?>" rel="button"
+                       class="<?php matador_button_classes( $button_class, $button_context  );?>"
 						title="<?php echo esc_attr( $label ); ?>"><?php echo esc_html( $label ); ?></a>
 				</li>
 

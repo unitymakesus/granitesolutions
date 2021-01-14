@@ -114,6 +114,8 @@ class Variables {
 			'admin_email_timeout'             => 'matador_admin_email_timeout',
 			'doing_sync'                      => 'matador_doing_sync',
 			'doing_app_sync'                  => 'matador_doing_app_sync',
+            'consent_object'                  => 'matador_bullhorn_candidate_consent_object',
+			'bullhorn_entitlements'           => 'matador_bullhorn_entitlements',
 		);
 
 		// Nonce Keys

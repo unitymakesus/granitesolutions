@@ -47,6 +47,9 @@ class Endpoints {
 	/**
 	 * Add Matador Query Variables
 	 *
+	 * @since 3.0.0
+	 * @since 3.6.0 added 'xid' and 'xsource' query variables
+	 *
 	 * @param array $vars existing query variables
 	 *
 	 * @return array $vars appended query variables
@@ -55,6 +58,8 @@ class Endpoints {
 		$vars[] = '_matador_api';
 		$vars[] = 'endpoint';
 		$vars[] = 'matador-apply';
+		$vars[] = 'xid';
+		$vars[] = 'xsource';
 
 		return $vars;
 	}

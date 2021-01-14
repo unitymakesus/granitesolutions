@@ -131,14 +131,6 @@ class AdminPageAccess extends AdminPage {
             __( 'Brute Force login attempts are repetitive attempts to gain access to your site using the login form.', SECSAFE_SLUG ) 
         );
 
-        $rows = $this->form_checkbox( 
-            $this->settings, 
-            __( 'Local Logins', SECSAFE_SLUG ), 
-            'login_local', 
-            __( 'Only Allow Local Logins', SECSAFE_SLUG ), 
-            __( 'Software can remotely log in without actually visiting your website or using the login form. Unless you know that you need to be able to remotely login, it is recommended to only allow local logins. This does not disable XML-RPC. This is compatible with ManageWP.', SECSAFE_SLUG ) 
-        );
-
         $rows .= $this->form_checkbox( 
             $this->settings, 
             __( 'XML-RPC', SECSAFE_SLUG ), 

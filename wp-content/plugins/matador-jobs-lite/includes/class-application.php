@@ -186,6 +186,7 @@ class Application {
 
 	public static function columns_content( $column, $post_id ) {
 		$status = self::get_sync_status( $post_id );
+
 		switch ( $column ) {
 			case 'matador-sync-status':
 				echo wp_kses_post( self::get_sync_status_label( $status, $post_id ) );
@@ -228,11 +229,12 @@ class Application {
 	public static function get_sync_status_label( $status, $post_id ) {
 		switch ( $status ) {
 			case -1:
-				return esc_html__( 'Pending', 'matador-jobs' );
+				$label = esc_html__( 'Pending', 'matador-jobs' );
+				break;
 			case 1:
 				if ( self::get_synced_id( $post_id ) ) {
 					if ( false !== Helper::get_client_cluster_url() ) {
-						return sprintf( '<a href="%1$sBullhornSTAFFING/OpenWindow.cfm?Entity=Candidate&id=%2$s" target="BullhornMainframe" title="%3$s">%4$s</a>',
+						$label = sprintf( '<a href="%1$sBullhornSTAFFING/OpenWindow.cfm?Entity=Candidate&id=%2$s" target="BullhornMainframe" title="%3$s">%4$s</a>',
 							esc_url( Helper::get_client_cluster_url() ),
 							absint( self::get_synced_id( $post_id ) ),
 							esc_html__( 'Open in Bullhorn', 'matador-jons' ),
@@ -241,22 +243,40 @@ class Application {
 						);
 					} else {
 						// Translators: placeholder is the remote (Bullhorn) ID of the candidate.
-						return sprintf( __( 'Synced as Bullhorn Candidate %1$s', 'matador-jobs' ), absint( self::get_synced_id( $post_id ) ) );
+						$label = sprintf( __( 'Synced as Bullhorn Candidate %1$s', 'matador-jobs' ), absint( self::get_synced_id( $post_id ) ) );
 					}
 				} else {
-					return esc_html__( 'Synced', 'matador-jobs' );
+					$label = esc_html__( 'Synced', 'matador-jobs' );
 				}
+                break;
 			case 2:
-				return esc_html__( 'Incomplete', 'matador-jobs' );
+				$label = esc_html__( 'Incomplete', 'matador-jobs' );
+                break;
 			case 3:
-				return esc_html__( 'Automatic Sync Failed. Re-try.', 'matador-jobs' );
+				$label = esc_html__( 'Automatic Sync Failed. Re-try.', 'matador-jobs' );
+                break;
 			case 5:
-				return esc_html__( 'Unable to Sync. (Too Little Information).', 'matador-jobs' );
+				$label = esc_html__( 'Unable to Sync. (Too Little Information).', 'matador-jobs' );
+                break;
 			case 6:
-				return esc_html__( 'Candidate exists and is marked as "Private" in Bullhorn. Application must be manually created.', 'matador-jobs' );
+				$label = esc_html__( 'Candidate exists and is marked as "Private" in Bullhorn. Application must be manually created.', 'matador-jobs' );
+                break;
 			default:
-				return esc_html__( 'Application record was not created properly. Contact Matador Support.', 'matador-jobs' );
+				$label = esc_html__( 'Application record was not created properly. Contact Matador Support.', 'matador-jobs' );
+                break;
 		}
+        /**
+         * Filter: Sync Status Label Text
+         *
+         * @since   3.6.0
+         *
+         * @param string $label
+         * @param int    $status
+         * @param int    $post_id
+         *
+         * @retun  string $label
+         */
+		return apply_filters( 'matador_application_get_sync_status_label', $label, $status, $post_id  );
 	}
 
 	public static function sync_log_meta_box() {

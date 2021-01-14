@@ -280,6 +280,11 @@ class AS3CF_Pro_Licences_Updates extends Delicious_Brains_API_Licences {
 	 * @param bool $skip_transient
 	 */
 	public function licence_issue_notice( $dashboard = false, $skip_transient = false ) {
+		// Only check license on primary site of multisite to reduce API calls etc.
+		if ( ! is_main_site() ) {
+			return;
+		}
+
 		if ( ! $this->as3cf->is_plugin_setup() ) {
 			// Don't show the notice if basic plugin requirements are not met.
 			return;
@@ -555,6 +560,18 @@ class AS3CF_Pro_Licences_Updates extends Delicious_Brains_API_Licences {
 			return $media_limit_check;
 		}
 
+		if (
+			! $force && ! empty( $media_limit_check ) &&
+			(
+				( isset( $media_limit_check['limit'] ) && 0 == $media_limit_check['limit'] ) ||
+				( isset( $media_limit_check['counts_towards_limit'] ) && empty( $media_limit_check['counts_towards_limit'] ) ) ||
+				( isset( $media_limit_check['status']['code'] ) && self::MEDIA_USAGE_APPROACHING > $media_limit_check['status']['code'] )
+			)
+		) {
+			// We're in no rush.
+			$skip_transient = false;
+		}
+
 		if ( $skip_transient || false === $media_limit_check || isset( $media_limit_check['errors'] ) ) {
 
 			if ( ! ( $licence_key = $this->get_licence_key() ) ) {
@@ -584,7 +601,7 @@ class AS3CF_Pro_Licences_Updates extends Delicious_Brains_API_Licences {
 				return array();
 			}
 
-			set_site_transient( $this->plugin->prefix . '_licence_media_check', $media_limit_check, 2 * HOUR_IN_SECONDS );
+			set_site_transient( $this->plugin->prefix . '_licence_media_check', $media_limit_check );
 		}
 
 		return $media_limit_check;

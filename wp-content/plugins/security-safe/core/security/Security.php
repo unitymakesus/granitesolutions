@@ -96,8 +96,6 @@ class Security extends Plugin
             // Check only if not logged in
             
             if ( !$this->logged_in ) {
-                // Force Local Login
-                $this->add_firewall_policy( $settings, 'PolicyLoginLocal', 'login_local' );
                 // Generic Login Errors
                 $this->add_policy( $settings, 'PolicyLoginErrors', 'login_errors' );
                 // Disable Login Password Reset

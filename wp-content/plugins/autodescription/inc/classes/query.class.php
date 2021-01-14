@@ -5,7 +5,7 @@
 
 namespace The_SEO_Framework;
 
-defined( 'THE_SEO_FRAMEWORK_PRESENT' ) or die;
+\defined( 'THE_SEO_FRAMEWORK_PRESENT' ) or die;
 
 /**
  * The SEO Framework plugin
@@ -66,7 +66,7 @@ class Query extends Core {
 		if ( isset( $cache ) )
 			return $cache;
 
-		if ( defined( 'WP_CLI' ) && WP_CLI )
+		if ( \defined( 'WP_CLI' ) && WP_CLI )
 			return $cache = false;
 
 		if ( isset( $GLOBALS['wp_query']->query ) || isset( $GLOBALS['current_screen'] ) )
@@ -90,7 +90,7 @@ class Query extends Core {
 
 		$message = "You've initiated a method that uses queries too early.";
 
-		$trace = @debug_backtrace( DEBUG_BACKTRACE_PROVIDE_OBJECT, 4 );
+		$trace = debug_backtrace( DEBUG_BACKTRACE_PROVIDE_OBJECT, 4 );
 		if ( ! empty( $trace[3] ) ) {
 			$message .= ' - In file: ' . $trace[3]['file'];
 			$message .= ' - On line: ' . $trace[3]['line'];
@@ -98,11 +98,11 @@ class Query extends Core {
 
 		$this->_doing_it_wrong( \esc_html( $method ), \esc_html( $message ), '2.9.0' );
 
-		//* Backtrace debugging.
+		// Backtrace debugging.
 		$depth = 10;
 		static $_more = true;
 		if ( $_more ) {
-			error_log( var_export( @debug_backtrace( DEBUG_BACKTRACE_PROVIDE_OBJECT, $depth ), true ) );
+			error_log( var_export( debug_backtrace( DEBUG_BACKTRACE_PROVIDE_OBJECT, $depth ), true ) );
 			$_more = false;
 		}
 	}
@@ -118,7 +118,7 @@ class Query extends Core {
 	 */
 	public function get_post_type_real_ID( $post = null ) {
 
-		$post = is_null( $post ) ? $this->get_the_real_ID() : $post;
+		$post = \is_null( $post ) ? $this->get_the_real_ID() : $post;
 
 		return \get_post_type( $post );
 	}
@@ -176,11 +176,11 @@ class Query extends Core {
 				return $id;
 		}
 
-		//* Try to get ID from plugins when caching is available.
+		// Try to get ID from plugins when caching is available.
 		$id = $use_cache ? $this->check_the_real_ID() : 0;
 
 		if ( ! $id ) {
-			//* This catches most IDs. Even Post IDs.
+			// This catches most IDs. Even Post IDs.
 			$id = \get_queried_object_id();
 		}
 
@@ -205,7 +205,7 @@ class Query extends Core {
 
 		$id = \get_the_ID();
 
-		//* Current term ID (outside loop).
+		// Current term ID (outside loop).
 		if ( ! $id && $this->is_archive_admin() )
 			$id = $this->get_admin_term_id();
 
@@ -446,7 +446,7 @@ class Query extends Core {
 	 */
 	public function is_archive_admin() {
 		global $current_screen;
-		return isset( $current_screen->base ) && in_array( $current_screen->base, [ 'edit-tags', 'term' ], true );
+		return isset( $current_screen->base ) && \in_array( $current_screen->base, [ 'edit-tags', 'term' ], true );
 	}
 
 	/**
@@ -496,7 +496,7 @@ class Query extends Core {
 	 */
 	public function is_wp_lists_edit() {
 		global $current_screen;
-		return isset( $current_screen->base ) && in_array( $current_screen->base, [ 'edit-tags', 'edit' ], true );
+		return isset( $current_screen->base ) && \in_array( $current_screen->base, [ 'edit-tags', 'edit' ], true );
 	}
 
 	/**
@@ -552,7 +552,7 @@ class Query extends Core {
 
 		static $pfp = null;
 
-		if ( is_null( $pfp ) )
+		if ( \is_null( $pfp ) )
 			$pfp = (int) \get_option( 'page_for_posts' );
 
 		if ( $id && $id === $pfp && false === \is_archive() ) {
@@ -694,7 +694,7 @@ class Query extends Core {
 		if ( \is_front_page() )
 			$is_front_page = true;
 
-		//* Elegant Themes Support. Yay.
+		// Elegant Themes Support. Yay.
 		if ( false === $is_front_page && 0 === $this->get_the_real_ID() && $this->is_home() ) {
 			$sof = \get_option( 'show_on_front' );
 
@@ -756,14 +756,14 @@ class Query extends Core {
 
 		$sof = \get_option( 'show_on_front' );
 
-		//* Compare against $id
+		// Compare against $id
 		if ( 'page' === $sof ) {
 			if ( (int) \get_option( 'page_on_front' ) === $id ) {
 				$is_front_page = true;
 			}
 		} elseif ( 'posts' === $sof ) {
 			if ( 0 === $id ) {
-				//* 0 as ID causes many issues. Just test for is_home().
+				// 0 as ID causes many issues. Just test for is_home().
 				if ( $this->is_home() ) {
 					$is_front_page = true;
 				}
@@ -814,7 +814,7 @@ class Query extends Core {
 	 *
 	 * @since 2.6.0
 	 * @since 4.0.0 Now tests for post type, which is more reliable.
-	 * @ignore not used internally, polar opposite of is_single().
+	 * @api not used internally, polar opposite of is_single().
 	 * @uses $this->is_singular()
 	 *
 	 * @param int|string|array $page Optional. Page ID, title, slug, or array of such. Default empty.
@@ -832,8 +832,8 @@ class Query extends Core {
 		if ( null !== $cache = $this->get_query_cache( __METHOD__, null, $page ) )
 			return $cache;
 
-		if ( is_int( $page ) || $page instanceof \WP_Post ) {
-			$is_page = in_array( \get_post_type( $page ), $this->get_hierarchical_post_types(), true );
+		if ( \is_int( $page ) || $page instanceof \WP_Post ) {
+			$is_page = \in_array( \get_post_type( $page ), $this->get_hierarchical_post_types(), true );
 		} else {
 			$is_page = \is_page( $page );
 		}
@@ -857,7 +857,7 @@ class Query extends Core {
 	 * @return bool
 	 */
 	public function is_page_admin() {
-		return $this->is_singular_admin() && in_array( $this->get_admin_post_type(), $this->get_hierarchical_post_types(), true );
+		return $this->is_singular_admin() && \in_array( $this->get_admin_post_type(), $this->get_hierarchical_post_types(), true );
 	}
 
 	/**
@@ -921,8 +921,8 @@ class Query extends Core {
 		if ( null !== $cache = $this->get_query_cache( __METHOD__, null, $post ) )
 			return $cache;
 
-		if ( is_int( $post ) || $post instanceof \WP_Post ) {
-			$is_single = in_array( \get_post_type( $post ), $this->get_nonhierarchical_post_types(), true );
+		if ( \is_int( $post ) || $post instanceof \WP_Post ) {
+			$is_single = \in_array( \get_post_type( $post ), $this->get_nonhierarchical_post_types(), true );
 		} else {
 			$is_single = \is_single( $post );
 		}
@@ -947,7 +947,7 @@ class Query extends Core {
 	 */
 	public function is_single_admin() {
 		// Checks for "is_singular_admin()" because the post type is non-hierarchical.
-		return $this->is_singular_admin() && in_array( $this->get_admin_post_type(), $this->get_nonhierarchical_post_types(), true );
+		return $this->is_singular_admin() && \in_array( $this->get_admin_post_type(), $this->get_nonhierarchical_post_types(), true );
 	}
 
 	/**
@@ -964,12 +964,12 @@ class Query extends Core {
 	 */
 	public function is_singular( $post_types = '' ) {
 
-		if ( is_int( $post_types ) ) {
+		if ( \is_int( $post_types ) ) {
 			// Integers are no longer accepted.
 			$post_types = '';
 		}
 
-		//* WP_Query functions require loop, do alternative check.
+		// WP_Query functions require loop, do alternative check.
 		if ( \is_admin() )
 			return $this->is_singular_admin();
 
@@ -1002,7 +1002,7 @@ class Query extends Core {
 	 */
 	public function is_singular_admin() {
 		global $current_screen;
-		return isset( $current_screen->base ) && in_array( $current_screen->base, [ 'edit', 'post' ], true );
+		return isset( $current_screen->base ) && \in_array( $current_screen->base, [ 'edit', 'post' ], true );
 	}
 
 	/**
@@ -1032,7 +1032,7 @@ class Query extends Core {
 	 */
 	public function is_tag( $tag = '' ) {
 
-		//* Admin requires another check.
+		// Admin requires another check.
 		if ( \is_admin() )
 			return $this->is_tag_admin();
 
@@ -1169,7 +1169,7 @@ class Query extends Core {
 		if ( isset( $id ) ) {
 			$is_shop = (int) \get_option( 'woocommerce_shop_page_id' ) === $id;
 		} else {
-			$is_shop = ! \is_admin() && function_exists( 'is_shop' ) && \is_shop();
+			$is_shop = ! \is_admin() && \function_exists( 'is_shop' ) && \is_shop();
 		}
 
 		$this->set_query_cache(
@@ -1206,7 +1206,7 @@ class Query extends Core {
 		if ( $post ) {
 			$is_product = 'product' === \get_post_type( $post );
 		} else {
-			$is_product = function_exists( 'is_product' ) && \is_product();
+			$is_product = \function_exists( 'is_product' ) && \is_product();
 		}
 
 		$this->set_query_cache(
@@ -1431,7 +1431,7 @@ class Query extends Core {
 		if ( $this->is_singular() && ! $this->is_singular_archive() )
 			$post = \get_post( $this->get_the_real_ID() );
 
-		if ( $post instanceof \WP_Post ) {
+		if ( isset( $post ) && $post instanceof \WP_Post ) {
 			$content = $post->post_content;
 			if ( false !== strpos( $content, '<!--nextpage-->' ) ) {
 				$content = str_replace( "\n<!--nextpage-->", '<!--nextpage-->', $content );
@@ -1459,7 +1459,7 @@ class Query extends Core {
 			 */
 			$_pages = \apply_filters( 'content_pagination', $_pages, $post );
 
-			$numpages = count( $_pages );
+			$numpages = \count( $_pages );
 		} elseif ( isset( $wp_query->max_num_pages ) ) {
 			$numpages = (int) $wp_query->max_num_pages;
 		} else {

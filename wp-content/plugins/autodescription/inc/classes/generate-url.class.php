@@ -6,7 +6,7 @@
 
 namespace The_SEO_Framework;
 
-defined( 'THE_SEO_FRAMEWORK_PRESENT' ) or die;
+\defined( 'THE_SEO_FRAMEWORK_PRESENT' ) or die;
 
 /**
  * The SEO Framework plugin
@@ -423,7 +423,7 @@ class Generate_Url extends Generate_Title {
 	 */
 	public function get_post_type_archive_canonical_url( $post_type = null ) {
 
-		if ( is_int( $post_type ) ) {
+		if ( \is_int( $post_type ) ) {
 			$this->_doing_it_wrong( __METHOD__, 'Only send strings or null in the first parameter.', '4.0.0' );
 			$post_type = '';
 		}
@@ -432,7 +432,7 @@ class Generate_Url extends Generate_Title {
 
 		if ( null === $post_type ) {
 			$post_type = \get_query_var( 'post_type' );
-			$post_type = is_array( $post_type ) ? reset( $post_type ) : $post_type;
+			$post_type = \is_array( $post_type ) ? reset( $post_type ) : $post_type;
 
 			$query = false;
 		}
@@ -494,7 +494,7 @@ class Generate_Url extends Generate_Title {
 			$_get = 'year';
 		}
 
-		//* Determine whether the input matches query.
+		// Determine whether the input matches query.
 		$_paginate = true;
 		switch ( $_get ) {
 			case 'day':
@@ -727,6 +727,7 @@ class Generate_Url extends Generate_Title {
 	 *              3. The third parameter is now changed to $use_base, from the archive pagination number.
 	 *              4. Now supports pretty permalinks with query parameters.
 	 *              5. Is now public.
+	 * @since 4.1.2 Now correctly reappends query when pagination isn't removed.
 	 *
 	 * @param string    $url  The fully qualified URL to remove pagination from.
 	 * @param int|null  $page The page number to remove. If null, it will get number from query.
@@ -739,7 +740,7 @@ class Generate_Url extends Generate_Title {
 	public function remove_pagination_from_url( $url, $page = null, $use_base = null ) {
 
 		if ( $this->pretty_permalinks ) {
-			//* Defensive programming...
+			// Defensive programming...
 			static $user_slash, $base;
 			$user_slash = isset( $user_slash ) ? $user_slash :
 				( $GLOBALS['wp_rewrite']->use_trailing_slashes ? '/' : '' );
@@ -748,6 +749,8 @@ class Generate_Url extends Generate_Title {
 			$_page = isset( $page ) ? $page : max( $this->paged(), $this->page() );
 
 			if ( $_page > 1 ) {
+				$_url = $url;
+
 				$_use_base = isset( $use_base ) ? $use_base
 					: $this->is_archive() || $this->is_real_front_page() || $this->is_singular_archive();
 
@@ -757,22 +760,25 @@ class Generate_Url extends Generate_Title {
 					$find = '/' . $_page . $user_slash;
 				}
 
-				$_query = parse_url( $url, PHP_URL_QUERY );
+				$_query = parse_url( $_url, PHP_URL_QUERY );
 				// Remove queries, add them back later.
 				if ( $_query )
-					$url = $this->s_url( $url );
+					$_url = $this->s_url( $_url );
 
-				$pos = strrpos( $url, $find );
-				//* Defensive programming, only remove if $find matches the stack length, without query arguments.
-				$continue = $pos && $pos + strlen( $find ) === strlen( $url );
+				$pos = strrpos( $_url, $find );
+				// Defensive programming, only remove if $find matches the stack length, without query arguments.
+				$continue = $pos && $pos + \strlen( $find ) === \strlen( $_url );
 
 				if ( $continue ) {
-					$url = substr( $url, 0, $pos );
-					$url = \user_trailingslashit( $url );
+					$_url = substr( $_url, 0, $pos );
+					$_url = \user_trailingslashit( $_url );
 
+					// Add back the query.
 					if ( $_query )
-						$url = $this->append_php_query( $url, $_query );
+						$_url = $this->append_php_query( $_url, $_query );
 				}
+
+				$url = $_url;
 			}
 		} else {
 			$url = \remove_query_arg( [ 'page', 'paged', 'cpage' ], $url );
@@ -842,7 +848,7 @@ class Generate_Url extends Generate_Title {
 			} elseif ( $this->is_author() ) {
 				$url = \add_query_arg( [ 'author' => $id ], $home );
 			} elseif ( $this->is_tax() ) {
-				//* Generate shortlink for object type and slug.
+				// Generate shortlink for object type and slug.
 				$object = \get_queried_object();
 
 				$tax  = isset( $object->taxonomy ) ? $object->taxonomy : '';
@@ -886,6 +892,7 @@ class Generate_Url extends Generate_Title {
 	 *              3. Removed second parameter. It was only a source of bugs.
 	 *              4. Removed WordPress Core `get_pagenum_link` filter.
 	 * @uses $this->get_paged_urls();
+	 * @api Not used internally.
 	 *
 	 * @param string $next_prev Whether to get the previous or next page link.
 	 *                          Accepts 'prev' and 'next'.
@@ -902,6 +909,8 @@ class Generate_Url extends Generate_Title {
 	 * @since 3.2.4 1. Now correctly removes the pagination base from singular URLs.
 	 *              2. Now returns no URLs when a custom canonical URL is set.
 	 * @since 4.1.0 Removed memoization.
+	 * @since 4.1.2 1. Added back memoization.
+	 *              2. Reduced needless canonical URL generation when it wouldn't be processed anyway.
 	 *
 	 * @return array Escaped site Pagination URLs: {
 	 *    string 'prev'
@@ -910,8 +919,11 @@ class Generate_Url extends Generate_Title {
 	 */
 	public function get_paged_urls() {
 
+		static $prev, $next;
+
+		if ( isset( $prev, $next ) ) goto end;
+
 		$prev = $next = '';
-		$_run = false;
 
 		if ( $this->has_custom_canonical_url() ) goto end;
 
@@ -938,6 +950,9 @@ class Generate_Url extends Generate_Title {
 			goto end;
 		}
 		// phpcs:enable, WordPress.WhiteSpace.PrecisionAlignment
+
+		// See if-statements below.
+		if ( ! ( $page + 1 <= $_numpages || $page > 1 ) ) goto end;
 
 		$canonical = $this->remove_pagination_from_url( $this->get_current_canonical_url() );
 

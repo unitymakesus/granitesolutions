@@ -3,48 +3,40 @@ Contributors: webtoffee
 Donate link: https://www.webtoffee.com/plugins/ 
 Tags: eu cookie law, GDPR, CCPA, cookie law, cookie consent, eu privacy directive, privacy directive, cookies, privacy, compliance
 Requires at least: 3.3.1
-Tested up to: 5.4
-Stable tag: 1.8.9
+Tested up to: 5.6
+Requires PHP: 5.6
+Stable tag: 1.9.5
 License: GPLv3
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 
-A simple way to get GDPR Cookie Consent as per EU GDPR/Cookie Law regulations. The plugin supports CCPA Do Not Sell too. Style it to match your own website.
+Easily set up cookie notice and get GDPR Cookie Consent as per EU GDPR/Cookie Law regulations. The plugin supports GDPR (DSGVO, RGPD), LGPD, and CCPA Do Not Sell.
 
 == Description ==
 
-The GDPR Cookie Consent plugin will assist you in making your website GDPR compliant. It also support for cookie compliance in accordance with The California Consumer Privacy Act (CCPA) which is a state statute intended to enhance privacy rights and consumer protection for residents of California. The plugin comes with a host of features some of which are listed below.
+The GDPR Cookie Consent plugin will assist you in making your website GDPR (RGPD, DSVGO) compliant. In addition to compliance with this GDPR WordPress plugin also supports cookie compliance in accordance with the LGPD of Brazil and California Consumer Privacy Act (CCPA) which is a state statute intended to enhance privacy rights and consumer protection for residents of California.
 
-= Key Features = 
+The plugin is one of the best WordPress GDPR compliance plugins as it comes with a host of features some of which are listed below.
 
-- The plugin will enable a notice with Accept and Reject options. The cookies are not rendered by default and only upon user consent. (The cookie value will be set to ‘null’ by default; it takes a value 'yes' when the user clicks ‘Accept’ and ‘no’ upon 'Reject'. Your developer can check this value to set a cookie accordingly.)
+== Key Features == 
+
+- The plugin will enable a WordPress cookie notice with Accept and Reject options. The cookies are not rendered by default and only upon user consent. (The cookie value will be set to ‘null’ by default; it takes a value 'yes' when the user clicks ‘Accept’ and ‘no’ upon 'Reject'. Your developer can check this value to set a cookie accordingly.)
 
 - Admin can configure cookie details and their description from the backend. The list of cookies can be displayed in your cookie policy page by using a shortcode.
 
-- This plugin adds a subtle cookie banner to your website either in the header or footer so you can show your compliance status regarding the new GDPR law.
+- This GDPR plugin adds a subtle cookie banner to your WordPress website either in the header or footer so you can show your compliance status regarding the new GDPR law.
 
-- You can fully customise the cookie notice style so it blends with your existing website: change the colours, fonts, styles, the position on the page and even how it behaves when you click “Accept”.
+- With the help of this WordPress GDPR plugin, you can fully customise the cookie notice style so it blends with your existing website: change the colours, fonts, styles, the position on the page and even how it behaves when you click “Accept”.
 
 - You can choose to make the cookie notice bar disappear after a few seconds (completely configurable) or to accept on scroll (an option available under Italian law).
 
 - It also has a Cookie Audit module so you can easily show what cookies your site uses and display them neatly in a table on your Privacy & Cookies Policy page.
 
-- The plugin can be configured to have a CCPA 'Do Not Sell My Personal Information' control to the cookie notice. 
+- The plugin can be configured to have a CCPA 'Do Not Sell My Personal Information' control to the cookie notice.
+
+- Integrates seamlessly with Official Facebook Pixel, Smash Balloon Instagram Feed & Twitter Feed.
 
 
-= The plugin uses the following cookies = 
-
-- viewed_cookie_policy – Is the primary cookie that records the user consent for the usage of the cookies upon accept and reject. It doesn’t track any personal data and is set only upon user action(accept/reject).
-
-- cookielawinfo-checkbox-necessary/cookielawinfo-checkbox-non-necessary – Records the default button state of the corresponding category. It works only in coordination with the primary cookie.
-
-- CookieLawInfoConsent – Records the default button state of the corresponding category & the status of CCPA. It works only in coordination with the primary cookie.
-
-
-
-The plugin supports WPML and qTranslate so your translation needs are covered.
-
-
-= Features = 
+== Additional Features == 
 
 * Fully customisable to look just like your own website’s style: customise the colours, styles and fonts
 * Put the cookie bar in either the header or the footer
@@ -56,11 +48,24 @@ The plugin supports WPML and qTranslate so your translation needs are covered.
 * WPML compatible
 * qTranslate support
 
-[Read more about the EU Cookie Law](https://cookielawinfo.com/ "More information about the EU Cookie Law")
 
-[GDPR Cookie Consent user guide](https://www.cookielawinfo.com/user-guide/ "GDPR Cookie Consent user guide")
+== The plugin uses the following cookies ==
 
-[Check our javascript solution for running third-party scripts](https://www.webtoffee.com/javascript-solution-for-running-third-party-scripts/ "Javascript solution for running third-party scripts")
+- viewed_cookie_policy – Is the primary cookie that records the user consent for the usage of the cookies upon ‘accept’ and ‘reject’. It doesn’t track any personal data and is set only upon user action(accept/reject).
+
+- cookielawinfo-checkbox-necessary/cookielawinfo-checkbox-non-necessary – Records the default button state of the corresponding category. It works only in coordination with the primary cookie.
+
+- CookieLawInfoConsent – Records the default button state of the corresponding category & the status of CCPA. It works only in coordination with the primary cookie.
+
+
+Another best part of this GDPR compliance plugin is that it seamlessly integrates with and supports WPML and qTranslate so your translation needs are covered.
+
+
+You can get more information and [read more about the EU Cookie Law](https://cookielawinfo.com/ "More information about the EU Cookie Law")
+
+[GDPR Cookie Consent user guide](https://www.webtoffee.com/gdpr-cookie-consent-plugin-basic-version-user-guide/ "GDPR Cookie Consent user guide") will help you with the setup of the plugin.
+
+[Check our javascript solution for running third-party scripts](https://www.webtoffee.com/javascript-solution-for-running-third-party-scripts/ "Javascript solution for running third-party scripts") will also be helpful.
 
 https://www.youtube.com/watch?v=ChjX6U5EPdE
 
@@ -98,12 +103,13 @@ For complete list of features and details, Please visit <a rel="nofollow" href="
 
 = NOTE: INSTALLING THIS PLUGIN ALONE DOES NOT MAKE YOUR SITE GDPR COMPLIANT. SINCE EACH SITE USES DIFFERENT COOKIES, YOU NEED TO ENSURE YOU HAVE THE NECESSARY CONFIGURATIONS IN PLACE WITH A SUPPORTING COOKIE NOTICE. = 
 
+
 == Frequently Asked Questions ==
 
-There’s a lot of help available on the main plugin website. See:
+There’s a lot of help available on the main plugin website. See the [FAQ](https://www.cookielawinfo.com/faq) on the main website and the [setup guide](https://www.webtoffee.com/gdpr-cookie-consent-plugin-basic-version-user-guide/) for GDPR cookie compliance.
 
 https://www.cookielawinfo.com/faq
-https://www.cookielawinfo.com/user-guide
+https://www.webtoffee.com/gdpr-cookie-consent-plugin-basic-version-user-guide/
 https://www.cookielawinfo.com/support
 
 = The cookie notice header isn’t displaying ? =
@@ -146,14 +152,83 @@ As a generic plugin, there's no way we can know anything about your specific cir
 See http://cookielawinfo.com for more information on what is required.
 
 
+== Other useful plugins from WebToffee that you might like: ==
+
+1.  [Product Catalog Sync for Facebook](https://wordpress.org/plugins/webtoffee-product-feed/ "WebToffee Product Feed for Facebook"): This plugin allows you to sync your WooCommerce plugins with your Facebook Business Manager account.
+2.  [Wishlist for WooCommerce](https://wordpress.org/plugins/wt-woocommerce-wishlist/ "Wishlist for WooCommerce"): This wishlist plugin allows you to add an option that lets your users add products to their wishlist that they can purchase later.
+3.  [Decorator – WooCommerce Email Customizer](https://wordpress.org/plugins/decorator-woocommerce-email-customizer/ "Decorator – WooCommerce Email Customizer"): As the name suggests, this plugin is for you to customize the WooCommerce emails that you send out to be customized and align more with your brand.
+4.  [Social Login for WordPress](https://wordpress.org/plugins/wt-social-login/ "Social Login for WordPress"): This plugin allows you to create a single sign-on for the users using their social media login.
+5.  [WordPress Migration & Duplicator](https://wordpress.org/plugins/wp-migration-duplicator/ "WordPress Migration & Duplicator"): This plugin helps you export your WordPress website media files, plugins, and themes including the database with a single click.
+
+
+== Installation ==
+
+= Automatic installation =
+
+The automatic installation is the easiest way to install the plugin. You can install the plugin within your WordPress dashboard from the same browser window.
+ 
+From your admin dashboard, go to Plugins > Add New. From the search box, type “GDPR Cookie consent” or just “gdpr” and then search. Click the install button on the GDPR Cookie Consent by WebToffee and then activate the plugin.
+
+= Manual installation =
+
+In the manual installation, you will need to download the zip file of the plugin from the plugin page in WordPress.org. You can upload the file directly from your WordPress dashboard, or using an FTP application.
+
+When doing a manual installation
+
+1.  Upload the plugin folder to the /wp-content/plugins/ directory.
+2.  Activate the plugin through the Plugins menu in WordPress.
+
+= Plugin updates =
+
+For every update of the plugin, you will be notified of the installed plugins page. You can directly update the plugin from your dashboard. We recommend that you keep the latest version of the plugin so that you can avail yourself of the new functionalities and security features.
+
+
 == Screenshots ==
 
-1. Header (with default styles)
-2. Admin panel
-3. Admin panel - styling the form with colour pickers
-4. Header (with custom styles)
+1. Cookie compliance notice on the user-end
+2. Cookie Settings options of the cookie notice
+3. Cookie audit for transparency
+4. GDPR plugin WordPress admin panel
+5. Cookie consent notice behavior settings
+6. Cookie notice - customization options
+7. Cookie notice - change consent options
+8. WordPress cookie notice - customize buttons options
+9. WordPress CCPA compliance - customize button options
+10. Manage cookies for cookie compliance
+11. Add cookie scripts for consent management
+12. Change necessary cookie descriptions 
+13. Add a privacy policy overview
 
 == Changelog ==
+
+= 1.9.5 =
+
+* Tested ok with Wordpress version 5.6
+
+= 1.9.4 =
+
+* Renamed show again tab to revisit consent
+* New shortcode `wt_cli_manage_consent` option for revisit consent
+
+= 1.9.3 =
+
+* Fix: Editors unable to access the dashboard due to recent security update
+
+= 1.9.2 =
+
+* Improvement: Option to change the title for necessary and non-necessary categories
+* Improvement: Added support for Official Facebook Pixel, Smash Balloon Instagram Feed & Twitter Feed plugins.
+
+= 1.9.1 =
+
+* Fix - Conflict with the Divi page builder
+
+= 1.9.0 =
+
+* Fix - Javascript error on IE after 1.8.9 update
+* Fix - Conflict with the theme customizer
+* Tested ok with Wordpress version 5.5
+* Updated translation files for Finnish
 
 = 1.8.9 =
 
@@ -428,8 +503,6 @@ See http://cookielawinfo.com for more information on what is required.
 
 == Upgrade Notice ==
 
-= 1.8.9 =
+= 1.9.5 =
 
-* Included support for CCPA ( Do not sell personal information )
-* Added javascript-based solution for running third-party scripts
-* Added support for external integration to modify the default behaviour of the plugin
+* Tested ok with Wordpress version 5.6

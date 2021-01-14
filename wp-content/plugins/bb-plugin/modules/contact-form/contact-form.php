@@ -406,6 +406,21 @@ FLBuilder::register_module('FLContactFormModule', array(
 						'label'   => __( 'Your Message Placeholder', 'fl-builder' ),
 						'default' => __( 'Your message', 'fl-builder' ),
 					),
+					'placeholder_labels'  => array(
+						'type'    => 'select',
+						'label'   => __( 'Show labels/placeholders', 'fl-builder' ),
+						'default' => 'placeholder',
+						'options' => array(
+							'placeholder' => __( 'Show Placeholders Only', 'fl-builder' ),
+							'labels'      => __( 'Show Labels Only', 'fl-builder' ),
+							'both'        => __( 'Show Both', 'fl-builder' ),
+						),
+						'toggle'  => array(
+							'show' => array(
+								'fields' => array( 'terms_checkbox_text', 'terms_text' ),
+							),
+						),
+					),
 					'terms_checkbox'      => array(
 						'type'    => 'select',
 						'label'   => __( 'Terms and Conditions Checkbox', 'fl-builder' ),

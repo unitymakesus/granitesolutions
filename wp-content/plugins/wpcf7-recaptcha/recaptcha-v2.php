@@ -25,7 +25,6 @@ function iqfix_wpcf7_manage_hooks() {
 
 	// reCaptcha Footer Javascript
 	remove_action( 'wp_footer', 'wpcf7_recaptcha_onload_script', 40 );
-	add_action( 'wp_footer', 'iqfix_wpcf7_recaptcha_callback_script', 40 );
 
 }
 add_action( 'setup_theme', 'iqfix_wpcf7_manage_hooks' );
@@ -70,101 +69,12 @@ function iqfix_wpcf7_recaptcha_enqueue_scripts() {
 		'render' 	=> 'explicit',
 	), $url );
 
-	wp_register_script( 'google-recaptcha', $url, array(), '2.0', true );
+	wp_register_script( 'wpcf7-recaptcha-controls', plugins_url( 'assets/js/wpcf7-recaptcha-controls.js', __FILE__ ), array(), '1.1', true );
+	wp_register_script( 'google-recaptcha', $url, array( 'wpcf7-recaptcha-controls' ), '2.0', true );
 	wp_localize_script( 'google-recaptcha', 'wpcf7iqfix', array(
-		'recaptcha_empty' => esc_html__( 'Please verify that you are not a robot.', 'wpcf7-recaptcha' ),
+		'recaptcha_empty'	=> esc_html__( 'Please verify that you are not a robot.', 'wpcf7-recaptcha' ),
+		'response_err'		=> esc_html__( 'wpcf7-recaptcha: Could not verify reCaptcha response.', 'wpcf7-recaptcha' ),
 	) );
-
-}
-// See `iqfix_wpcf7_manage_hooks` callback above
-
-
-/**
- * reCaptcha Javascript
- * 
- * @return void
- */
-function iqfix_wpcf7_recaptcha_callback_script() {
-
-	if ( ! wp_script_is( 'google-recaptcha', 'enqueued' ) ) {
-		return;
-	}
-
-?>
-<script type="text/javascript">
-var recaptchaWidgets = [];
-var recaptchaCallback = function() {
-	var forms = document.getElementsByTagName( 'form' );
-	var pattern = /(^|\s)g-recaptcha(\s|$)/;
-
-	for ( var i = 0; i < forms.length; i++ ) {
-		var divs = forms[ i ].getElementsByTagName( 'div' );
-
-		for ( var j = 0; j < divs.length; j++ ) {
-			var sitekey = divs[ j ].getAttribute( 'data-sitekey' );
-
-			if ( divs[ j ].className && divs[ j ].className.match( pattern ) && sitekey ) {
-				var params = {
-					'sitekey': sitekey,
-					'type': divs[ j ].getAttribute( 'data-type' ),
-					'size': divs[ j ].getAttribute( 'data-size' ),
-					'theme': divs[ j ].getAttribute( 'data-theme' ),
-					'align': divs[ j ].getAttribute( 'data-align' ),
-					'badge': divs[ j ].getAttribute( 'data-badge' ),
-					'tabindex': divs[ j ].getAttribute( 'data-tabindex' )
-				};
-
-				var callback = divs[ j ].getAttribute( 'data-callback' );
-
-				if ( callback && 'function' == typeof window[ callback ] ) {
-					params[ 'callback' ] = window[ callback ];
-				}
-
-				var expired_callback = divs[ j ].getAttribute( 'data-expired-callback' );
-
-				if ( expired_callback && 'function' == typeof window[ expired_callback ] ) {
-					params[ 'expired-callback' ] = window[ expired_callback ];
-				}
-
-				var widget_id = grecaptcha.render( divs[ j ], params );
-				recaptchaWidgets.push( widget_id );
-				break;
-			}
-		}
-	}
-};
-
-document.addEventListener( 'wpcf7submit', function( event ) {
-	switch ( event.detail.status ) {
-		case 'spam':
-		case 'mail_sent':
-		case 'mail_failed':
-			for ( var i = 0; i < recaptchaWidgets.length; i++ ) {
-				grecaptcha.reset( recaptchaWidgets[ i ] );
-			}
-	}
-}, false );
-
-document.addEventListener( 'wpcf7spam', function( event ) {
-	
-	var wpcf7forms = document.getElementsByClassName( 'wpcf7' );
-	
-	Array.prototype.forEach.call( wpcf7forms, function( form ) {
-		
-		if( form.getAttribute( 'id' ) != event.target.getAttribute( 'id' ) ) {
-			return;
-		}
-		
-		var response  = form.querySelector( 'input[name="g-recaptcha-response"]' );
-		var recaptcha = form.querySelector( 'div.wpcf7-recaptcha' );
-		if( '' === response.value ) {
-			var recaptchaWrapper = recaptcha.parentElement;
-			wpcf7.notValidTip( recaptchaWrapper, wpcf7iqfix.recaptcha_empty );
-		}
-	} );
-} );
-</script>
-<?php
 
 }
 // See `iqfix_wpcf7_manage_hooks` callback above

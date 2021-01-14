@@ -5,7 +5,7 @@
 
 namespace The_SEO_Framework;
 
-defined( 'THE_SEO_FRAMEWORK_PRESENT' ) or die;
+\defined( 'THE_SEO_FRAMEWORK_PRESENT' ) or die;
 
 /**
  * The SEO Framework plugin
@@ -39,17 +39,9 @@ function _init_locale() {
 	\load_plugin_textdomain(
 		'autodescription',
 		false,
-		dirname( THE_SEO_FRAMEWORK_PLUGIN_BASENAME ) . DIRECTORY_SEPARATOR . 'language'
+		\dirname( THE_SEO_FRAMEWORK_PLUGIN_BASENAME ) . DIRECTORY_SEPARATOR . 'language'
 	);
 }
-
-/**
- * Loads base overloading trait-collection.
- *
- * For now, other traits must be loaded via this function.
- * However, we might deprecate this method in favor of an autoloader.
- */
-_load_trait( 'core/overload' );
 
 \add_action( 'plugins_loaded', __NAMESPACE__ . '\\_init_tsf', 5 );
 /**
@@ -147,7 +139,7 @@ function _autoload_classes( $class ) {
 	}
 
 	$_chunks       = explode( '\\', strtolower( $class ) );
-	$_chunck_count = count( $_chunks );
+	$_chunck_count = \count( $_chunks );
 
 	if ( $_chunck_count > 2 ) {
 		//? directory position = $_chunck_count - ( 2 = (The_SEO_Framework)\ + (Bridges/Builders/Interpreters)\ )

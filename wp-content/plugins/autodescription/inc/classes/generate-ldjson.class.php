@@ -6,7 +6,7 @@
 
 namespace The_SEO_Framework;
 
-defined( 'THE_SEO_FRAMEWORK_PRESENT' ) or die;
+\defined( 'THE_SEO_FRAMEWORK_PRESENT' ) or die;
 
 /**
  * The SEO Framework plugin
@@ -165,6 +165,7 @@ class Generate_Ldjson extends Generate_Image {
 	 *
 	 * @since 2.9.3
 	 * @since 3.0.0 This whole functions now only listens to the searchbox option.
+	 * @since 4.1.2 Now properly slashes the search URL.
 	 *
 	 * @return string escaped LD+JSON Search and Sitename script.
 	 */
@@ -191,6 +192,7 @@ class Generate_Ldjson extends Generate_Image {
 		];
 
 		//= The searchbox part.
+		$pattern     = '%s{%s}';
 		$action_name = 'search_term_string';
 		$search_link = $this->pretty_permalinks ? \trailingslashit( \get_search_link() ) : \get_search_link();
 		/**
@@ -199,10 +201,16 @@ class Generate_Ldjson extends Generate_Image {
 		 */
 		$search_url = (string) \apply_filters( 'the_seo_framework_ld_json_search_url', $search_link );
 
+		if ( ! empty( $GLOBALS['wp_rewrite']->get_search_permastruct() ) ) {
+			$pattern    = \user_trailingslashit( '%s{%s}', 'search' );
+			$search_url = \trailingslashit( $search_url );
+		}
+
 		$data += [
 			'potentialAction' => [
 				'@type'       => 'SearchAction',
-				'target'      => sprintf( '%s{%s}', \esc_url( $search_url ), $action_name ),
+				// not properly sanitized; however, search_term_string is inert.
+				'target'      => sprintf( $pattern, \esc_url( $search_url ), $action_name ),
 				'query-input' => sprintf( 'required name=%s', $action_name ),
 			],
 		];
@@ -326,7 +334,7 @@ class Generate_Ldjson extends Generate_Image {
 	 *
 	 * @since 4.0.0
 	 * @uses $this->get_image_details()
-	 * @ignore Not used internally, only externally.
+	 * @api Not used internally, only externally.
 	 *
 	 * @param array|null $args    The query arguments. Accepts 'id' and 'taxonomy'.
 	 *                            Leave null to autodetermine query.
@@ -456,13 +464,13 @@ class Generate_Ldjson extends Generate_Image {
 			]
 		);
 
-		if ( is_array( $taxonomies ) ) {
+		if ( \is_array( $taxonomies ) ) {
 			$taxonomy = reset( $taxonomies );
 		} else {
 			$taxonomy = $taxonomies;
 		}
 
-		//* Test categories.
+		// Test categories.
 		$r = \is_object_in_term( $post_id, $taxonomy, '' );
 		if ( ! $r || \is_wp_error( $r ) )
 			return '';
@@ -490,7 +498,7 @@ class Generate_Ldjson extends Generate_Image {
 		$parents      = [];
 		$assigned_ids = [];
 
-		//* Fetch cats children id's, if any.
+		// Fetch cats children id's, if any.
 		foreach ( $terms as $term_id => $parent_id ) :
 			$assigned_ids[ $term_id ] = $parent_id;
 			// Check if they have parents (gets them all).
@@ -509,7 +517,7 @@ class Generate_Ldjson extends Generate_Image {
 		if ( ! $parents )
 			return '';
 
-		//* Seed out parents that have multiple assigned children.
+		// Seed out parents that have multiple assigned children.
 		foreach ( $parents as $pa_id => $child_id ) :
 			foreach ( $child_id as $ckey => $cid ) :
 				if ( isset( $parents[ $cid ] ) ) {
@@ -518,7 +526,7 @@ class Generate_Ldjson extends Generate_Image {
 			endforeach;
 		endforeach;
 
-		//* Merge tree list.
+		// Merge tree list.
 		$tree_ids = $this->build_ld_json_breadcrumb_trees( $parents );
 
 		if ( ! $tree_ids )
@@ -569,7 +577,7 @@ class Generate_Ldjson extends Generate_Image {
 			}
 			// phpcs:enable, WordPress.WhiteSpace.PrecisionAlignment
 
-			//* Store in cache.
+			// Store in cache.
 			$items[] = [
 				'@type'    => 'ListItem',
 				'position' => $position,
@@ -608,23 +616,23 @@ class Generate_Ldjson extends Generate_Image {
 
 		foreach ( $cats as $parent => $kitten ) {
 			if ( empty( $kitten ) ) {
-				//* Final cat.
+				// Final cat.
 				$trees[] = $parent;
 			} else {
-				if ( 1 === count( $kitten ) ) {
-					//* Single tree.
+				if ( 1 === \count( $kitten ) ) {
+					// Single tree.
 					$trees[] = [ reset( $kitten ), $parent ];
 				} else {
-					//* Nested categories.
+					// Nested categories.
 					$add = [];
 
 					foreach ( $kitten as $kit_id => $child_id ) {
-						//* Only add if non-existent in $trees.
-						if ( ! in_array( $child_id, $trees, true ) )
+						// Only add if non-existent in $trees.
+						if ( ! \in_array( $child_id, $trees, true ) )
 							$add[] = $child_id;
 					}
 
-					//* Put children in right order.
+					// Put children in right order.
 					$add = array_reverse( $add );
 
 					$trees[] = array_merge( $add, [ $parent ] );
@@ -651,9 +659,9 @@ class Generate_Ldjson extends Generate_Image {
 
 		$found = [];
 
-		if ( in_array( $find, (array) $ids, true ) ) {
+		if ( \in_array( $find, (array) $ids, true ) ) {
 			$found = [ $find ];
-		} elseif ( is_array( $ids ) ) {
+		} elseif ( \is_array( $ids ) ) {
 			foreach ( $ids as $id ) {
 				if ( $this->filter_ld_json_breadcrumb_trees( $id, $find ) ) {
 					$found = array_splice(

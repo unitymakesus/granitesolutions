@@ -48,7 +48,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 				<?php foreach ( $options as $option_value => $option_name ) : ?>
 
-					<?php printf( '<option value="%1$s" %2$s>%3$s</option>', esc_attr( $option_value ), selected( $value, $option_value, false ), esc_html( $option_name ) ); ?>
+					<?php
+                    if ( is_array( $value ) ) {
+                        $selected = selected( in_array( strval( $option_value ), $value, true ), true, false );
+                    } else {
+                        $selected = selected( $value, $option_value, false );
+                    }
+                    ?>
+
+					<?php printf( '<option value="%1$s" %2$s>%3$s</option>', esc_attr( $option_value ), $selected , esc_html( $option_name ) ); ?>
 
 				<?php endforeach; ?>
 

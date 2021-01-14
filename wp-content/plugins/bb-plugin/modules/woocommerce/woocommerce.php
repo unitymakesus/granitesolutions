@@ -15,6 +15,7 @@ class FLWooCommerceModule extends FLBuilderModule {
 			'name'            => __( 'WooCommerce', 'fl-builder' ),
 			'description'     => __( 'Display products or categories from your WooCommerce store.', 'fl-builder' ),
 			'category'        => __( 'WooCommerce', 'fl-builder' ),
+			'icon'            => 'shopping-cart.svg',
 			'enabled'         => $enabled,
 			'partial_refresh' => true,
 		));

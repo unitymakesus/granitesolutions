@@ -18,35 +18,43 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Defined before include:
- * @var string $error
+ * Mustache Templating
+ *
+ * This template is post-processed with Mustache templating engine.
+ *
+ * The following variables are available to Mustache:
+ *
+ * - sitename
+ * - error
+ *
+ * To use Mustache templating:
+ *
+ * - Include variable inline with text in double curly braces for HTML-escaped text, eg: "Hello {{name}}!"
+ * - Include variable inline with text in triple curly braces for unescaped text, eg: "Hello {{{name}}}!"
+ * - Include variable array with a dot to read the array's key's value, eg: "City: {{address.city}}, {{address.state}}.
+ *
+ * For more help, @see https://github.com/bobthecow/mustache.php/wiki/Mustache-Tags
  */
 
-// @todo all this needs to be made translatable
+/**
+ * These PHP variables are also available to this template, defined before includes:
+ *
+ * @var string $sitename
+ * @var string $error
+ */
+?>
 
-echo
-'Hi,
+<p><?php esc_html_e( 'Hello Administrator', 'matador-jobs' ); ?>,</p>
 
-Your website and the Matador Jobs plugin needs your help.
+<p><?php esc_html_e( 'Matador Jobs Plugin on is experiencing a connection issue on your site that requires your intervention.', 'matador-jobs' ); ?></p>
 
-We got this this error:' . esc_html( $error ) . '
+<p><?php esc_html_e( 'Matador Jobs sends this email to administrators after three consecutive connection failures, and once daily thereafter.', 'matador-jobs' ); ?></p>
 
-We are sending you this notice because we believe you will need to manually reconnect your
-site to Bullhorn in order to restore functionality. Follow these steps:
+<p><?php esc_html_e( 'Below is a copy of the error message, which may be helpful in resolving the issue.', 'matador-jobs' ); ?></p>
 
-* Log into your WordPress admin.
-* Click on or hover "Matador Jobs" in the sidebar, then click on "Settings" under it.
-* Click on "Connection Assistant"
-* Click on "Reauthorize Site"
+<p><em>{{error}}</em></p>
 
-This can be caused by a few things, including: Bullhorn servers being down, the Username and/or
-Password being changed, your Client ID or Client Secret being changed, your Bullhorn account
-being paused/suspended, or other causes.
-
-If you keep getting these errors and need help, know that Matador Jobs Pro support is available
-for Matador Jobs Pro and All-Access customers. http://matadorjobs.com/support
-
-Thank You!
-
-Matador Team
-';
+<p>
+	<?php esc_html_e( 'For advice on resolving connection issues, review our help document on the topic.', 'matador-jobs' ); ?>
+	<a href="https://matadorjobs.com/support/documentation/resolving-disconnection-from-bullhorn/"><?php esc_html_e( 'Go to help docs.', 'matador-jobs' ); ?></a>
+</p>

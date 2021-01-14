@@ -23,7 +23,7 @@ namespace The_SEO_Framework\Bridges;
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-defined( 'THE_SEO_FRAMEWORK_PRESENT' ) or die;
+\defined( 'THE_SEO_FRAMEWORK_PRESENT' ) or die;
 
 /**
  * Sets up class loader as file is loaded.
@@ -33,6 +33,7 @@ defined( 'THE_SEO_FRAMEWORK_PRESENT' ) or die;
  * @link https://bugs.php.net/bug.php?id=75771
  */
 $_load_feed_class = function() {
+	// phpcs:ignore, TSF.Performance.Opcodes.ShouldHaveNamespaceEscape
 	new Feed();
 };
 
@@ -44,7 +45,6 @@ $_load_feed_class = function() {
  * @final Can't be extended.
  */
 final class Feed {
-	use \The_SEO_Framework\Traits\Enclose_Stray_Private;
 
 	/**
 	 * @since 4.1.0
@@ -105,10 +105,10 @@ final class Feed {
 	 */
 	public function _init() {
 
-		//* Alter the content feed.
+		// Alter the content feed.
 		\add_filter( 'the_content_feed', [ $this, '_modify_the_content_feed' ], 10, 2 );
 
-		//* Only add the feed link to the excerpt if we're only building excerpts.
+		// Only add the feed link to the excerpt if we're only building excerpts.
 		if ( \get_option( 'rss_use_excerpt' ) )
 			\add_filter( 'the_excerpt_rss', [ $this, '_modify_the_content_feed' ], 10, 1 );
 	}
@@ -157,7 +157,7 @@ final class Feed {
 
 		if ( ! $content ) return '';
 
-		//* Strip all code and lines.
+		// Strip all code and lines.
 		$excerpt = static::$tsf->s_excerpt_raw( $content, false );
 
 		/**
@@ -166,7 +166,7 @@ final class Feed {
 		 */
 		$max_len = (int) \apply_filters( 'the_seo_framework_max_content_feed_length', 400 );
 
-		//* Generate excerpt.
+		// Generate excerpt.
 		$excerpt = static::$tsf->trim_excerpt( $excerpt, 0, $max_len );
 
 		return '<p>' . $excerpt . '</p>';

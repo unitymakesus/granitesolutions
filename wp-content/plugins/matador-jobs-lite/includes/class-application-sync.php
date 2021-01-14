@@ -15,8 +15,9 @@
 
 namespace matador;
 
-use stdClass;
 use DateTime;
+use stdClass;
+use matador\MatadorJobs\Email\{ApplicationApplicantMessage, ApplicationRecruiterMessage, AdminNoticeGeneralMessage};
 
 class Application_Sync {
 
@@ -106,6 +107,9 @@ class Application_Sync {
 	 * @param int $application_id
 	 */
 	public function __construct( $application_id = null ) {
+        new ApplicationRecruiterMessage();
+        new ApplicationApplicantMessage();
+
 		if ( null !== $application_id && is_int( $application_id ) && get_post_status( intval( $application_id ) ) ) {
 			$this->sync( $application_id );
 		}
@@ -307,6 +311,23 @@ class Application_Sync {
 	public function add_bullhorn_candidate() {
 
 		add_action( 'matador_log', array( $this, 'add_to_log' ), 10, 2 );
+        /**
+         * Filter : Should Add Candidate
+         *
+         * Check if the application should processed (useful to bypass, ie: into a 3rd party first)
+         *
+         * @since 3.6.0
+         *
+         * @param bool $should
+         * @param int $application_id
+         * @param array $application
+         *
+         * @return bool
+         */
+		if ( ! apply_filters('matador_application_sync_should_add_candidate', true, $this->application_id, $this->application_data ) ){
+
+		    return;
+        }
 
 		try {
 
@@ -340,23 +361,30 @@ class Application_Sync {
 
 				if ( ! empty( $this->candidate_bhid ) ) {
 
-					if ( 'Private' === $this->candidate_bhid ) {
+					// Start Updating Existing Candidate
+					$this->candidate_sync_step = 'existing-start';
+					Logger::add( 'info', 'matador-app-existing-found', esc_html__( 'Found and updating existing remote candidate', 'matador-jobs' ) . ' ' . $this->candidate_bhid );
+
+					// Fetch Existing Candidate Data
+					$this->candidate_sync_step = 'existing-fetch';
+					$this->candidate_data      = $bullhorn->get_candidate( $this->candidate_bhid );
+
+					if ( 'Private' === $this->candidate_data->candidate->status && ! $bullhorn->has_private_candidate_entitlement() ) {
 
 						$this->candidate_sync_step   = null;
 						$this->candidate_sync_status = '6';
 						$this->save_data();
-						Logger::add( 'info', 'matador-app-sync-private_candidate', esc_html__( 'We found a candidate in bullhorn but they where marked as private.', 'matador-jobs' ) . ' ' . $this->application_id );
-						Email::admin_error_notification( esc_html__( 'We found a candidate in bullhorn but they where marked as private. So could not update then in Bullhorn.', 'matador-jobs' ) . get_edit_post_link( $this->application_id, 'email' ) );
 
-					} elseif ( is_int( $this->candidate_bhid ) ) {
+						$error      = __( 'A "private" candidate applied for a role and the API user is unable modify "Private" candidates to update the record or submit them for a role.', 'matador-jobs' );
+						$error_more = __( 'You must manually access their application in Matador Jobs and submit them for the position. Also, you should contact Bullhorn to grant your API User access to modify private candidates.', 'matador-jobs' );
 
-						// Start Updating Existing Candidate
-						$this->candidate_sync_step = 'existing-start';
-						Logger::add( 'info', 'matador-app-existing-found', esc_html__( 'Found and updating existing remote candidate', 'matador-jobs' ) . ' ' . $this->candidate_bhid );
+						Logger::add( 'info', 'matador-app-sync-private_candidate', esc_html( $error . ' ( ID:' . $this->application_id . ')' ) );
+						AdminNoticeGeneralMessage::message( [
+							'error' => $error . ' ' . $error_more,
+							'force' => true,
+						] );
 
-						// Fetch Existing Candidate Data
-						$this->candidate_sync_step = 'existing-fetch';
-						$this->candidate_data      = $bullhorn->get_candidate( $this->candidate_bhid );
+					} else {
 
 						// Update Candidate from Submitted Data
 						$this->candidate_sync_step = 'existing-update';
@@ -381,12 +409,10 @@ class Application_Sync {
 								throw new Exception( 'error', 'update-candidate-failed', esc_html__( 'An existing remote candidate update failed and Matador is unable to continue.', 'matador-jobs' ) );
 							}
 						}
-
-						$this->candidate_sync_step = 'existing-candidate-complete';
-
-					} else {
-						throw new Exception( 'error', 'update-candidate-failed', esc_html__( 'Candidate update failed because a non-integer and unexpected value was returned.', 'matador-jobs' ) );
 					}
+
+					$this->candidate_sync_step = 'existing-candidate-complete';
+
 				} else {
 
 					// Start Creating a Candidate
@@ -511,6 +537,8 @@ class Application_Sync {
 		remove_action( 'matador_log', array( $this, 'add_to_log' ), 10 );
 		return true;
 	}
+
+
 
 	/**
 	 * Save Application Data
@@ -665,14 +693,16 @@ class Application_Sync {
 
 			if ( ! $resume ) {
 				$text_resume = apply_filters( 'matador_submit_candidate_text_resume', '', $application );
-				if ( ! empty( $reumse ) ) {
+				if ( ! empty( $text_resume ) ) {
 					$resume = $bullhorn->parse_resume( null, $text_resume );
 				}
 			}
 
-			if ( ! is_object( $resume ) || ! $resume ) {
-				Logger::add( 'error', 'bullhorn-application-processing-error', __( 'Error on resume process from Bullhorn: ', 'matador-jobs' ) . $resume['error'] );
+			if ( $resume && ! is_object( $resume ) ) {
+				Logger::add( 'error', 'bullhorn-application-processing-error', __( 'Error on resume process from Bullhorn: ', 'matador-jobs' ) . print_r( $resume['error'], true ) );
 				$resume = false;
+			} elseif ( ! $resume ) {
+				Logger::add( 'error', 'bullhorn-application-processing-error', __( 'No resume for applicant.', 'matador-jobs' ) );
 			}
 		}
 
@@ -727,6 +757,8 @@ class Application_Sync {
 		$candidate->candidate = self::candidate_address( $candidate->candidate, $application );
 
 		$candidate->candidate = self::candidate_comments( $candidate->candidate, $application );
+
+        $candidate->candidate = self::candidate_consent( $candidate->candidate, $application );
 
 		unset( $candidate->candidate->editHistoryValue ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName
 
@@ -826,7 +858,9 @@ class Application_Sync {
 		$candidate->candidate = self::candidate_address( $candidate->candidate, $application );
 		$candidate->candidate = self::candidate_comments( $candidate->candidate, $application );
 
-		if ( $resume && isset( $resume->candidate->description ) && ! empty( $resume->candidate->description ) ) {
+        $candidate->candidate = self::candidate_consent( $candidate->candidate, $application );
+
+        if ( $resume && isset( $resume->candidate->description ) && ! empty( $resume->candidate->description ) ) {
 			$candidate->candidate->description = $resume->candidate->description;
 		}
 
@@ -1167,6 +1201,145 @@ class Application_Sync {
 
 		return $person;
 	}
+
+    /**
+     * Create Candidate Consent
+     *
+     * Create object(s) to give to the GDPR Bullhorn custom object that manages candidate consent
+     *
+     * @since 3.6.0
+     *
+     * @access private
+     * @static
+     *
+     * @param stdClass $person
+     * @param array $application
+     *
+     * @return stdClass
+     */
+    private static function candidate_consent( $person = null, $application = null ) {
+
+	    if ( ! $person || ! $application ) {
+	        return $person;
+	    }
+
+	    // Create variables for use.
+	    $privacy  = null;
+	    $consents = array();
+	    $jobs     = array();
+
+	    // If the application requires consent, the application is rejected
+	    // in processing. This check at sync only determines if the candidate
+	    // should have the consent object created.
+	    if ( '1' === Matador::setting( 'application_privacy_field' ) ) {
+
+	    	$privacy = new stdClass();
+
+		    // To build a consent text description, get the IDs of jobs the applicant
+		    if ( isset( $application['jobs'] ) ) {
+			    foreach ( $application['jobs'] as $key => $job ) {
+				    if ( isset( $job['bhid'] ) && is_numeric( $job['bhid'] ) ) {
+					    $jobs[] = intval( $job['bhid'] );
+				    }
+			    }
+		    }
+		    $description = ( empty( $jobs ) ) ? esc_html__( 'Candidate applied to general application.', 'matador-jobs' ) : esc_html__( 'Candidate applied to the following job ids: ', 'matador-jobs' ) . implode( ', ', $jobs );
+
+		    // Add IP address to Description, if Available
+		    if ( ! empty( $application['ip'] ) ) {
+		    	$description .= PHP_EOL . sprintf( '(IP address: %s)', esc_attr( $application['ip'] ) );
+		    }
+
+		    // Create the consent object for Privacy Policy Acceptance
+		    //
+		    // Date last sent is 'date1'
+		    $privacy->date1      = (int) ( microtime( true ) * 1000 );
+		    // Date last received is 'date2'
+		    $privacy->date2      = (int) ( microtime( true ) * 1000 );
+		    // Description is 'textBlock1'
+		    $privacy->textBlock1 = $description;
+		    // Purpose is 'text1'
+		    $privacy->text1      = esc_html__( 'Recruiting', 'matador-jobs' );
+		    // Legal Basis is 'text2'
+		    $privacy->text2      = esc_html__( 'Legal Obligation', 'matador-jobs' );
+		    // Source is 'text3'
+		    $privacy->text3      = esc_html__( 'Web Response', 'matador-jobs' );
+
+		    /**
+		     * Matador Applicant Candidate Privacy Consent
+		     *
+		     * Modify the custom object that we save when a candidate agree to terms in an application form.
+		     *
+		     * @since 3.6.0
+		     *
+		     * @param stdClass $privacy consent objects
+		     * @param array    $application the incoming application data
+		     * @param stdClass $person the Person data set so far.
+		     *
+		     * @return stdClass modified Consent object
+		     */
+		    $privacy = apply_filters( 'matador_applicant_candidate_privacy_consent_object', $privacy, $application, $person );
+
+		    // Push the object into an array of consent objects
+		    $consents[] = $privacy;
+		}
+
+	    /**
+	     * Matador Applicant Candidate Consents
+	     *
+	     * Modify the array of consent custom objects Use this to add additional/custom consents, ie: consent to get
+	     * email updates.
+	     *
+	     * @since 3.6.0
+	     *
+	     * @param stdClass $consents array of consent objects
+	     * @param array    $application the incoming application data
+	     * @param stdClass $person the Person data set so far.
+	     *
+	     * @return stdClass modified array of Consent objects
+	     */
+	    $consents = apply_filters( 'matador_applicant_candidate_consents_data', $consents, $application, $person );
+
+	    // If there is no privacy policy or custom consents, exit
+	    if ( empty( $consents ) ) {
+
+	    	return $person;
+	    }
+
+	    /**
+	     * Matador Applicant Candidate Consent Object Name
+	     *
+	     * The API call to automatically locate the Bullhorn Candidate Consents object is taxing. To improve performance
+	     * you may manually set this value, provided you confidently know its value. The value will be something like
+	     * 'customObject1s'
+	     *
+	     * @since 3.6.0
+	     *
+	     * @param string $consent_object_location default empty string
+	     *
+	     * @return string in the format of customObject{$i}s where $i is 1-10
+	     */
+	    $consent_object_location = apply_filters( 'matador_applicant_candidate_consent_object_name', '' );
+
+	    $consent_object_location = $consent_object_location ?: get_transient( Matador::variable( 'consent_object' , 'transients' ) );
+
+	    if ( false === $consent_object_location ) {
+
+	    	try {
+			    $bullhorn = new Bullhorn_Connection();
+			    $consent_object_location = $bullhorn->get_consent_object_name();
+		    } catch ( \Exception $e ) {
+
+	    		return $person;
+		    }
+	    }
+
+	    if ( ! empty( $consent_object_location ) && false !== $consent_object_location ) {
+		    $person->$consent_object_location = $consents;
+	    }
+
+        return $person;
+    }
 
 	/**
 	 * Add to Application Sync Log

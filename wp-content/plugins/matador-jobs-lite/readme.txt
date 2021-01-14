@@ -3,27 +3,21 @@
 - Contributors: jeremyescott, pbearne
 - Donate Link: https://matadorjobs.com
 - Tags: Bullhorn, job board, matador, google jobs search, career portal, OSCP
-- Requires at least: 4.7
-- Tested up to: 5.2.3
-- Stable tag: 3.5.6
-- Requires PHP: 7.0
+- Requires at least: 4.9.6
+- Tested up to: 5.5.0
+- Stable tag: 3.6.4
+- Version: 3.6.4
+- Requires PHP: 5.6
 - License: GPLv3 or later
 - License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
-Connect your WordPress site with your Bullhorn account. Cache job data locally and display it with style inside your
-WordPress theme.
+Connect your WordPress site with your Bullhorn account. Cache job data locally and display it with style inside your WordPress theme.
 
 == Description ==
 
-Connect your Bullhorn Account with your WordPress site and display your valuable jobs on your new self-hosted job board.
-Matador makes this as easy as it sounds, and lets you seamlessly integrate a powerful job board--a major marketing tool
-for your business--directly into your WordPress site. Everything that is great about WordPress is extended to Matador:
-great out-of-the-box SEO, easy templating/theming, endless customization options, and more. Matador goes further by
-listing your jobs with incredible job-specific SEO customization (optimized for Google Jobs Search), and more.
+Connect your Bullhorn Account with your WordPress site and display your valuable jobs on your new self-hosted job board. Matador makes this as easy as it sounds, and lets you seamlessly integrate a powerful job board--a major marketing tool for your business--directly into your WordPress site. Everything that is great about WordPress is extended to Matador: great out-of-the-box SEO, easy templating/theming, endless customization options, and more. Matador goes further by listing your jobs with incredible job-specific SEO customization (optimized for Google Jobs Search), and more.
 
-Use Matador's powerful settings to connect our "Apply Now" button for jobs to a page that will collect applications, or
-look into purchasing Matador Jobs Pro to accept applications from Matador and see them turned into candidates submitted
-to jobs directly in your Bullhorn Account!
+Use Matador's powerful settings to connect our "Apply Now" button for jobs to a page that will collect applications, or look into purchasing Matador Jobs Pro to accept applications from Matador and see them turned into candidates submitted to jobs directly in your Bullhorn Account!
 
 == Installation ==
 
@@ -40,61 +34,39 @@ This section describes how to install the plugin and get it working.
 
 = Does this Require a Bullhorn Account? =
 
-You must have an active Bullhorn Account to use Matador's Bullhorn Import/Export features. It technically will function
-as a stand-alone jobs board without a Bullhorn Account, but there are better options out there for that.
+You must have an active Bullhorn Account to use Matador's Bullhorn Import/Export features. It technically will function as a stand-alone jobs board without a Bullhorn Account, but there are better options out there for that.
 
 = How Do I Get Bullhorn API Credentials? =
 
-You must submit a ticket to Bullhorn support. Merely informing them you will be using Matador should give them all the
-info they need to help you, as we are now Bullhorn Marketplace Developer Partners and they know what a new Matador user
-needs. That said, we recommend first installing the plugin, activating it, and starting the Bullhorn Connection
-Assistant before you do this. Follow the prompts in the easy-to-use assistant and Matador will generate a copy-and-paste
-email you can send to Bullhorn Support to get you started.
+You must submit a ticket to Bullhorn support. Merely informing them you will be using Matador should give them all the info they need to help you, as we are now Bullhorn Marketplace Developer Partners and they know what a new Matador user needs. That said, we recommend first installing the plugin, activating it, and starting the Bullhorn Connection Assistant before you do this. Follow the prompts in the easy-to-use assistant and Matador will generate a copy-and-paste email you can send to Bullhorn Support to get you started.
 
 = So Matador downloads jobs from Bullhorn. Does it accept applications too? =
 
-Yes, if your a user of Matador Jobs Pro or All-Access. Once you've connected to Bullhorn and synced your first jobs,
-your visitors can apply to the jobs. Based on settings, the applications will be sent to your Bullhorn either
-immediately or in the next regularly scheduled sync with Bullhorn.
+Yes, if your a user of Matador Jobs Pro or All-Access. Once you've connected to Bullhorn and synced your first jobs, your visitors can apply to the jobs. Based on settings, the applications will be sent to your Bullhorn either immediately or in the next regularly scheduled sync with Bullhorn.
 
-If you are only right now a user of the free Matador Jobs Lite, not yet. Matador Jobs lite allows you to designate a
-destination page for the "Apply" button, but you will need to handle your own applications, perhaps with a contact form
-plugin.
+If you are only right now a user of the free Matador Jobs Lite, not yet. Matador Jobs lite allows you to designate a destination page for the "Apply" button, but you will need to handle your own applications, perhaps with a contact form plugin.
 
 If you'd like more information on Matador Jobs Pro or All-Access, visit <https://matadorjobs.com/>.
 
 = How Can I Customize the Look of Matador? =
 
-Our documentation site <https://matadorjobs.com/support/documentation/> explains how to use our template system, theme
-functions, shortcodes, and actions and filters to make your site look amazing. You can also watch out for occasional
-client showcases on our where we feature creative and amazing looking implementations of Matador.
+Our documentation site <https://matadorjobs.com/support/documentation/> explains how to use our template system, theme functions, shortcodes, and actions and filters to make your site look amazing. You can also watch out for occasional client showcases on our where we feature creative and amazing looking implementations of Matador.
 
 = How Can I Customize the Function of Matador? =
 
-Matador is built by WordPress users for WordPress users. We included hundreds of Actions and Filters to help you
-customize how it works just like WordPress core. Some of those are documented at
-<https://matadorjobs.com/support/documentation/> while others can be discovered with a quick code review.
+Matador is built by WordPress users for WordPress users. We included hundreds of Actions and Filters to help you customize how it works just like WordPress core. Some of those are documented at <https://matadorjobs.com/support/documentation/> while others can be discovered with a quick code review.
 
-But that requires a developer and hours of work! If you haven't already, check out our many official extensions that are
-viewable at <https://matadorjobs.com/products/>. These extend Matador's core functionality in ways that can make each
-site feel unique! You can use an unlimited number of these All-Access Add-Ons with any Matador Jobs All-Access plan.
+But that requires a developer and hours of work! If you haven't already, check out our many official extensions that are viewable at <https://matadorjobs.com/products/>. These extend Matador's core functionality in ways that can make each site feel unique! You can use an unlimited number of these All-Access Add-Ons with any Matador Jobs All-Access plan.
 
-If you need something and you don't see an add-on, feel free to write us. Leave a comment in the Support Forum or with
-our Pro support system <http://www.matadorjobs.com/support/> (requires Matador Jobs Pro or All-Access). Simple
-modifications might already be documented and we can point you to them. And if you have a more complex modification, we
-may be able to take your input and idea and turn it into another All-Access Add-On.
+If you need something and you don't see an add-on, feel free to write us. Leave a comment in the Support Forum or with our Pro support system <http://www.matadorjobs.com/support/> (requires Matador Jobs Pro or All-Access). Simple modifications might already be documented and we can point you to them. And if you have a more complex modification, we may be able to take your input and idea and turn it into another All-Access Add-On.
 
 = Where can I get support? =
 
-Users of Matador Jobs Lite should use the plugin's WordPress.org support forum. Users of Matador Jobs Pro and All-Access
-annual or lifetime plans can use our support ticket system at <http://www.matadorjobs.com/support/>.
+Users of Matador Jobs Lite should use the plugin's WordPress.org support forum. Users of Matador Jobs Pro and All-Access annual or lifetime plans can use our support ticket system at <http://www.matadorjobs.com/support/>.
 
 == Upgrade Notice ==
 
-Upgrading from 'Bullhorn 2 WordPress' 2.4 or 2.5 to Matador Jobs Lite/Pro 3.0 or later includes some breaking updates.
-This will cause some sites to disconnect or look differently. Back up your site and perform the upgrade on a staging
-server if possible. We have made every effort to make this smooth, but be warned, it will require extra work to make
-your site function the same again.
+Upgrading from 'Bullhorn 2 WordPress' 2.4 or 2.5 to Matador Jobs Lite/Pro 3.0 or later includes some breaking updates. This will cause some sites to disconnect or look differently. Back up your site and perform the upgrade on a staging server if possible. We have made every effort to make this smooth, but be warned, it will require extra work to make your site function the same again.
 
 == Screenshots ==
 
@@ -104,6 +76,104 @@ your site function the same again.
 4. Jobs listings in the admin
 
 == Changelog ==
+
+= 3.6.4 =
+
+Features:
+
+- Extending a feature added in 3.6.0, if a job ID is accessed directly via either external ID scheme (ie:  /jobs-page/1234 or /jobs-page/?xid=1234) and the job does not exist on the site, a sync to Bullhorn will be fired off. This is to address issues related to Bullhorn-based real-time XML feeds that present a Matador URL prior to the resource being created in Matador. In some cases, either a user, but more commonly a 3rd party aggregator, would try to access the resource, but be returned a 404 Error: Not Found. Now, if a job posting is not found, this will trigger a sync and ideally will result in the resource becoming available.
+- Added filter 'matador_the_jobs_description_allowed_protocols' to allow the permitted HTTP protocols in imported job descriptions to be extended beyond WordPress's core allowed HTTP protocols. This can be used to expose your site to exploitation and should be used with absolute caution, however can be used to allow data:// and svg:// protocols in descriptions.
+
+Bugfixes:
+
+- Fixes issue causing employmentType in Structured Data (used by Google for Jobs Search) to not present properly in certain cases, especially when the Bullhorn data is customized. Thanks to Nishi B. from Beach Head for the bug report.
+- Fixed a backward compatibility issue affecting some users of PHP 5.6.x. We apologize for the issue. Please note, PHP 5.6.x is no longer receiving security updates and is 50% slower than PHP 7.2, the current minimum supported version of PHP. Matador will continue to support PHP 5.6.x but new features will not load for users of less than PHP 7.2.
+- Fixed issue affecting iOS Safari during Matador Campaign tracking load. In iOS Safari, window.external is not defined, which threw a Javascript error
+- Fix issue where some API calls on certain server configurations would fail due to an extraneous forward-slash.
+
+= 3.6.3 =
+
+Features:
+
+- Adds automatic detection of the "ALLOW_PRIVATE" entitlement on the candidate object. Application syncs that encounter a Private candidate will check if the API user can modify them, if not falling back to old Private Candidate routines, if so allowing the sync to carry on as normal.
+- The "Sync this Job" button is automatically removed for sites that utilize developer filters that disable adding/updating jobs on a sync.
+
+Bugfixes:
+
+- Improved the behavior of "Sync This Job" button. Will now always sync/overwrite job data regardless of whether job was recently updated at Bullhorn.
+- Improvements to existing Private Candidate application handling (when "ALLOW_PRIVATE" is false). Thank you to Nishi B for the heads up.
+- Fixed an issue affecting some web hosts, including Windows-based web hosts, when loading a 3rd-party code library. Thank you Tony S for the tip.
+- Fixed issue where the consent object's "name" wasn't being properly auto-detected on some user's sites. Thank you Nishi B for bringing this to our attention.
+- Fixed two uncommon issues encountered when importing options for checkboxes or select fields from a Bullhorn data source (generally when using Advanced Applications Extension). These were caused when type mismatches were created during conversion of data to/from arrays in PHP/Matador and JSON/Bullhorn.
+- Fixed a "typo" in a settings option. A form setting description referencing a Bullhorn job order field name was incorrect even though the setting label and setting values were as intended.
+
+= 3.6.2 =
+
+Bugfixes:
+
+- Fixed an issue where the Matador Application form may not have always denied a form submission when Google reCAPTCHA was not filled out, resulting in an on-screen error message for applicants. Thank you to Doug B for the help finding this one.
+- Fixed a backward compatibility handler for versions 3.0.0 and 3.4.0. A filter introduced in those versions for developers to use to customize emails was deprecated in 3.6.0's big email-related code rewrite, but was given special handling for backward-compatibility into the 3.6.0 release. It was, unfortunately, not working as intended, resulting in some sites using the older developer filters to fail. Thank you to Nishi B for pointing this out.
+- Fixed an issue where the content-type header for email was not being unset after a Matador email was sent. Though this was very unlikely to have caused any issues for users, its possible some email sent by non-Matador plugins that would've sent after a Matador email would've been affected. Now the content-type filter will be removed after a Matador email sends.
+- Fixed an issue where Matador's Javascript wouldn't load in some rare cases. To ensure the lightest impact to load times, Matador Javascript is only loaded when needed. A rare case was discovered where the Javascript would not be loaded for taxonomy (i.e.: category, location) drop-down menus if the page also didn't use the [matador_jobs] shortcode or function or didn't have an application. Now the javascript will load during any appearance of the drop-down.
+
+Internationalization:
+
+- Fixed misspelled text domain for a translatable string, meaning it is now able to translated.
+
+Inclusive Language:
+
+Some phrases and terms used by developers have roots in speech that was originally oppressive or exclusive in nature. Not only are these phrases rooted in world in which we, Jeremy & Paul, do not support, but in fact they are less descriptive for a layperson than using more accurate phrases. In an effort to do our small part in righting these historical wrongs and improving the clarity in which we communicate, we are working to remove instances of this language from our projects. The following changes made it into this release:
+
+- All uses of the term "API Redirect Whitelist" (as a noun) is now to "Allowed API Redirect List"
+- All uses of the term "whitelist" (as a verb) is now "register".
+- You willl now see phrases like "you need to register your uri to your Allowed API Redirect List" instead of "you need to whitelist your redirect URI" or "your redirect URI is not on the whitelist."
+
+Note 1: We'd like to thank our partners at Bullhorn for supporting this change as they undergo similar updates to their own documentation.
+Note 2: Our efforts to replace insensitive language in our project with inclusive alternatives is a work in progress. We will continue to make these changes in upcoming releases.
+
+= 3.6.1 =
+
+Bugfixes:
+
+- Fixed issue on PHP 7.3 & 7.4 where Matador would cause a NOTICE error, which if WP_DEBUG was set to true, would print an error to screen and interrupt Matador. Please make sure your WP_DEBUG is set to false in production (live) as a general best practice and apply updates in a staging environment. Thank you to Samantha S for the tip.
+- Removed duplicated code files in Matador Jobs Lite due to build process error.
+
+= 3.6.0 =
+
+Features:
+
+- Added support for Bullhorn's "Consent" Tab (customObject). If "Require Applicant to Agree to Privacy Policy" setting is on and Matador can detect the presence of the Consent custom object on the Candidate object, Matador will add consent data during Candidate create, update, and submission. In most cases, you will need to make no changes to your site to take advantage of this feature provided the object has been configured on your Bullhorn account. (Note: due to a bug, this feature may not have worked fully until 3.6.3)
+- Added Schema/JSON+LD support for "Work from Home" jobs. Basic support is enabled automatically when "onSite" is set to "No Preference" or "Off-Site". If your company uses other terms to refer to "Work From Home" in your Bullhorn, you can identify these via the filter 'matador_bullhorn_import_telecommute_types'. Advanced support requires further configuration. Schema/JSON+LD support for "Work From Home" will result in job searches for the same country (or state) of the hiring organization (employer). If you'd like to narrow or widen this, you can assign custom fields in your Bullhorn Job Listing and Matador will import these. They are "type" and "value", where type may be, "COUNTRY" and value will be "USA". Use filter 'matador_bullhorn_import_location_requirements_fields' to assign these.
+- Added alternate URL schemes to support other integrations. Jobs can now be found by appending the remote job id (ie: Bullhorn ID) to the jobs base URL. IE: if jobs exist at your-site.com/gigs/ and you have a job ID on Bullhorn of 1234, then your-site.com/gigs/1234 will redirect to its human-friendly URL, eg: your-site.com/gigs/job-name-1234. This is to better support 3rd party integrations, eg: with Indeed. Jobs can now also be found by appending a query string to the jobs base URL with the argument of 'xid'. IE: if jobs exist on your-site.com/gigs/ and you have a job ID on Bullhorn of 1234, then your-site.com/gigs/?xid=1234 will redirect to its human-friendly URL, eg: your-site.com/gigs/job-name-1234. For forward compatability with future support of additional job boards, you can include an additional argument of 'xsource' to verify the external source, ie: your-site.com/gigs/?xid=1234&xsource=bullhorn.
+- Completely new Email-related codebase. Settings allowing you to set the default "from name" and "from email" for Matador-generated emails. New "Default Recruiter" email setting. Allows you to determine a recipient for the recruiter email when the job has no assigned users and/or the application isn't tied to a job. Mustache Templating added to email templates, to simplify templates.
+- A number of improvements to the sync routine of Matador Jobs. Jobs are now not updated unless they've been updated since the last sync, improving performance by up to 70%!
+- Matador's JSON+LD support is now properly merged with Yoast SEO's (WPSEO) plugin's use of the single graph.
+- Added "Single Job Refresh" action to the job. Visit the job page in WordPress Admin and click on the button to refresh it immediately from its Bullhorn record without requiring a full job sync.
+- Added the whitelist URI to the Connection Assistant tool, so it can be referenced without doing a reset.
+
+Bugfixes:
+
+- In the default template to output a select or multiselect field (via shortcode or function) for a taxonomy (eg: category, location) the field was named improperly when the multiselect option was set, resulting in the field values not being formatted properly and search results from the subsequent form submission were incorrect. This is fixed so that when a multiselect flag is set, the selected options will now properly pass values to the POST or GET request. Thank you to Emily B. of Integrity Locums for the bug report.
+- Fixed an issue in Matador on PHP 7.3 where a matador_jobs()/[matador_jobs] function/shortcode argument was handled during processing in such a way that an error was raised PHP 7.3.
+- The matador_application()/[matador_application] function/shortcode would not recognize Bullhorn or WordPress id passed via querystring. This is an edge case implementation of Matador designed for third-party form systems, but we made sure we can support it as well.
+- In a rare instance, a custom theme's style rules could make the hidden file input field still display but with graphical error. To ensure this doesn't happen, additional CSS rules were added to make this less likely to occur, but note that custom theme CSS can always override ours, and sometimes things unexpected occur.
+- When certain SMTP or other mail sending plugins were used, they may have encountered errors with duplicates of the same email being in the "to" field. The email generating code will now remove duplicate email addresses in any given field (to, cc, bcc, etc).
+- Fixed issue where certain PHP versions (7.3, 7.4) could throw an error during application processing and incorrectly reject an application form submission.
+
+Developer:
+
+- Add support for select option groups in custom form fields by nesting arrays of options within the options array. Only supported via customized fields, as Bullhorn does not provide data in this structure.
+- Added template for hidden type application form fields.
+- Added filter matador_bullhorn_candidate_get_candidate_fields to modify fields retrieved during an existing candidate edit. Please see documentation block for notes and warnings.
+- Added action matador_import_before_save_job_location and replaced matador_save_job_address with matador_import_after_save_job_location to assist users in creating custom experiences with location data.
+
+Internationalization:
+
+- Added French (Canadian) Translations File
+
+= 3.5.7 & 3.5.8 =
+
+- No changes in this version, but a version number increment was created to correct an error we made in uploading the wrong version of Matador Jobs Lite to the WordPress.org Plugin Repository.
 
 = 3.5.6 =
 
@@ -166,7 +236,7 @@ Bugfixes:
 Internationalization:
 
 - We discovered and fixed an issue causing two text strings that should be translatable to be not translatable.
-- We discovered and made translatable two text strings previously translatable.
+- We discovered and made translatable two text strings previously untranslatable.
 - We updated the Netherlands Dutch translation file, following feedback from our users.
 
 = 3.5.2 =

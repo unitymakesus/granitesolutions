@@ -29,6 +29,7 @@ final class Settings_Actions {
 	 */
 	public function __construct() {
 		add_action( 'matador_options_after_set', array( __CLASS__, 'trigger_rewrite_flush' ), 10, 2 );
+		add_action( 'matador_options_after_set', array( __CLASS__, 'trigger_cache_flush' ), 10, 2 );
 		add_action( 'matador_options_after_set_license_core', array( __CLASS__, 'activate_license' ), 10, 2 );
 		add_action( 'matador_options_after_unset_license_core', array( __CLASS__, 'deactivate_license' ), 10, 1 );
 	}
@@ -74,6 +75,53 @@ final class Settings_Actions {
 		if ( in_array( strtolower( $key ), $triggers, true ) ) {
 			new Event_Log( 'options-trigger-rewrite', __( 'A setting that affects rewrites was changed. Rewrites will be flushed on next admin load.', 'matador-jobs' ) );
 			set_transient( Matador::variable( 'flush_rewrite_rules', 'transients' ), true, 30 );
+		}
+	}
+
+	/**
+	 * Trigger Cache Flush
+	 *
+	 * Determines if a field should trigger a cache flush, and if so, removes the cache trigger before
+	 * next sync.
+	 *
+	 * @access public
+	 * @static
+	 * @since 3.6.0
+	 *
+	 * @param string $key
+	 * @param string $value
+	 *
+	 * @return void
+	 */
+	public static function trigger_cache_flush( $key, $value ) {
+
+		unset( $value );
+
+		$cache_triggers = array(
+			'bullhorn_description_field',
+			'bullhorn_is_public',
+			'bullhorn_category_field',
+			'jsonld_hiring_organization',
+			'jsonld_salary',
+			'post_type_slug_job_listing_each',
+			'notify_type',
+			'bullhorn_date_field',
+		);
+
+		/**
+		 * Filter: cache Triggers
+		 *
+		 * Allows us to add settings keys to the list of triggers, so that
+		 * when the setting is changed, a the date last modified for jobs is removed
+		 * so on the next sync all posts are updated.
+		 *
+		 * @since 3.6.0
+		 */
+		$cache_triggers = apply_filters( 'matador_options_rewrite_cache_triggers', $cache_triggers );
+
+		if ( in_array( strtolower( $key ), $cache_triggers, true ) ) {
+			delete_metadata( 'post', 0, '_matador_source_date_modified', '', true );
+			new Event_Log( 'options-trigger-date-last-modified-cleared', __( 'A setting that affects job content was changed. A full sync will will be conducted at the next scheduled time.', 'matador-jobs' ) );
 		}
 	}
 

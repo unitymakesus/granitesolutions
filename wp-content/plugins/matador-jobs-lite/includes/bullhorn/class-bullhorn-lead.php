@@ -228,7 +228,7 @@ class Bullhorn_Lead extends Bullhorn_Connection {
 
 
 	/**
-	 * Save Candidate
+	 * Save Lead
 	 *
 	 * @param object $candidate
 	 *
@@ -313,7 +313,7 @@ class Bullhorn_Lead extends Bullhorn_Connection {
 
 
 	/**
-	 * Attach Note to a candidate
+	 * Attach Note to a lead
 	 *
 	 * @param object $candidate
 	 *

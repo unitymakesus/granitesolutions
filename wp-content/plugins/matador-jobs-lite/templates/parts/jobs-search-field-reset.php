@@ -25,13 +25,18 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Filters the class attribute of the submit button for the Matador Search form.
  *
  * @since 3.3.0
+ * @deprecated 3.6.0. Please use 'matador_template_button_classes' in combination with the ID
+ *
+ * @param string $class
+ *
+ * @return string $class
  */
 $button_class = apply_filters( 'matador_search_form_reset_button_class', 'matador-search-reset' );
 ?>
 
 <div class="matador-search-form-field-group matador-search-form-field-reset">
 
-	<button type="submit" id="matador-search-reset" class="<?php echo esc_attr( $button_class ); ?>">
+	<button type="submit" id="matador-search-reset" class="<?php matador_button_classes( [ $button_class, 'matador-button', 'matador-button-secondary' ], 'secondary' ); ?>">
 		<?php
 		/**
 		 * Filter: Matador Search From Reset Label

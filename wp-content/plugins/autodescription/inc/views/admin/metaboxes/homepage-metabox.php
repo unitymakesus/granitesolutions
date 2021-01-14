@@ -4,13 +4,14 @@
  * @subpackage The_SEO_Framework\Admin\Settings
  */
 
-use The_SEO_Framework\Bridges\SeoSettings;
-
-defined( 'THE_SEO_FRAMEWORK_PRESENT' ) and $_this = the_seo_framework_class() and $this instanceof $_this or die;
-
+// phpcs:disable, VariableAnalysis.CodeAnalysis.VariableAnalysis.UndefinedVariable -- includes.
 // phpcs:disable, WordPress.WP.GlobalVariablesOverride -- This isn't the global scope.
 
-//* Fetch the required instance within this file.
+use The_SEO_Framework\Bridges\SeoSettings;
+
+defined( 'THE_SEO_FRAMEWORK_PRESENT' ) and the_seo_framework()->_verify_include_secret( $_secret ) or die;
+
+// Fetch the required instance within this file.
 $instance = $this->get_view_instance( 'the_seo_framework_homepage_metabox', $instance );
 
 $home_id = $this->get_the_front_page_ID();
@@ -77,7 +78,7 @@ switch ( $instance ) :
 			</label>
 		</p>
 		<?php
-		//* Output these unconditionally, with inline CSS attached to allow reacting on settings.
+		// Output these unconditionally, with inline CSS attached to allow reacting on settings.
 		$this->output_character_counter_wrap( $this->get_field_id( 'homepage_title' ), '', (bool) $this->get_option( 'display_character_counter' ) );
 		$this->output_pixel_counter_wrap( $this->get_field_id( 'homepage_title' ), 'title', (bool) $this->get_option( 'display_pixel_counter' ) );
 		?>
@@ -116,7 +117,7 @@ switch ( $instance ) :
 		 */
 		if ( $home_id && apply_filters( 'the_seo_framework_warn_homepage_global_title', false ) ) {
 			$this->attention_noesc(
-				//* Markdown escapes.
+				// Markdown escapes.
 				$this->convert_markdown(
 					sprintf(
 						/* translators: %s = Homepage URL markdown */
@@ -144,7 +145,7 @@ switch ( $instance ) :
 			</label>
 		</p>
 		<?php
-		//* Output these unconditionally, with inline CSS attached to allow reacting on settings.
+		// Output these unconditionally, with inline CSS attached to allow reacting on settings.
 		$this->output_character_counter_wrap( $this->get_field_id( 'homepage_description' ), '', (bool) $this->get_option( 'display_character_counter' ) );
 		$this->output_pixel_counter_wrap( $this->get_field_id( 'homepage_description' ), 'description', (bool) $this->get_option( 'display_pixel_counter' ) );
 		?>
@@ -179,7 +180,7 @@ switch ( $instance ) :
 		 */
 		if ( $home_id && apply_filters( 'the_seo_framework_warn_homepage_global_description', false ) ) {
 			$this->attention_noesc(
-				//* Markdown escapes.
+				// Markdown escapes.
 				$this->convert_markdown(
 					sprintf(
 						/* translators: %s = Homepage URL markdown */
@@ -196,7 +197,7 @@ switch ( $instance ) :
 	case 'the_seo_framework_homepage_metabox_additions':
 		$tagline_placeholder = $this->s_title_raw( $this->get_blogdescription() );
 
-		//* Fetches escaped title parts.
+		// Fetches escaped title parts.
 		$_example_title = $this->escape_title(
 			$this->get_filtered_raw_custom_field_title( $_generator_args ) ?: $this->get_filtered_raw_generated_title( $_generator_args )
 		);
@@ -286,7 +287,7 @@ switch ( $instance ) :
 			</label>
 		</p>
 		<?php
-		//* Output this unconditionally, with inline CSS attached to allow reacting on settings.
+		// Output this unconditionally, with inline CSS attached to allow reacting on settings.
 		$this->output_character_counter_wrap( $this->get_field_id( 'homepage_og_title' ), '', (bool) $this->get_option( 'display_character_counter' ) );
 		?>
 		<p>
@@ -310,7 +311,7 @@ switch ( $instance ) :
 			</label>
 		</p>
 		<?php
-		//* Output this unconditionally, with inline CSS attached to allow reacting on settings.
+		// Output this unconditionally, with inline CSS attached to allow reacting on settings.
 		$this->output_character_counter_wrap( $this->get_field_id( 'homepage_og_description' ), '', (bool) $this->get_option( 'display_character_counter' ) );
 		?>
 		<p>
@@ -335,7 +336,7 @@ switch ( $instance ) :
 			</label>
 		</p>
 		<?php
-		//* Output this unconditionally, with inline CSS attached to allow reacting on settings.
+		// Output this unconditionally, with inline CSS attached to allow reacting on settings.
 		$this->output_character_counter_wrap( $this->get_field_id( 'homepage_twitter_title' ), '', (bool) $this->get_option( 'display_character_counter' ) );
 		?>
 		<p>
@@ -359,7 +360,7 @@ switch ( $instance ) :
 			</label>
 		</p>
 		<?php
-		//* Output this unconditionally, with inline CSS attached to allow reacting on settings.
+		// Output this unconditionally, with inline CSS attached to allow reacting on settings.
 		$this->output_character_counter_wrap( $this->get_field_id( 'homepage_twitter_description' ), '', (bool) $this->get_option( 'display_character_counter' ) );
 		?>
 		<p>
@@ -378,7 +379,7 @@ switch ( $instance ) :
 		<?php
 		$this->description( __( 'A social image can be displayed when your homepage is shared. It is a great way to grab attention.', 'autodescription' ) );
 
-		//* Fetch image placeholder.
+		// Fetch image placeholder.
 		$image_details     = current( $this->get_generated_image_details( $_generator_args, true, 'social', true ) );
 		$image_placeholder = isset( $image_details['url'] ) ? $image_details['url'] : '';
 
@@ -532,7 +533,7 @@ switch ( $instance ) :
 		<?php
 		$this->description( __( "If your homepage is paginated and outputs content that's also found elsewhere on the website, enabling this option may prevent duplicate content.", 'autodescription' ) );
 
-		//* Echo checkbox.
+		// Echo checkbox.
 		$this->wrap_fields(
 			$this->make_checkbox(
 				'home_paged_noindex',

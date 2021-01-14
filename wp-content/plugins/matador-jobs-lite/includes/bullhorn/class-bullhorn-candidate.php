@@ -67,7 +67,7 @@ class Bullhorn_Candidate extends Bullhorn_Connection {
 		}
 
 		// API Method
-		$method = '/search/Candidate';
+		$method = 'search/Candidate';
 
 		// API Params
 		$params = array(
@@ -86,10 +86,6 @@ class Bullhorn_Candidate extends Bullhorn_Connection {
 			&& ! isset( $request->errorMessage ) // @codingStandardsIgnoreLine (SnakeCase)
 			&& 0 < $request->count
 		) {
-			if ( ! empty( $request->data[0]->status ) && 'Private' === $request->data[0]->status ) {
-
-				return 'Private';
-			}
 
 			return (int) $request->data[0]->id;
 		} else {
@@ -122,7 +118,20 @@ class Bullhorn_Candidate extends Bullhorn_Connection {
 
 		// API Params
 		$params = array(
-			'fields' => 'id,name,nickName,firstName,middleName,lastName,address,secondaryAddress,email,email2,email3,mobile,phone,phone2,phone3,description,status,dateLastModified',
+			/**
+			 * Matador Bullhorn Candidate Get Candidate Method Fields Filter
+			 *
+			 * NOTE: Use this with caution. Exposing fields for edit can allow unintended changes to candidate record.
+			 *
+			 * WARNING: If field does not exist in the Bullhorn Candidate entity, your application sync will break.
+			 *
+			 * @since 3.6.0
+			 *
+			 * @param string $fields Comma separated, without spaces, list of Candidate Fields per Bullhorn API Candidate Entity
+			 *
+			 * @return string
+			 */
+			'fields' => apply_filters( 'matador_bullhorn_candidate_get_candidate_fields', 'id,name,nickName,firstName,middleName,lastName,address,secondaryAddress,email,email2,email3,mobile,phone,phone2,phone3,description,status,dateLastModified' ),
 		);
 
 		// API Request
@@ -606,7 +615,7 @@ class Bullhorn_Candidate extends Bullhorn_Connection {
 		}
 
 		// API Method
-		$method = '/file/Candidate/' . $candidate->candidate->id . '/raw';
+		$method = 'file/Candidate/' . $candidate->candidate->id . '/raw';
 
 		// API Params
 		$params = array(
@@ -826,7 +835,7 @@ class Bullhorn_Candidate extends Bullhorn_Connection {
 
 		// API Method
 		if ( ! $file && $content ) {
-			$method = '/resume/parseToCandidateViaJson';
+			$method = 'resume/parseToCandidateViaJson';
 		} else {
 
 			$file_size = filesize( $file ) / pow( 1024, 2 );
@@ -858,7 +867,7 @@ class Bullhorn_Candidate extends Bullhorn_Connection {
 				Logger::add( 'info', 'bullhorn-file-size-exceeds-limit', sprintf( $error, $file_size_limit ) );
 
 				if ( $content ) {
-					$method = '/resume/parseToCandidateViaJson';
+					$method = 'resume/parseToCandidateViaJson';
 				} else {
 					return false;
 				}
@@ -875,7 +884,7 @@ class Bullhorn_Candidate extends Bullhorn_Connection {
 
 			$count = isset( $count ) ? ++ $count : 1;
 
-			if ( '/resume/parseToCandidateViaJson' === $method ) {
+			if ( 'resume/parseToCandidateViaJson' === $method ) {
 				$body = array(
 					'resume' => $content,
 				);

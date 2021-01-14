@@ -6,6 +6,10 @@ final class FL_Debug {
 
 	public static function init() {
 		if ( isset( $_GET['fldebug'] ) && get_transient( 'fl_debug_mode', false ) === $_GET['fldebug'] ) {
+			if ( isset( $_GET['info'] ) ) {
+				phpinfo();
+				exit;
+			}
 			add_action( 'init', array( 'FL_Debug', 'display_tests' ) );
 		}
 
@@ -113,6 +117,12 @@ final class FL_Debug {
 		self::register( 'site_url', $args );
 
 		$args = array(
+			'name' => 'IP',
+			'data' => $_SERVER['SERVER_ADDR'],
+		);
+		self::register( 'wp_ip', $args );
+
+		$args = array(
 			'name' => 'WP Version',
 			'data' => $wp_version,
 		);
@@ -166,6 +176,14 @@ final class FL_Debug {
 				'data' => get_option( 'upload_path' ),
 			);
 			self::register( 'wp_media_upload_path', $args );
+		}
+
+		if ( defined( 'DISALLOW_UNFILTERED_HTML' ) && DISALLOW_UNFILTERED_HTML ) {
+			$args = array(
+				'name' => 'Unfiltered HTML is globally disabled! ( DISALLOW_UNFILTERED_HTML )',
+				'data' => 'Yes',
+			);
+			self::register( 'is_multi', $args );
 		}
 
 		$args = array(
@@ -228,6 +246,17 @@ final class FL_Debug {
 					self::register( 'child_bb_modules', $args );
 				}
 			}
+		}
+
+		// child theme functions
+		if ( $theme->get( 'Template' ) ) {
+			$functions_file = trailingslashit( get_stylesheet_directory() ) . 'functions.php';
+			$contents       = file_get_contents( $functions_file );
+			$args           = array(
+				'name' => 'Child Theme Functions',
+				'data' => $contents,
+			);
+			self::register( 'child_funcs', $args );
 		}
 
 		$args = array(

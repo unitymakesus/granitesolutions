@@ -4,16 +4,17 @@
  * @subpackage The_SEO_Framework\Admin\Edit\Inpost
  */
 
-use The_SEO_Framework\Bridges\PostSettings;
-
-defined( 'THE_SEO_FRAMEWORK_PRESENT' ) and $_this = the_seo_framework_class() and $this instanceof $_this or die;
-
+// phpcs:disable, VariableAnalysis.CodeAnalysis.VariableAnalysis.UndefinedVariable -- includes.
 // phpcs:disable, WordPress.WP.GlobalVariablesOverride -- This isn't the global scope.
 
-//* Fetch the required instance within this file.
+use The_SEO_Framework\Bridges\PostSettings;
+
+defined( 'THE_SEO_FRAMEWORK_PRESENT' ) and the_seo_framework()->_verify_include_secret( $_secret ) or die;
+
+// Fetch the required instance within this file.
 $instance = $this->get_view_instance( 'inpost', $instance );
 
-//* Setup default vars.
+// Setup default vars.
 $post_id = $this->get_the_real_ID(); // We also have access to object $post at the main call...
 
 $_generator_args = [
@@ -25,17 +26,17 @@ switch ( $instance ) :
 	case 'inpost_main':
 		$default_tabs = [
 			'general'    => [
-				'name'     => \__( 'General', 'autodescription' ),
+				'name'     => __( 'General', 'autodescription' ),
 				'callback' => PostSettings::class . '::_general_tab',
 				'dashicon' => 'admin-generic',
 			],
 			'social'     => [
-				'name'     => \__( 'Social', 'autodescription' ),
+				'name'     => __( 'Social', 'autodescription' ),
 				'callback' => PostSettings::class . '::_social_tab',
 				'dashicon' => 'share',
 			],
 			'visibility' => [
-				'name'     => \__( 'Visibility', 'autodescription' ),
+				'name'     => __( 'Visibility', 'autodescription' ),
 				'callback' => PostSettings::class . '::_visibility_tab',
 				'dashicon' => 'visibility',
 			],
@@ -50,7 +51,7 @@ switch ( $instance ) :
 		 * @param array $default_tabs The default tabs.
 		 * @param null  $depr         The post type label. Deprecated.
 		 */
-		$tabs = (array) \apply_filters( 'the_seo_framework_inpost_settings_tabs', $default_tabs, null );
+		$tabs = (array) apply_filters( 'the_seo_framework_inpost_settings_tabs', $default_tabs, null );
 
 		echo '<div class="tsf-flex tsf-flex-inside-wrap">';
 		PostSettings::_flex_nav_tab_wrapper( 'inpost', $tabs );
@@ -71,7 +72,10 @@ switch ( $instance ) :
 				</div>
 				<div class="tsf-flex-setting-input tsf-flex">
 					<div>
-						<?php echo $this->get_generated_seo_bar( $_generator_args ); ?>
+						<?php
+						// phpcs:ignore, WordPress.Security.EscapeOutput -- get_generated_seo_bar() escapes.
+						echo $this->get_generated_seo_bar( $_generator_args );
+						?>
 					</div>
 				</div>
 			</div>
@@ -224,7 +228,7 @@ switch ( $instance ) :
 		$canonical             = $this->get_post_meta_item( '_genesis_canonical_uri' );
 		$canonical_placeholder = $this->create_canonical_url( $_generator_args );
 
-		//* Get robots defaults.
+		// Get robots defaults.
 		$r_defaults = $this->robots_meta(
 			$_generator_args,
 			The_SEO_Framework\ROBOTS_IGNORE_SETTINGS | The_SEO_Framework\ROBOTS_IGNORE_PROTECTION
@@ -333,6 +337,11 @@ switch ( $instance ) :
 									1  => $_s['force_off'],
 								],
 								'default' => $this->get_post_meta_item( $_s['option'] ),
+								'data'    => [
+									'defaultUnprotected' => $_s['_default'],
+									/* translators: %s = default option value */
+									'defaultI18n'        => __( 'Default (%s)', 'autodescription' ),
+								],
 							] );
 							// phpcs:enable, WordPress.Security.EscapeOutput
 						?>
@@ -498,12 +507,15 @@ switch ( $instance ) :
 				</div>
 			</div>
 			<div class="tsf-flex-setting-input tsf-flex">
-				<textarea class="large-text" name="autodescription[_twitter_description]" id="autodescription_twitter_description" placeholder="<?php echo esc_attr( $social_placeholders['description']['twitter'] ); ?>" rows="3" cols="4" autocomplete=off><?php echo $this->esc_attr_preserve_amp( $this->get_post_meta_item( '_twitter_description' ) ); ?></textarea>
+				<textarea class="large-text" name="autodescription[_twitter_description]" id="autodescription_twitter_description" placeholder="<?php echo esc_attr( $social_placeholders['description']['twitter'] ); ?>" rows="3" cols="4" autocomplete=off><?php
+					// Textareas don't require sanitization in HTML5... other than removing the closing </textarea> tag...?
+					echo $this->esc_attr_preserve_amp( $this->get_post_meta_item( '_twitter_description' ) );
+					?></textarea>
 			</div>
 		</div>
 		<?php
 
-		//* Fetch image placeholder.
+		// Fetch image placeholder.
 		if ( $this->is_static_frontpage( $post_id ) && $this->get_option( 'homepage_social_image_url' ) ) {
 			$image_details     = current( $this->get_image_details( $_generator_args, true, 'social', true ) );
 			$image_placeholder = isset( $image_details['url'] ) ? $image_details['url'] : '';

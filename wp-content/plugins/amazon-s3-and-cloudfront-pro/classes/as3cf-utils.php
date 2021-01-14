@@ -112,6 +112,21 @@ if ( ! class_exists( 'AS3CF_Utils' ) ) {
 		}
 
 		/**
+		 * Is the given size recognized as the full sized image?
+		 *
+		 * @param string|null $size
+		 *
+		 * @return bool
+		 */
+		public static function is_full_size( $size ) {
+			if ( empty( $size ) || in_array( $size, array( 'full', 'original' ) ) ) {
+				return true;
+			}
+
+			return false;
+		}
+
+		/**
 		 * Reduce the given URL down to the simplest version of itself.
 		 *
 		 * Useful for matching against the full version of the URL in a full-text search
@@ -260,9 +275,6 @@ if ( ! class_exists( 'AS3CF_Utils' ) ) {
 			// Allow other processes to add files to be uploaded
 			$paths = apply_filters( 'as3cf_attachment_file_paths', $paths, $attachment_id, $meta );
 
-			// Remove duplicates
-			$paths = array_unique( $paths );
-
 			// Remove paths that don't exist
 			if ( $exists_locally ) {
 				foreach ( $paths as $key => $path ) {
@@ -310,6 +322,7 @@ if ( ! class_exists( 'AS3CF_Utils' ) ) {
 
 		/**
 		 * Get intermediate size from attachment filename.
+		 * If multiple sizes exist with same filename, only the first size found will be returned.
 		 *
 		 * @param int    $attachment_id
 		 * @param string $filename

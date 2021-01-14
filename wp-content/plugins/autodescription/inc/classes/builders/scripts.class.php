@@ -23,7 +23,7 @@ namespace The_SEO_Framework\Builders;
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-defined( 'THE_SEO_FRAMEWORK_PRESENT' ) or die;
+\defined( 'THE_SEO_FRAMEWORK_PRESENT' ) or die;
 
 /**
  * Sets up class loader as file is loaded.
@@ -33,6 +33,7 @@ defined( 'THE_SEO_FRAMEWORK_PRESENT' ) or die;
  * @link https://bugs.php.net/bug.php?id=75771
  */
 $_load_scripts_class = function() {
+	// phpcs:ignore, TSF.Performance.Opcodes.ShouldHaveNamespaceEscape
 	new Scripts();
 };
 
@@ -52,7 +53,6 @@ $_load_scripts_class = function() {
  * @final Can't be extended.
  */
 final class Scripts {
-	use \The_SEO_Framework\Traits\Enclose_Stray_Private;
 
 	/**
 	 * Codes to maintain the internal state of the scripts. This state might not reflect
@@ -195,6 +195,20 @@ final class Scripts {
 	public static function enqueue() {
 		static::$instance->_prepare_admin_scripts();
 		static::$instance->_output_templates();
+	}
+
+	/**
+	 * Enqueues all known registeres scripts, styles, and templates,
+	 * in the footer, right before WordPress's last script-outputting call.
+	 *
+	 * @since 4.1.2
+	 * @see ABSPATH.wp-admin/admin-footer.php
+	 */
+	public static function footer_enqueue() {
+
+		if ( \The_SEO_Framework\_has_run( __METHOD__ ) ) return;
+
+		\add_action( 'admin_footer', [ static::class, 'enqueue' ], 998 );
 	}
 
 	/**
@@ -448,7 +462,6 @@ final class Scripts {
 		return $out;
 	}
 
-
 	/**
 	 * Concatenates inline JS.
 	 *
@@ -487,8 +500,8 @@ final class Scripts {
 
 			if (
 			   ! isset( $_colors[ $_scheme ]->colors ) // phpcs:ignore, WordPress.WhiteSpace
-			|| ! is_array( $_colors[ $_scheme ]->colors )
-			|| count( $_colors[ $_scheme ]->colors ) < 4
+			|| ! \is_array( $_colors[ $_scheme ]->colors )
+			|| \count( $_colors[ $_scheme ]->colors ) < 4
 			) {
 				$_colors = [
 					'#222',
@@ -562,6 +575,7 @@ final class Scripts {
 	 *
 	 * @since 3.1.0
 	 * @since 3.2.2 Now clears outputted templates, so to prevent duplications.
+	 * @since 4.1.2 Now clears templates right before outputting them, so to prevent a plausible infinite loop.
 	 * @see $this->forward_known_scripts()
 	 * @see $this->register_template()
 	 * @see $this->autoload_scripts()
@@ -571,9 +585,11 @@ final class Scripts {
 	public function _output_templates() {
 		foreach ( static::$templates as $id => $templates ) {
 			if ( \wp_script_is( $id, 'enqueued' ) ) { // This list retains scripts after they're outputted.
+				// Unset template before the loop, to prevent an infinite loop.
+				unset( static::$templates[ $id ] );
+
 				foreach ( $templates as $t )
 					$this->output_view( $t[0], $t[1] );
-				unset( static::$templates[ $id ] );
 			}
 		}
 	}

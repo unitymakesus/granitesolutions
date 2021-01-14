@@ -177,9 +177,9 @@ class Yoda
         // https://endoflife.software/programming-languages/server-side-scripting/php
         // https://secure.php.net/ChangeLog-7.php
         return [
-            '7.4.0' => '7.4.0',
-            '7.3.0' => '7.3.12',
-            '7.2.0' => '7.2.25',
+            '7.4.0' => '7.4.10',
+            '7.3.0' => '7.3.22',
+            '7.2.0' => '7.2.33',
             'min'   => '7.2.0',
         ];
     }

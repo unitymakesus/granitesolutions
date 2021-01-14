@@ -552,7 +552,6 @@ class Plugin {
                         'login_errors' => '1',
                         'login_password_reset' => '0',
                         'login_remember_me' => '0',
-                        'login_local' => '1',
                     ];
 
         // Firewall --------------------------------|

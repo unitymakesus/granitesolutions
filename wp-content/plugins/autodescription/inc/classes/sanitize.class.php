@@ -6,7 +6,7 @@
 
 namespace The_SEO_Framework;
 
-defined( 'THE_SEO_FRAMEWORK_PRESENT' ) or die;
+\defined( 'THE_SEO_FRAMEWORK_PRESENT' ) or die;
 
 /**
  * The SEO Framework plugin
@@ -64,7 +64,7 @@ class Sanitize extends Admin_Pages {
 		 * @since 2.2.9
 		 */
 		if ( empty( $_POST[ THE_SEO_FRAMEWORK_SITE_OPTIONS ] )
-		|| ! is_array( $_POST[ THE_SEO_FRAMEWORK_SITE_OPTIONS ] ) )
+		|| ! \is_array( $_POST[ THE_SEO_FRAMEWORK_SITE_OPTIONS ] ) )
 			return $validated = false;
 
 		// This is also handled in /wp-admin/options.php. Nevertheless, one might register outside of scope.
@@ -307,6 +307,8 @@ class Sanitize extends Admin_Pages {
 				'prev_next_archives',
 				'prev_next_frontpage',
 
+				'oembed_use_og_title',
+				'oembed_use_social_image',
 				'oembed_remove_author',
 
 				'og_tags',
@@ -328,6 +330,7 @@ class Sanitize extends Admin_Pages {
 				'ping_use_cron',
 				'ping_google',
 				'ping_bing',
+				'ping_use_cron_prerender',
 
 				'excerpt_the_feed',
 				'source_the_feed',
@@ -571,11 +574,11 @@ class Sanitize extends Admin_Pages {
 		if ( $get )
 			return $options;
 
-		if ( is_array( $suboption ) ) {
+		if ( \is_array( $suboption ) ) {
 			foreach ( $suboption as $so ) {
 				$options[ $option ][ $so ] = $filter;
 			}
-		} elseif ( is_null( $suboption ) ) {
+		} elseif ( \is_null( $suboption ) ) {
 			$options[ $option ] = $filter;
 		} else {
 			$options[ $option ][ $suboption ] = $filter;
@@ -609,13 +612,13 @@ class Sanitize extends Admin_Pages {
 		$filters = $this->get_option_filters();
 
 		if ( ! isset( $filters[ $option ] ) ) {
-			//* We are not filtering this option at all
+			// We are not filtering this option at all
 			return $new_value;
-		} elseif ( is_string( $filters[ $option ] ) ) {
-			//* Single option value
+		} elseif ( \is_string( $filters[ $option ] ) ) {
+			// Single option value
 			return $this->do_filter( $filters[ $option ], $new_value, \get_option( $option ), $option );
-		} elseif ( is_array( $filters[ $option ] ) ) {
-			//* Array of suboption values to loop through
+		} elseif ( \is_array( $filters[ $option ] ) ) {
+			// Array of suboption values to loop through
 			$old_value = \get_option( $option, [] );
 			foreach ( $filters[ $option ] as $suboption => $filter ) {
 				$old_value[ $suboption ] = isset( $old_value[ $suboption ] ) ? $old_value[ $suboption ] : '';
@@ -625,7 +628,7 @@ class Sanitize extends Admin_Pages {
 			return $new_value;
 		}
 
-		//* Should never hit this, but:
+		// Should never hit this, but:
 		return $new_value;
 	}
 
@@ -646,10 +649,10 @@ class Sanitize extends Admin_Pages {
 
 		$available_filters = $this->get_available_filters();
 
-		if ( ! in_array( $filter, array_keys( $available_filters ), true ) )
+		if ( ! \in_array( $filter, array_keys( $available_filters ), true ) )
 			return $new_value;
 
-		return call_user_func_array(
+		return \call_user_func_array(
 			$available_filters[ $filter ],
 			[
 				$new_value,
@@ -744,7 +747,7 @@ class Sanitize extends Admin_Pages {
 					continue 2;
 
 				case 'social_image_id':
-					//* Bound to social_image_url.
+					// Bound to social_image_url.
 					$value = $data['social_image_url'] ? $this->s_absint( $value ) : 0;
 					continue 2;
 
@@ -797,16 +800,11 @@ class Sanitize extends Admin_Pages {
 
 				case '_genesis_canonical_uri':
 				case '_social_image_url':
-					/**
-					 * Remove unwanted query parameters. They're allowed by Google, but very much rather not.
-					 * Also, they will only cause bugs.
-					 * Query parameters are also only used when no pretty permalinks are used. Which is bad.
-					 */
 					$value = $this->s_url_query( $value );
 					continue 2;
 
 				case '_social_image_id':
-					//* Bound to _social_image_url.
+					// Bound to _social_image_url.
 					$value = $data['_social_image_url'] ? $this->s_absint( $value ) : 0;
 					continue 2;
 
@@ -817,7 +815,7 @@ class Sanitize extends Admin_Pages {
 					continue 2;
 
 				case 'redirect':
-					//* Let's keep this as the output really is.
+					// Let's keep this as the output really is.
 					$value = $this->s_redirect_url( $value );
 					continue 2;
 
@@ -848,14 +846,14 @@ class Sanitize extends Admin_Pages {
 
 		$title_separator = $this->get_separator_list();
 
-		$key = array_key_exists( $new_value, $title_separator );
+		$key = \array_key_exists( $new_value, $title_separator );
 
 		if ( $key )
 			return (string) $new_value;
 
 		$previous = $this->get_option( 'title_separator' );
 
-		//* Fallback to default if empty.
+		// Fallback to default if empty.
 		if ( empty( $previous ) )
 			$previous = $this->get_default_option( 'title_separator' );
 
@@ -932,13 +930,17 @@ class Sanitize extends Admin_Pages {
 	 * @since 3.1.0 Simplified method.
 	 * @since 4.1.0 1. Made this method about 25~92% faster (more replacements = more faster). 73% slower on empty strings (negligible).
 	 *              2. Now also strips form-feed and vertical whitespace characters--might they appear in the wild.
+	 *              3. Now also strips horizontal tabs (reverted in 4.1.1).
+	 * @since 4.1.1 1. Now uses real bytes, instead of sequences (causing uneven transformations, plausibly emptying content).
+	 *              2. No longer transforms horizontal tabs. Use `s_tabs()` instead.
+	 * @link https://www.php.net/manual/en/regexp.reference.escape.php
 	 *
 	 * @param string $new_value The input value with possible multiline.
 	 * @return string The input string without multiple lines.
 	 */
 	public function s_singleline( $new_value ) {
 		// Use x20 because it's a human-visible real space.
-		return trim( strtr( $new_value, "\r\n\t\v\f", "\x20\x20\x20\x20\x20" ) );
+		return trim( strtr( $new_value, "\x0A\x0B\x0C\x0D", "\x20\x20\x20\x20" ) );
 	}
 
 	/**
@@ -960,14 +962,16 @@ class Sanitize extends Admin_Pages {
 	 * Removes tabs and replaces it with spaces.
 	 *
 	 * @since 2.8.2
+	 * @since 4.1.1 Now uses real bytes, instead of sequences (causing uneven transformations, plausibly emptying content).
 	 * @see $this->s_dupe_space() For removing duplicates spaces.
+	 * @link https://www.php.net/manual/en/regexp.reference.escape.php
 	 *
 	 * @param string $new_value The input value with possible tabs.
 	 * @return string The input string without tabs.
 	 */
 	public function s_tabs( $new_value ) {
 		// Use x20 because it's a human-visible real space.
-		return strtr( $new_value, "\t", "\x20" );
+		return strtr( $new_value, "\x09", "\x20" );
 	}
 
 	/**
@@ -987,14 +991,14 @@ class Sanitize extends Admin_Pages {
 	 */
 	public function s_excerpt( $excerpt = '', $allow_shortcodes = true, $escape = true ) {
 
-		//* No need to parse an empty excerpt.
+		// No need to parse an empty excerpt.
 		if ( '' === $excerpt ) return '';
 
 		$strip_args = [
 			'space' =>
-				[ 'article', 'aside', 'blockquote', 'dd', 'div', 'dl', 'dt', 'li', 'main', 'ol', 'p', 'section', 'ul' ],
+				[ 'article', 'aside', 'blockquote', 'br', 'dd', 'div', 'dl', 'dt', 'li', 'main', 'ol', 'p', 'section', 'ul' ],
 			'clear' =>
-				[ 'address', 'bdo', 'br', 'button', 'canvas', 'code', 'fieldset', 'figcaption', 'figure', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'header', 'hr', 'iframe', 'input', 'label', 'link', 'meta', 'nav', 'noscript', 'option', 'pre', 'samp', 'script', 'select', 'style', 'svg', 'table', 'textarea', 'tfoot', 'var', 'video' ],
+				[ 'address', 'bdo', 'button', 'canvas', 'code', 'fieldset', 'figcaption', 'figure', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'header', 'hr', 'iframe', 'input', 'label', 'link', 'meta', 'nav', 'noscript', 'option', 'pre', 'samp', 'script', 'select', 'style', 'svg', 'table', 'textarea', 'tfoot', 'var', 'video' ],
 		];
 
 		/**
@@ -1099,7 +1103,7 @@ class Sanitize extends Admin_Pages {
 	 */
 	public function s_knowledge_type( $new_value ) {
 
-		if ( in_array( $new_value, [ 'person', 'organization' ], true ) )
+		if ( \in_array( $new_value, [ 'person', 'organization' ], true ) )
 			return $new_value;
 
 		return 'organization';
@@ -1118,12 +1122,12 @@ class Sanitize extends Admin_Pages {
 	 */
 	public function s_left_right( $new_value ) {
 
-		if ( in_array( $new_value, [ 'left', 'right' ], true ) )
+		if ( \in_array( $new_value, [ 'left', 'right' ], true ) )
 			return $new_value;
 
 		$previous = $this->get_option( 'title_location' );
 
-		//* Fallback if previous is also empty.
+		// Fallback if previous is also empty.
 		if ( ! $previous )
 			$previous = $this->get_default_option( 'title_location' );
 
@@ -1143,12 +1147,12 @@ class Sanitize extends Admin_Pages {
 	 */
 	public function s_left_right_home( $new_value ) {
 
-		if ( in_array( $new_value, [ 'left', 'right' ], true ) )
+		if ( \in_array( $new_value, [ 'left', 'right' ], true ) )
 			return $new_value;
 
 		$previous = $this->get_option( 'home_title_location' );
 
-		//* Fallback if previous is also empty.
+		// Fallback if previous is also empty.
 		if ( ! $previous )
 			$previous = $this->get_default_option( 'home_title_location' );
 
@@ -1165,7 +1169,7 @@ class Sanitize extends Admin_Pages {
 	 */
 	public function s_alter_query_type( $new_value ) {
 
-		if ( in_array( $new_value, [ 'in_query', 'post_query' ], true ) )
+		if ( \in_array( $new_value, [ 'in_query', 'post_query' ], true ) )
 			return $new_value;
 
 		return 'in_query';
@@ -1219,7 +1223,7 @@ class Sanitize extends Admin_Pages {
 	 */
 	public function s_disabled_post_types( $new_values ) {
 
-		if ( ! is_array( $new_values ) ) return [];
+		if ( ! \is_array( $new_values ) ) return [];
 
 		foreach ( $this->get_forced_supported_post_types() as $forced ) {
 			unset( $new_values[ $forced ] );
@@ -1240,7 +1244,7 @@ class Sanitize extends Admin_Pages {
 	 */
 	public function s_post_types( $new_values ) {
 
-		if ( ! is_array( $new_values ) ) return [];
+		if ( ! \is_array( $new_values ) ) return [];
 
 		foreach ( $new_values as $index => $value ) {
 			$new_values[ $index ] = $this->s_one_zero( $value );
@@ -1261,7 +1265,7 @@ class Sanitize extends Admin_Pages {
 	 */
 	public function s_disabled_taxonomies( $new_values ) {
 
-		if ( ! is_array( $new_values ) ) return [];
+		if ( ! \is_array( $new_values ) ) return [];
 
 		foreach ( $this->get_forced_supported_taxonomies() as $forced ) {
 			unset( $new_values[ $forced ] );
@@ -1282,7 +1286,7 @@ class Sanitize extends Admin_Pages {
 	 */
 	public function s_taxonomies( $new_values ) {
 
-		if ( ! is_array( $new_values ) ) return [];
+		if ( ! \is_array( $new_values ) ) return [];
 
 		foreach ( $new_values as $index => $value ) {
 			$new_values[ $index ] = $this->s_one_zero( $value );
@@ -1335,6 +1339,7 @@ class Sanitize extends Admin_Pages {
 
 	/**
 	 * Removes HTML tags and line breaks from string.
+	 * Also removes all spaces.
 	 *
 	 * @since 2.5.2
 	 * @since 2.8.0 Method is now public.
@@ -1385,6 +1390,7 @@ class Sanitize extends Admin_Pages {
 	 *
 	 * @since 2.2.8
 	 * @since 2.8.0 Method is now public.
+	 * @TODO rename to s_url_keep_query?
 	 *
 	 * @param string $new_value String, a URL, possibly unsafe.
 	 * @return string String a safe URL with Query Arguments.
@@ -1536,10 +1542,10 @@ class Sanitize extends Admin_Pages {
 	 */
 	public function s_twitter_card( $new_value ) {
 
-		//* Fetch Twitter card array.
+		// Fetch Twitter card array.
 		$card = $this->get_twitter_card_types();
 
-		$key = array_key_exists( $new_value, $card );
+		$key = \array_key_exists( $new_value, $card );
 
 		if ( $key ) return (string) $new_value;
 
@@ -1725,7 +1731,7 @@ class Sanitize extends Admin_Pages {
 			'http',
 		];
 
-		if ( in_array( $new_value, $accepted_values, true ) )
+		if ( \in_array( $new_value, $accepted_values, true ) )
 			return (string) $new_value;
 
 		return 'automatic';
@@ -1765,7 +1771,7 @@ class Sanitize extends Admin_Pages {
 	 */
 	public function s_image_preview( $new_value ) {
 
-		if ( ! in_array( $new_value, [ 'none', 'standard', 'large' ], true ) )
+		if ( ! \in_array( $new_value, [ 'none', 'standard', 'large' ], true ) )
 			$new_value = 'standard';
 
 		return $new_value;
@@ -1854,6 +1860,7 @@ class Sanitize extends Admin_Pages {
 	 *              3. Now no longer (for example) accidentally takes `link` tags when only `li` tags are set for stripping.
 	 *              4. Now performs a separate query for void elements; to prevent regex recursion.
 	 * @since 4.1.0 Now detects nested elements and preserves that content correctly--as if we'd pass through scrupulously beyond infinity.
+	 * @since 4.1.1 Can now replace void elements with spaces when so inclined via the arguments (space vs clear).
 	 * @link https://www.w3schools.com/html/html_blocks.asp
 	 * @link https://html.spec.whatwg.org/multipage/syntax.html#void-elements
 	 *
@@ -1878,9 +1885,9 @@ class Sanitize extends Admin_Pages {
 
 		$default_args = [
 			'space' =>
-				[ 'address', 'article', 'aside', 'blockquote', 'dd', 'div', 'dl', 'dt', 'fieldset', 'figcaption', 'figure', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'header', 'li', 'main', 'nav', 'ol', 'p', 'pre', 'section', 'table', 'tfoot', 'ul' ],
+				[ 'address', 'article', 'aside', 'blockquote', 'br', 'dd', 'div', 'dl', 'dt', 'fieldset', 'figcaption', 'figure', 'footer', 'form', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'header', 'li', 'main', 'nav', 'ol', 'p', 'pre', 'section', 'table', 'tfoot', 'ul' ],
 			'clear' =>
-				[ 'bdo', 'br', 'button', 'canvas', 'code', 'hr', 'iframe', 'input', 'label', 'link', 'noscript', 'meta', 'option', 'samp', 'script', 'select', 'style', 'svg', 'textarea', 'var', 'video' ],
+				[ 'bdo', 'button', 'canvas', 'code', 'hr', 'iframe', 'input', 'label', 'link', 'noscript', 'meta', 'option', 'samp', 'script', 'select', 'style', 'svg', 'textarea', 'var', 'video' ],
 			'strip' => true,
 		];
 
@@ -1913,8 +1920,9 @@ class Sanitize extends Admin_Pages {
 			$_regex = sprintf( '<(%s)\b[^>]*?>', implode( '|', $args[ $type ] ) );
 
 			if ( $void_query ) {
-				$_regex = sprintf( '<(%s)\b[^>]*?>', implode( '|', $void_query ) );
-				$input  = preg_replace( "/$_regex/si", '', $input );
+				$_regex   = sprintf( '<(%s)\b[^>]*?>', implode( '|', $void_query ) );
+				$_replace = 'space' === $type ? ' ' : '';
+				$input    = preg_replace( "/$_regex/si", $_replace, $input );
 			}
 			if ( $fill_query ) {
 				$_regex   = sprintf( '<(%s)\b[^>]*>([^<]*)(<\/\1>)?|(<\/?(?1)>)', implode( '|', $fill_query ) );
@@ -1977,7 +1985,7 @@ class Sanitize extends Admin_Pages {
 		 * TODO Should we even test for this here, or at the image generators' type?
 		 * It seems, however, that all services we want to communicate with ignore these types, anyway.
 		 */
-		if ( in_array(
+		if ( \in_array(
 			strtolower( strtok( pathinfo( $url, PATHINFO_EXTENSION ), '?' ) ),
 			[ 'apng', 'bmp', 'ico', 'cur', 'svg', 'tif', 'tiff' ],
 			true
@@ -2005,7 +2013,7 @@ class Sanitize extends Admin_Pages {
 			$alt = \wp_strip_all_tags( $alt );
 			// 420: https://developer.twitter.com/en/docs/tweets/optimize-with-cards/overview/summary.html
 			// Don't "ai"-trim if under, it's unlikely to always be a sentence.
-			$alt = strlen( $alt ) > 420 ? $this->trim_excerpt( $alt, 0, 420 ) : $alt;
+			$alt = \strlen( $alt ) > 420 ? $this->trim_excerpt( $alt, 0, 420 ) : $alt;
 		}
 
 		return compact( 'url', 'id', 'width', 'height', 'alt' );
@@ -2029,7 +2037,7 @@ class Sanitize extends Admin_Pages {
 
 		$cleaned_details = [];
 
-		// Failsafe. Convert associative detailts to a multidimensional sequential array.
+		// Failsafe. Convert associative details to a multidimensional sequential array.
 		if ( isset( $details_array['url'] ) )
 			$details_array = [ $details_array ];
 
@@ -2063,7 +2071,7 @@ class Sanitize extends Admin_Pages {
 	 */
 	protected function set_and_strlen( &$var, $value = '' ) {
 
-		if ( is_array( $value ) ) {
+		if ( \is_array( $value ) ) {
 			foreach ( $value as $v ) {
 				if ( $this->set_and_strlen( $var, $v ) )
 					return true;
@@ -2071,6 +2079,6 @@ class Sanitize extends Admin_Pages {
 			return false;
 		}
 
-		return is_string( $var ) && strlen( trim( $var ) );
+		return \strlen( $var = trim( $value ) );
 	}
 }

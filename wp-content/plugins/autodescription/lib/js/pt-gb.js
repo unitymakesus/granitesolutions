@@ -81,8 +81,8 @@ window.tsfPTGB = function( $ ) {
 		if ( ! Object.keys( l10n.taxonomies ).length )
 			return;
 
-		let taxonomies = l10n.taxonomies,
-			inputTemplate = wp.template( 'tsf-primary-term-selector' ),
+		let taxonomies       = l10n.taxonomies,
+			inputTemplate    = wp.template( 'tsf-primary-term-selector' ),
 			registeredFields = {};
 
 		const geti18n = ( taxonomy, what ) => what in taxonomies[ taxonomy ].i18n && taxonomies[ taxonomy ].i18n[ what ] || '';
@@ -232,7 +232,7 @@ window.tsfPTGB = function( $ ) {
 
 		class TermSelector extends PrimaryTermSelectorHandler {
 			constructor() {
-				super(...arguments);
+				super( ...arguments );
 				this.onChange = this.onChange.bind( this );
 				this.state = {
 					loading: true,

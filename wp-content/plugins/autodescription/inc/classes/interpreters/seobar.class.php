@@ -23,7 +23,7 @@ namespace The_SEO_Framework\Interpreters;
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-defined( 'THE_SEO_FRAMEWORK_PRESENT' ) or die;
+\defined( 'THE_SEO_FRAMEWORK_PRESENT' ) or die;
 
 /**
  * Interprets the SEO Bar into an HTML item.
@@ -35,7 +35,6 @@ defined( 'THE_SEO_FRAMEWORK_PRESENT' ) or die;
  *         Note that you can't instance this class. Only static methods and properties are accessible.
  */
 final class SeoBar {
-	use \The_SEO_Framework\Traits\Enclose_Stray_Private;
 
 	const STATE_UNDEFINED = 0b0000;
 	const STATE_UNKNOWN   = 0b0001;
@@ -135,11 +134,12 @@ final class SeoBar {
 	 * Passes the SEO Bar item collection by reference.
 	 *
 	 * @since 4.0.0
+	 * @since 4.1.1 Is now static.
 	 * @collector
 	 *
 	 * @return array SEO Bar items. Passed by reference.
 	 */
-	public function &collect_seo_bar_items() {
+	public static function &collect_seo_bar_items() {
 		return static::$items;
 	}
 
@@ -334,7 +334,7 @@ final class SeoBar {
 	 */
 	private function enumerate_assessment_list( array $item ) {
 
-		$count       = count( $item['assess'] );
+		$count       = \count( $item['assess'] );
 		$assessments = [];
 
 		static $gettext = null;

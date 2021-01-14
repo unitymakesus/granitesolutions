@@ -33,7 +33,7 @@
 
 		<div class="fl-settings-form-content">
 			<?php /* translators: %s: docs link */ ?>
-			<p><?php printf( __( 'Enable or disable icon sets using the options below or upload a custom icon set. Instructions on how to generate your own custom icon sets can be read %s.', 'fl-builder' ), sprintf( '<a href="https://kb.wpbeaverbuilder.com/article/110-enable-disable-or-import-new-icon-sets" target="_blank">%s</a>', _x( 'here', 'Link text', 'fl-builder' ) ) ); ?></p>
+			<p><?php printf( __( 'Enable or disable icon sets using the options below or upload a custom icon set. Instructions on how to generate your own custom icon sets can be read %s.', 'fl-builder' ), sprintf( '<a href="https://docs.wpbeaverbuilder.com/beaver-builder/styles/icons/create-and-import-a-custom-icon-set/" target="_blank">%s</a>', _x( 'here', 'Link text', 'fl-builder' ) ) ); ?></p>
 			<p><?php _e( 'If an icon is being used in a supported module its CSS will be enqueued. Deselecting sets here only removes the set from the settings UI.', 'fl-builder' ); ?></p>
 			<?php
 
@@ -67,7 +67,7 @@
 			<?php if ( $fa5_pro_enabled || $legacy ) : ?>
 				<p>
 				<input style="width:300px;" placeholder="https://kit.fontawesome.com/nnnnnn.js" type="text" name="fl-fa-pro-kit" value="<?php echo esc_attr( get_option( '_fl_builder_kit_fa_pro' ) ); ?>" />
-				<br /><?php _e( 'For KIT support enter the kit url here otherwise the Pro CDN will be used.', 'fl-builder' ); ?>
+				<br /><?php _e( 'For KIT support enter the kit URL here otherwise the Pro CDN will be used.', 'fl-builder' ); ?>
 				<br /><br /><strong><?php _e( 'Note: KIT must be set to Webfont and not SVG.', 'fl-builder' ); ?></strong>
 				</p>
 				<p>

@@ -6,7 +6,7 @@
 
 namespace The_SEO_Framework;
 
-defined( 'THE_SEO_FRAMEWORK_PRESENT' ) or die;
+\defined( 'THE_SEO_FRAMEWORK_PRESENT' ) or die;
 
 /**
  * The SEO Framework plugin
@@ -290,7 +290,7 @@ class Term_Data extends Post_Data {
 		// We could test for is_wp_error( $term ), but this is more to the point.
 		if ( empty( $term->term_id ) ) return;
 
-		//* Check again against ambiguous injection...
+		// Check again against ambiguous injection...
 		// Note, however: function wp_update_term() already performs all these checks for us before firing this callback's action.
 		if ( ! \current_user_can( 'edit_term', $term->term_id ) ) return;
 		if ( ! isset( $_POST['_wpnonce'] ) ) return;
@@ -298,6 +298,7 @@ class Term_Data extends Post_Data {
 
 		$data = (array) $_POST['autodescription-meta'];
 
+		// Trim, sanitize, and save the metadata.
 		$this->save_term_meta( $term->term_id, $tt_id, $taxonomy, $data );
 	}
 
@@ -320,7 +321,7 @@ class Term_Data extends Post_Data {
 		// We could test for is_wp_error( $term ), but this is more to the point.
 		if ( empty( $term->term_id ) ) return;
 
-		//* Check again against ambiguous injection...
+		// Check again against ambiguous injection...
 		// Note, however: function wp_ajax_inline_save_tax() already performs all these checks for us before firing this callback's action.
 		if ( ! \current_user_can( 'edit_term', $term->term_id ) ) return;
 		if ( ! \check_ajax_referer( 'taxinlineeditnonce', '_inline_edit', false ) ) return;
@@ -332,6 +333,7 @@ class Term_Data extends Post_Data {
 			(array) $_POST['autodescription-quick']
 		);
 
+		// Trim, sanitize, and save the metadata.
 		$this->save_term_meta( $term->term_id, $tt_id, $taxonomy, $data );
 	}
 
@@ -434,10 +436,10 @@ class Term_Data extends Post_Data {
 	 */
 	public function delete_term_meta( $term_id ) {
 
-		//* If this results in an empty data string, all data has already been removed by WP core.
+		// If this results in an empty data string, all data has already been removed by WP core.
 		$data = \get_term_meta( $term_id, THE_SEO_FRAMEWORK_TERM_OPTIONS, true );
 
-		if ( is_array( $data ) ) {
+		if ( \is_array( $data ) ) {
 			foreach ( $this->get_term_meta_defaults( $term_id ) as $key => $value ) {
 				unset( $data[ $key ] );
 			}

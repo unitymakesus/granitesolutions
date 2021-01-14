@@ -29,7 +29,7 @@ namespace matador;
 			If you haven't asked Bullhorn for API access yet, you will need to. This may require a call-in
 			to sales or support. Since you will be taking the time to get everything set up, make sure you
 			get everything you need, including the four API credentials and your callback or redirect URI
-			whitelisted. To help you with this, feel free to copy-and-paste this email and send it,
+			registered. To help you with this, feel free to copy-and-paste this email and send it,
 			or use it as a script when calling them on the phone.
 			", 'matador-jobs' );
 		?>
@@ -45,8 +45,8 @@ namespace matador;
 	// Translators: ignore the placeholder.
 	$email .= sprintf( __( 'We will be using %1$s with WordPress to integrate data from our Bullhorn account to our website with your API.', 'matador-jobs' ), __( 'Matador Jobs Board', 'matador-jobs' ) ) . ' ';
 	$email .= __( 'Can you please set us up for access?', 'matador-jobs' ) . PHP_EOL . PHP_EOL;
-	$email .= __( 'At the minimum, we will need an API Client ID, API Client Secret ID, API User ID, and API User Password.', 'matador-jobs' ) . ' ';
-	$email .= __( "Please also add these URL's to our API Redirect whitelist too:", 'matador-jobs' ) . PHP_EOL . PHP_EOL;
+	$email .= __( 'At the minimum, we will need an API Client ID, API Client Secret ID, API User ID, API User Password, and server cluster for our account.', 'matador-jobs' ) . ' ';
+	$email .= __( "Also, please also register and allow these following callback URL's:" ) . PHP_EOL . PHP_EOL;
 	$email .= $endpoint . PHP_EOL;
 	$email .= ( false === strpos( $endpoint, 'http:' ) ) ? str_replace( 'https:', 'http:', $endpoint ) : str_replace( 'http:', 'https:', $endpoint ) . PHP_EOL;
 	$email .= PHP_EOL . PHP_EOL;
@@ -62,7 +62,7 @@ namespace matador;
 			<?php
 			esc_html_e( '
 				If you plan to use Matador on both a staging and a production site, you 
-				should ask for both sites to be whitelisted at the same time. It will save
+				should ask for both sites to be registered at the same time. It will save
 				you from delays later on.
 				', 'matador-jobs' );
 			?>

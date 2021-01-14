@@ -143,13 +143,13 @@ window.tsfTitle = function( $ ) {
 	 * @access private
 	 * @return {Element}
 	 */
-	const _getHoverPrefixElement = id => document.getElementById( 'tsf-title-placeholder-prefix_' + id ) || $( '</span>' )[0];
+	const _getHoverPrefixElement = id => document.getElementById( 'tsf-title-placeholder-prefix_' + id ) || document.createElement( 'span' );
 	/**
 	 * @since 4.1.0
 	 * @access private
 	 * @return {Element}
 	 */
-	const _getHoverAdditionsElement = id => document.getElementById( 'tsf-title-placeholder-additions_' + id ) || $( '</span>' )[0];
+	const _getHoverAdditionsElement = id => document.getElementById( 'tsf-title-placeholder-additions_' + id ) || document.createElement( 'span' );
 
 	/**
 	 * Sets input element for all listeners. Must be called prior interacting with this object.
@@ -171,7 +171,7 @@ window.tsfTitle = function( $ ) {
 			prefixPlacement:      l10n.states.prefixPlacement,
 		}
 		_loadTitleActions( element );
-		return titleInputInstances.get( element.id );
+		return getInputElement( element.id );
 	}
 
 	/**
@@ -373,7 +373,7 @@ window.tsfTitle = function( $ ) {
 	 * @access private
 	 *
 	 * @function
-	 * @param {!jQuery.Event} event
+	 * @param {Event} event
 	 * @return {HTMLElement[]}
 	 */
 	const _setReferenceTitle = event => {
@@ -430,18 +430,23 @@ window.tsfTitle = function( $ ) {
 			referenceNaValue = tsf.escapeString( tsf.decodeEntities( tsf.sDoubleSpace( textNa.trim() ) ) );
 
 		references.forEach( reference => {
+			// We require the event below when adjusting some states... Don't uncomment this.
+			// if ( reference.innerHTML === referenceValue ) return;
+
 			reference.innerHTML = referenceValue;
 			// Fires change event. Defered to another thread.
-			setTimeout( () => { $( reference ).change() }, 0 );
+			setTimeout( () => { reference.dispatchEvent( new Event( 'change' ) ) }, 0 );
 		} );
 
 		referencesNa.forEach( referenceNa => {
+			// We require the event below when adjusting some states... Don't uncomment this.
+			// if ( referenceNa.innerHTML === referenceNaValue ) return;
+
 			referenceNa.innerHTML = referenceNaValue;
 			// Fires change event. Defered to another thread.
-			setTimeout( () => { $( referenceNa ).change() }, 0 );
+			setTimeout( () => { referenceNa.dispatchEvent( new Event( 'change' ) ) }, 0 );
 		} );
 	}
-
 
 	/**
 	 * Updates hover additions.
@@ -522,9 +527,10 @@ window.tsfTitle = function( $ ) {
 	 * @since 4.0.0
 	 * @since 4.1.0 Now supports multiple instances.
 	 * @access private
+	 * TODO dejQuery this? We need to use stuff like .cssText then...
 	 *
 	 * @function
-	 * @param {!jQuery.Event} event
+	 * @param {Event} event
 	 * @return {undefined}
 	 */
 	const _updateHoverPlacement = event => {
@@ -535,9 +541,8 @@ window.tsfTitle = function( $ ) {
 		if ( ! hoverAdditionsElement && ! hoverPrefixElement )
 			return;
 
-		let input      = event.target,
-			$input     = $( input ),
-			inputValue = $input.val();
+		const input      = event.target,
+			  inputValue = event.target.value;
 
 		let prefix    = _getPrefixValue( event.target.id ),
 			additions = _getAdditionsValue( event.target.id );
@@ -552,17 +557,19 @@ window.tsfTitle = function( $ ) {
 
 		if ( ! hasPrefixValue && ! hasAdditionsValue ) {
 			//= Both items are emptied through settings.
-			$input.css( 'text-indent', 'initial' );
+			input.style.textIndent = 'initial';
 			return;
 		}
 
 		if ( ! inputValue.length ) {
 			//= Input is emptied.
-			$input.css( 'text-indent', "initial" );
+			input.style.textIndent = 'initial';
 			if ( hoverPrefixElement ) hoverPrefixElement.style.display = 'none';
 			if ( hoverAdditionsElement ) hoverAdditionsElement.style.display = 'none';
 			return;
 		}
+
+		const $input = $( input );
 
 		let outerWidth        = $input.outerWidth( true ),
 			verticalPadding   = ( $input.outerHeight( true ) - $input.height() ) / 2,
@@ -571,7 +578,7 @@ window.tsfTitle = function( $ ) {
 			horizontalPadding = ( outerWidth - $input.innerWidth() ) / 2;
 
 		let offsetPosition = tsf.l10n.states.isRTL ? 'right' : 'left',
-			leftOffset     = ( $input.outerWidth( true ) - $input.width() ) / 2;
+			leftOffset     = ( outerWidth - $input.width() ) / 2;
 
 		let fontStyleCSS = {
 			display:       $input.css( 'display' ),
@@ -586,8 +593,8 @@ window.tsfTitle = function( $ ) {
 			paddingBottom: verticalPadding + 'px',
 		};
 
-		let $prefixElement    = $( hoverPrefixElement ),
-			$additionsElement = $( hoverAdditionsElement );
+		const $prefixElement    = $( hoverPrefixElement ),
+			  $additionsElement = $( hoverAdditionsElement );
 
 		let additionsMaxWidth = 0,
 			additionsOffset   = 0,
@@ -595,20 +602,21 @@ window.tsfTitle = function( $ ) {
 			totalIndent       = 0,
 			prefixMaxWidth    = 0;
 
-		let elipsisWidth = 0; // TODO make this 18? x-button-Browser incompatible & indentation bugs!
+		// TODO make this 18? x-button-Browser incompatible & indentation bugs! We should only calculate this when they show..
+		let elipsisWidth = 0;
 
 		if ( hasPrefixValue ) {
 			$prefixElement.css( fontStyleCSS );
 			$prefixElement.css( { maxWidth: 'initial' } );
 			prefixMaxWidth = hoverPrefixElement.getBoundingClientRect().width;
-			if ( prefixMaxWidth < elipsisWidth )
+			if ( prefixMaxWidth < elipsisWidth ) // useless code since elipsis is always 0.
 				prefixMaxWidth = 0;
 		}
 		if ( hasAdditionsValue ) {
 			let textWidth = 0;
 
 			(() => {
-				let offSetElement  = document.getElementById( 'tsf-title-offset_' + event.target.id ),
+				let offSetElement  = document.getElementById( `tsf-title-offset_${event.target.id}` ),
 					$offsetElement = $( offSetElement );
 				$offsetElement.text( inputValue );
 				$offsetElement.css({
@@ -684,7 +692,7 @@ window.tsfTitle = function( $ ) {
 	 * @access private
 	 *
 	 * @function
-	 * @param {!jQuery.Event} event
+	 * @param {Event} event
 	 * @return {undefined}
 	 */
 	const _updatePlaceholder = event => {
@@ -698,7 +706,7 @@ window.tsfTitle = function( $ ) {
 	 * @access private
 	 *
 	 * @function
-	 * @param {!jQuery.Event} event
+	 * @param {Event} event
 	 * @return {undefined}
 	 */
 	const _updateCounter = event => {
@@ -724,7 +732,7 @@ window.tsfTitle = function( $ ) {
 	 * @access private
 	 *
 	 * @function
-	 * @param {!jQuery.Event} event
+	 * @param {Event} event
 	 * @return {undefined}
 	 */
 	const _updatePixels = event => {
@@ -756,7 +764,8 @@ window.tsfTitle = function( $ ) {
 	 */
 	const triggerInput = id => {
 		if ( id ) {
-			$( titleInputInstances.get( id ) ).trigger( 'input.tsfUpdateTitles' );
+			let el = getInputElement( id );
+			el && el.dispatchEvent( new Event( 'input' ) );
 		} else {
 			// We don't want it to loop infinitely. Check element.id value first.
 			titleInputInstances.forEach( element => element.id && triggerInput( element.id ) );
@@ -776,7 +785,8 @@ window.tsfTitle = function( $ ) {
 	 */
 	const triggerCounter = id => {
 		if ( id ) {
-			$( titleInputInstances.get( id ) ).trigger( 'tsf-update-title-counter' );
+			let el = getInputElement( id );
+			el && el.dispatchEvent( new CustomEvent( 'tsf-update-title-counter' ) );
 		} else {
 			// We don't want it to loop infinitely. Check element.id value first.
 			titleInputInstances.forEach( element => element.id && triggerCounter( element.id ) );
@@ -792,7 +802,7 @@ window.tsfTitle = function( $ ) {
 	 * @uses _onUpdateCounterTrigger
 	 *
 	 * @function
-	 * @param {!jQuery.Event} event
+	 * @param {Event} event
 	 * @return {undefined}
 	 */
 	const _onUpdateTitlesTrigger = event => {
@@ -812,7 +822,7 @@ window.tsfTitle = function( $ ) {
 	 * @see triggerCounter
 	 *
 	 * @function
-	 * @param {!jQuery.Event} event
+	 * @param {Event} event
 	 * @return {undefined}
 	 */
 	const _onUpdateCounterTrigger = event => {
@@ -820,19 +830,21 @@ window.tsfTitle = function( $ ) {
 		_updatePixels( event );
 	}
 
-	let _enqueueTriggerInputBuffer = 0;
+	let _enqueueTriggerInputBuffer = {};
 	/**
 	 * Triggers meta title input.
 	 *
 	 * @since 4.0.0
+	 * @since 4.1.1 Added first parameter, id.
 	 * @access public
 	 *
 	 * @function
+	 * @param {string} id The input ID.
 	 * @return {undefined}
 	 */
-	const enqueueTriggerInput = () => {
-		clearTimeout( _enqueueTriggerInputBuffer );
-		_enqueueTriggerInputBuffer = setTimeout( triggerInput, 10 );
+	const enqueueTriggerInput = id => {
+		( id in _enqueueTriggerInputBuffer ) && clearTimeout( _enqueueTriggerInputBuffer[ id ] );
+		_enqueueTriggerInputBuffer[ id ] = setTimeout( () => triggerInput( id ), 10 );
 	}
 
 	/**
@@ -843,15 +855,18 @@ window.tsfTitle = function( $ ) {
 	 * @access public
 	 *
 	 * @function
-	 * @param {!jQuery.Event}
 	 * @param {string} id The input id. When not set, all inputs will be triggered.
 	 * @return {undefined}
 	 */
 	const triggerUnregisteredInput = id => {
 		if ( 'tsfAys' in window ) {
-			let settingsChangedCache = tsfAys.getChangedState;
+			let wereSettingsChanged = tsfAys.areSettingsChanged();
+
 			triggerInput( id );
-			if ( ! settingsChangedCache ) tsfAys.reset();
+
+			// Only reset if we polluted the change listener, and only if a change wasn't already registered.
+			if ( ! wereSettingsChanged && tsfAys.areSettingsChanged() )
+				tsfAys.reset();
 		} else {
 			triggerInput( id );
 		}
@@ -883,7 +898,7 @@ window.tsfTitle = function( $ ) {
 	 * @access private
 	 *
 	 * @function
-	 * @param {!jQuery.Event} event
+	 * @param {Event} event
 	 * @return {undefined}
 	 */
 	const _focusTitleInput = event => {
@@ -972,6 +987,7 @@ window.tsfTitle = function( $ ) {
 	 * Initializes the title environment.
 	 *
 	 * @since 4.1.0
+	 * @since 4.1.1 No longer passes the event to the enqueueUnregisteredInputTrigger() callback.
 	 * @access private
 	 *
 	 * @function
@@ -984,7 +1000,7 @@ window.tsfTitle = function( $ ) {
 		$( document ).on( 'wp-window-resized', _doResize );
 
 		// When counters are updated, trigger an input; which will reassess them.
-		window.addEventListener( 'tsf-counter-updated', enqueueTriggerInput );
+		window.addEventListener( 'tsf-counter-updated', () => enqueueUnregisteredInputTrigger() );
 	}
 	/**
 	 * Initializes the title input action callbacks.
@@ -1000,9 +1016,8 @@ window.tsfTitle = function( $ ) {
 
 		if ( ! titleInput instanceof Element ) return;
 
-		$( titleInput )
-			.on( 'input.tsfUpdateTitles', _onUpdateTitlesTrigger )
-			.on( 'tsf-update-title-counter', _onUpdateCounterTrigger );
+		titleInput.addEventListener( 'input', _onUpdateTitlesTrigger );
+		titleInput.addEventListener( 'tsf-update-title-counter', _onUpdateCounterTrigger );
 
 		let hoverPrefix    = _getHoverPrefixElement( titleInput.id ),
 			hoverAdditions = _getHoverAdditionsElement( titleInput.id );
@@ -1045,7 +1060,7 @@ window.tsfTitle = function( $ ) {
 		triggerInput,
 		enqueueTriggerInput,
 		triggerUnregisteredInput,
-		enqueueUnregisteredInputTrigger,
+		enqueueUnregisteredInputTrigger, // this should've been enqueueTriggerUnregisteredInput...
 	}, {
 		l10n,
 		untitledTitle,

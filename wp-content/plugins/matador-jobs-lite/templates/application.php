@@ -106,7 +106,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 		<?php do_action( 'matador_application_after_fields' ); ?>
 
-		<input class="matador-submit" name="submit" type="submit"
+        <input id="matador-submit" class="<?php matador_button_classes( 'matador-button', 'primary' ); ?>" name="submit" type="submit"
 		       value="<?php echo esc_attr( apply_filters( 'matador_application_submit_button_text', esc_attr__( 'Submit Application', 'matador-jobs' ) ) ); ?>"/>
 
 		<?php do_action( 'matador_application_after_submit' ); ?>

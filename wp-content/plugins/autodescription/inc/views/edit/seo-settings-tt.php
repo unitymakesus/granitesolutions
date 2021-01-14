@@ -4,13 +4,14 @@
  * @subpackage The_SEO_Framework\Admin\Edit\Term
  */
 
-use The_SEO_Framework\Bridges\TermSettings;
-
-defined( 'THE_SEO_FRAMEWORK_PRESENT' ) and $_this = the_seo_framework_class() and $this instanceof $_this or die;
-
+// phpcs:disable, VariableAnalysis.CodeAnalysis.VariableAnalysis.UndefinedVariable -- includes.
 // phpcs:disable, WordPress.WP.GlobalVariablesOverride -- This isn't the global scope.
 
-//* Fetch Term ID and taxonomy.
+use The_SEO_Framework\Bridges\TermSettings;
+
+defined( 'THE_SEO_FRAMEWORK_PRESENT' ) and the_seo_framework()->_verify_include_secret( $_secret ) or die;
+
+// Fetch Term ID and taxonomy.
 $term_id = $term->term_id;
 $meta    = $this->get_term_meta( $term_id );
 
@@ -45,7 +46,7 @@ $image_details     = current( $this->get_generated_image_details( $_generator_ar
 $image_placeholder = isset( $image_details['url'] ) ? $image_details['url'] : '';
 
 $canonical_placeholder = $this->create_canonical_url( $_generator_args ); // implies get_custom_field = false
-$robots_defaults       = $this->robots_meta( $_generator_args, The_SEO_Framework\ROBOTS_IGNORE_PROTECTION | The_SEO_Framework\ROBOTS_IGNORE_SETTINGS );
+$robots_defaults       = $this->robots_meta( $_generator_args, The_SEO_Framework\ROBOTS_IGNORE_SETTINGS );
 
 // TODO reintroduce the info blocks, and place the labels at the left, instead??
 $robots_settings = [
@@ -341,6 +342,11 @@ $robots_settings = [
 						],
 						'default' => $_s['_value'],
 						'info'    => $_s['_info'],
+						'data'    => [
+							'defaultUnprotected' => $_s['_default'],
+							/* translators: %s = default option value */
+							'defaultI18n'        => __( 'Default (%s)', 'autodescription' ),
+						],
 					] );
 					// phpcs:enable, WordPress.Security.EscapeOutput
 				endforeach;

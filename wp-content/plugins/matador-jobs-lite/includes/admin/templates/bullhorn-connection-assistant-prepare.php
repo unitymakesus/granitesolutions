@@ -44,7 +44,7 @@ namespace matador;
 		<li><?php esc_html_e( 'An API Client Secret', 'matador-jobs' ); ?></li>
 		<li><?php esc_html_e( 'An API User ID', 'matador-jobs' ); ?></li>
 		<li><?php esc_html_e( 'An API User Password', 'matador-jobs' ); ?></li>
-		<li><?php esc_html_e( 'Your Matador callback or redirect URI whitelisted with Bullhorn.', 'matador-jobs' ); ?></li>
+		<li><?php esc_html_e( 'The Matador Jobs callback URI registered to your Allowed API Redirect URI list at Bullhorn.', 'matador-jobs' ); ?></li>
 	</ul>
 
 	<p>

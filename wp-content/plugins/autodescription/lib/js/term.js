@@ -61,24 +61,72 @@ window.tsfTerm = function( $ ) {
 	 * Initializes Canonical URL meta input listeners.
 	 *
 	 * @since 4.0.0
+	 * @since 4.1.2 Changed name from _initCanonicalInput
 	 * @access private
 	 *
 	 * @function
 	 * @return {undefined}
 	 */
-	const _initCanonicalInput = () => {
+	const _initVisibilityListeners = () => {
+		const indexSelect = document.getElementById( 'autodescription-meta[noindex]' );
 
-		// TODO, listen to slug.
+		let canonicalUrl    = '',
+			showcanonicalPh = true;
 
-		// let canonicalInput = $( '#autodescription_canonical' );
+		/**
+		 * @since 4.1.2
+		 *
+		 * @function
+		 * @param {string} link
+		 * @return {undefined}
+		 */
+		const updateCanonicalPlaceholder = () => {
+			let canonicalInput = document.getElementById( 'autodescription-meta[canonical]' );
 
-		// if ( ! canonicalInput ) return;
+			if ( ! canonicalInput ) return;
 
-		// const updateCanonical = ( link ) => {
-		// 	canonicalInput.attr( 'placeholder', link );
-		// }
+			// Link might not've been updated (yet). Fill it in with PHP-supplied value (if any).
+			canonicalUrl = canonicalUrl || canonicalInput.placeholder;
 
-		// $( document ).on( 'tsf-updated-gutenberg-link', ( event, link ) => updateCanonical( link ) );
+			if ( ! showcanonicalPh ) {
+				canonicalInput.placeholder = '';
+			} else {
+				canonicalInput.placeholder = canonicalUrl;
+			}
+		}
+
+		/**
+		 * @since 4.1.2
+		 *
+		 * @function
+		 * @param {Number} value
+		 * @return {undefined}
+		 */
+		const setRobotsIndexingState = value => {
+			let type = '';
+
+			switch ( +value ) {
+				case 0: // default, unset since unknown.
+					type = indexSelect.dataset.defaultUnprotected;
+					break;
+				case -1: // index
+					type = 'index';
+					break;
+				case 1: // noindex
+					type = 'noindex';
+					break;
+			}
+			if ( 'noindex' === type ) {
+				showcanonicalPh = false;
+			} else {
+				showcanonicalPh = true;
+			}
+
+			updateCanonicalPlaceholder();
+		}
+		indexSelect.addEventListener( 'change', event => setRobotsIndexingState( event.target.value ) );
+
+		setRobotsIndexingState( indexSelect.value );
 	}
 
 	/**
@@ -116,12 +164,12 @@ window.tsfTerm = function( $ ) {
 		 * Updates title additions, based on singular settings change.
 		 *
 		 * @function
-		 * @param {!jQuery.Event} event
+		 * @param {Event} event
 		 * @return {undefined}
 		 */
-		const updateTitleAdditions = ( event ) => {
+		const updateTitleAdditions = event => {
 			let prevAddAdditions = tsfTitle.getStateOf( _titleId, 'addAdditions' ),
-				addAdditions     = ! $( event.target ).is( ':checked' );
+				addAdditions     = ! event.target.checked;
 
 			if ( l10n.params.additionsForcedDisabled ) {
 				addAdditions = false;
@@ -131,9 +179,10 @@ window.tsfTerm = function( $ ) {
 				tsfTitle.updateStateOf( _titleId, 'addAdditions', addAdditions );
 			}
 		}
-		$( blogNameTrigger )
-			.on( 'change', updateTitleAdditions )
-			.trigger( 'change' );
+		if ( blogNameTrigger ) {
+			blogNameTrigger.addEventListener( 'change', updateTitleAdditions );
+			blogNameTrigger.dispatchEvent( new Event( 'change' ) );
+		}
 
 		//!? Disabled as we don't add prefixes when using a custom title:
 		//
@@ -181,7 +230,8 @@ window.tsfTerm = function( $ ) {
 
 			tsfTitle.updateStateOf( _titleId, 'defaultTitle', defaultTitle );
 		}
-		$( '#edittag #name' ).on( 'input', event => updateDefaultTitle( event.target.value ) );
+		const termNameInput = document.querySelector( '#edittag #name' );
+		termNameInput && termNameInput.addEventListener( 'input', event => updateDefaultTitle( event.target.value ) );
 
 		tsfTitle.enqueueUnregisteredInputTrigger( _titleId );
 	}
@@ -222,7 +272,7 @@ window.tsfTerm = function( $ ) {
 	 * @return {undefined}
 	 */
 	const _loadSettings = () => {
-		_initCanonicalInput();
+		_initVisibilityListeners();
 		_initTitleListeners();
 		_initDescriptionListeners();
 	}

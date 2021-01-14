@@ -6,13 +6,13 @@
  * @author      Jeremy Scott, Paul Bearne
  * @copyright   2017 Matador Software, LLC
  * @license     GPL-3.0+
- * @version     3.5.6
+ * @version     3.6.4
  *
  * @wordpress-plugin
  * Plugin Name: Matador Jobs Lite
  * Plugin URI:  https://matadorjobs.com
  * Description: Connect your Bullhorn Account with your WordPress site and display your jobs on your WordPress site.
- * Version:     3.5.6
+ * Version:     3.6.4
  * Author:      Jeremy Scott, Paul Bearne, Matador Software, LLC
  * Author URI:  https://matadorjobs.com
  * Text Domain: matador-jobs

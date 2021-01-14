@@ -16,7 +16,7 @@ define( 'SECSAFE_DIR_INCLUDES', SECSAFE_DIR_CORE . '/includes' );
 // Load Yoda Before We Translate
 require_once SECSAFE_DIR_INCLUDES . '/Yoda.php';
 Yoda::set_constants();
-define( 'SECSAFE_VERSION', '2.3.1' );
+define( 'SECSAFE_VERSION', '2.3.2' );
 define( 'SECSAFE_DESC', __( 'Firewall, Security Hardening, Auditing & Privacy', SECSAFE_SLUG ) );
 /**
  * WP Security Safe Plugin.
@@ -27,7 +27,7 @@ define( 'SECSAFE_DESC', __( 'Firewall, Security Hardening, Auditing & Privacy', 
  *
  * @wordpress-plugin
  * Plugin Name: WP Security Safe
- * Version:     2.3.1
+ * Version:     2.3.2
  * Plugin URI: https://sovstack.com/security-safe
  * Description: Firewall, Security Hardening, Auditing & Privacy
  * Author: Sovereign Stack, LLC

@@ -6,7 +6,7 @@
 
 namespace The_SEO_Framework;
 
-defined( 'THE_SEO_FRAMEWORK_PRESENT' ) or die;
+\defined( 'THE_SEO_FRAMEWORK_PRESENT' ) or die;
 
 /**
  * The SEO Framework plugin
@@ -78,8 +78,8 @@ class Site_Options extends Sanitize {
 				'alter_archive_query_type' => 'in_query', // Archive query type.
 				'alter_search_query_type'  => 'in_query', // Search query type.
 
-				'cache_sitemap'          => 1, // Sitemap transient cache.
-				'cache_object'           => 1, // Object caching.
+				'cache_sitemap' => 1, // Sitemap transient cache.
+				'cache_object'  => 1, // Object caching.
 
 				// General. Layout.
 				'display_seo_bar_tables'  => 1, // SEO Bar post-list tables.
@@ -93,7 +93,7 @@ class Site_Options extends Sanitize {
 				'canonical_scheme' => 'automatic', // Canonical URL scheme.
 
 				// General. Timestamps.
-				'timestamps_format'   => '1', // Timestamp format, numeric string
+				'timestamps_format' => '1', // Timestamp format, numeric string
 
 				// General. Exclusions.
 				'disabled_post_types' => [], // Post Type support.
@@ -107,13 +107,13 @@ class Site_Options extends Sanitize {
 				'title_strip_tags'    => 1,         // Apply 'strip tags' on titles.
 
 				// Description.
-				'auto_description'      => 1, // Enables auto description.
+				'auto_description' => 1, // Enables auto description.
 
 				// Robots index.
-				'author_noindex'     => 0, // Author Archive robots noindex
-				'date_noindex'       => 1, // Date Archive robots noindex
-				'search_noindex'     => 1, // Search Page robots noindex
-				'site_noindex'       => 0, // Site Page robots noindex
+				'author_noindex' => 0, // Author Archive robots noindex
+				'date_noindex'   => 1, // Date Archive robots noindex
+				'search_noindex' => 1, // Search Page robots noindex
+				'site_noindex'   => 0, // Site Page robots noindex
 				$this->get_robots_post_type_option_id( 'noindex' ) => [
 					'attachment' => 1,
 				], // Post Type support.
@@ -122,18 +122,18 @@ class Site_Options extends Sanitize {
 				], // Taxonomy support.
 
 				// Robots follow.
-				'author_nofollow'     => 0, // Author Archive robots nofollow
-				'date_nofollow'       => 0, // Date Archive robots nofollow
-				'search_nofollow'     => 0, // Search Page robots nofollow
-				'site_nofollow'       => 0, // Site Page robots nofollow
+				'author_nofollow' => 0, // Author Archive robots nofollow
+				'date_nofollow'   => 0, // Date Archive robots nofollow
+				'search_nofollow' => 0, // Search Page robots nofollow
+				'site_nofollow'   => 0, // Site Page robots nofollow
 				$this->get_robots_post_type_option_id( 'nofollow' ) => [], // Post Type support.
 				$this->get_robots_taxonomy_option_id( 'nofollow' ) => [], // Taxonomy support.
 
 				// Robots archive.
-				'author_noarchive'     => 0, // Author Archive robots noarchive
-				'date_noarchive'       => 0, // Date Archive robots noarchive
-				'search_noarchive'     => 0, // Search Page robots noarchive
-				'site_noarchive'       => 0, // Site Page robots noarchive
+				'author_noarchive' => 0, // Author Archive robots noarchive
+				'date_noarchive'   => 0, // Date Archive robots noarchive
+				'search_noarchive' => 0, // Search Page robots noarchive
+				'site_noarchive'   => 0, // Site Page robots noarchive
 				$this->get_robots_post_type_option_id( 'noarchive' ) => [], // Post Type support.
 				$this->get_robots_taxonomy_option_id( 'noarchive' ) => [], // Taxonomy support.
 
@@ -178,7 +178,7 @@ class Site_Options extends Sanitize {
 				'prev_next_frontpage' => 1, // Adds next/prev tags
 
 				// Facebook.
-				'facebook_publisher' => '', // Facebook Business Url
+				'facebook_publisher' => '', // Facebook Business URL
 				'facebook_author'    => '', // Facebook User URl
 				'facebook_appid'     => '', // Facebook App ID
 
@@ -192,19 +192,21 @@ class Site_Options extends Sanitize {
 				'twitter_creator' => '', // Twitter user @username
 
 				// oEmbed.
-				'oembed_remove_author' => 0, // Remove author from oEmbeds
+				'oembed_use_og_title'     => 0, // Use custom meta titles in oEmbeds
+				'oembed_use_social_image' => 1, // Use social images in oEmbeds
+				'oembed_remove_author'    => 0, // Remove author from oEmbeds
 
 				// Social on/off.
-				'og_tags'         => 1, // Output of Open Graph meta tags
-				'facebook_tags'   => 1, // Output the Facebook meta tags
-				'twitter_tags'    => 1, // Output the Twitter meta tags
-				'oembed_scripts'  => 1, // Enable WordPress's oEmbed scripts
+				'og_tags'        => 1, // Output of Open Graph meta tags
+				'facebook_tags'  => 1, // Output the Facebook meta tags
+				'twitter_tags'   => 1, // Output the Twitter meta tags
+				'oembed_scripts' => 1, // Enable WordPress's oEmbed scripts
 
 				// Social title settings.
 				'social_title_rem_additions' => 1, // Remove social title additions
 
 				// Social image settings.
-				'multi_og_image' => 1, // Allow multiple images to be generated
+				'multi_og_image' => 0, // Allow multiple images to be generated
 
 				// Theme color settings.
 				'theme_color' => '', // Theme color metatag, default none
@@ -244,17 +246,18 @@ class Site_Options extends Sanitize {
 				'knowledge_tumblr'     => '', // Tumblr Account
 
 				// Sitemaps.
-				'sitemaps_output'      => 1,    // Output of sitemap
-				'sitemap_query_limit'  => 3000, // Sitemap post limit.
+				'sitemaps_output'     => 1,    // Output of sitemap
+				'sitemap_query_limit' => 3000, // Sitemap post limit.
 
-				'sitemaps_modified'    => 1, // Add sitemap modified time.
-				'sitemaps_priority'    => 0, // Add sitemap priorities.
+				'sitemaps_modified' => 1, // Add sitemap modified time.
+				'sitemaps_priority' => 0, // Add sitemap priorities.
 
-				'sitemaps_robots'      => 1, // Add sitemap location to robots.txt
+				'sitemaps_robots' => 1, // Add sitemap location to robots.txt
 
-				'ping_use_cron'        => 1, // Ping using CRON.
-				'ping_google'          => 1, // Ping Google
-				'ping_bing'            => 1, // Ping Bing
+				'ping_use_cron'           => 1, // Ping using cron
+				'ping_google'             => 1, // Ping Google
+				'ping_bing'               => 1, // Ping Bing
+				'ping_use_cron_prerender' => 0, // Sitemap cron-ping prerender
 
 				'sitemap_styles'       => 1,        // Whether to style the sitemap
 				'sitemap_logo'         => 1,        // Whether to add logo to sitemap
@@ -283,6 +286,7 @@ class Site_Options extends Sanitize {
 	 * @since 2.9.0 Removed all non-warned settings.
 	 * @since 3.1.0 Now applies the "the_seo_framework_warned_site_options" filter.
 	 * @since 4.1.0 Added robots' post type setting warnings.
+	 * @since 4.1.2 Added `ping_use_cron_prerender`.
 	 *
 	 * @return array $options.
 	 */
@@ -302,11 +306,11 @@ class Site_Options extends Sanitize {
 		return (array) \apply_filters(
 			'the_seo_framework_warned_site_options',
 			[
-				'title_rem_additions' => 1, // Title remove additions.
-				'site_noindex'        => 1, // Site Page robots noindex
-				'site_nofollow'       => 1, // Site Page robots nofollow
-				'homepage_noindex'    => 1, // Homepage robots noindex
-				'homepage_nofollow'   => 1, // Homepage robots noarchive
+				'title_rem_additions'     => 1, // Title remove additions.
+				'site_noindex'            => 1, // Site Page robots noindex.
+				'site_nofollow'           => 1, // Site Page robots nofollow.
+				'homepage_noindex'        => 1, // Homepage robots noindex.
+				'homepage_nofollow'       => 1, // Homepage robots noarchive.
 				$this->get_robots_post_type_option_id( 'noindex' ) => [
 					'post' => 1,
 					'page' => 1,
@@ -315,6 +319,7 @@ class Site_Options extends Sanitize {
 					'post' => 1,
 					'page' => 1,
 				],
+				'ping_use_cron_prerender' => 1, // Sitemap cron-ping prerender.
 			]
 		);
 	}
@@ -329,7 +334,7 @@ class Site_Options extends Sanitize {
 	 *
 	 * @param string  $key       Option name.
 	 * @param boolean $use_cache Optional. Whether to use the cache value or not. Defaults to true.
-	 * @return mixed The value of this $key in the database.
+	 * @return mixed The value of this $key in the database. Empty string when not set.
 	 */
 	public function get_option( $key, $use_cache = true ) {
 
@@ -343,6 +348,7 @@ class Site_Options extends Sanitize {
 		if ( ! isset( $cache[ THE_SEO_FRAMEWORK_SITE_OPTIONS ] ) )
 			$cache[ THE_SEO_FRAMEWORK_SITE_OPTIONS ] = \stripslashes_deep( $this->get_all_options( THE_SEO_FRAMEWORK_SITE_OPTIONS ) );
 
+		// TODO fall back to default if not registered? This means we no longer have to rely on upgrading. Or, array merge (recursive) at get_all_options?
 		return isset( $cache[ THE_SEO_FRAMEWORK_SITE_OPTIONS ][ $key ] ) ? $cache[ THE_SEO_FRAMEWORK_SITE_OPTIONS ][ $key ] : '';
 	}
 
@@ -414,10 +420,10 @@ class Site_Options extends Sanitize {
 		\get_option( THE_SEO_FRAMEWORK_SITE_OPTIONS )
 			or \add_option( THE_SEO_FRAMEWORK_SITE_OPTIONS, $this->get_default_site_options() );
 
-		//* Check whether the Options Reset initialization has been added.
+		// Check whether the Options Reset initialization has been added.
 		$this->check_options_reset();
 
-		//* Handle post-update actions. Must be initialized on admin_init and is initalized on options.php.
+		// Handle post-update actions. Must be initialized on admin_init and is initalized on options.php.
 		if ( 'options.php' === $GLOBALS['pagenow'] )
 			$this->process_settings_submission();
 	}
@@ -555,7 +561,7 @@ class Site_Options extends Sanitize {
 		if ( $depr )
 			$this->_doing_it_wrong( __METHOD__, 'The second parameter is deprecated.', '3.1.0' );
 
-		//* If we need to bypass the cache
+		// If we need to bypass the cache
 		if ( ! $use_cache ) {
 			$defaults = $this->get_default_site_options();
 			return isset( $defaults[ $key ] ) ? \stripslashes_deep( $defaults[ $key ] ) : null;
@@ -590,7 +596,7 @@ class Site_Options extends Sanitize {
 		if ( $depr )
 			$this->_doing_it_wrong( __METHOD__, 'The second parameter is deprecated.', '3.1.0' );
 
-		//* If we need to bypass the cache
+		// If we need to bypass the cache
 		if ( ! $use_cache ) {
 			$warned = $this->get_warned_site_options();
 			return $this->s_one_zero( ! empty( $warned[ $key ] ) );
@@ -613,7 +619,7 @@ class Site_Options extends Sanitize {
 	 * @return string
 	 */
 	public function get_robots_post_type_option_id( $type ) {
-		return $this->s_field_id( $type . '_post_types' );
+		return $this->s_field_id( "{$type}_post_types" );
 	}
 
 	/**
@@ -625,13 +631,15 @@ class Site_Options extends Sanitize {
 	 * @return string
 	 */
 	public function get_robots_taxonomy_option_id( $type ) {
-		return $this->s_field_id( $type . '_taxonomies' );
+		return $this->s_field_id( "{$type}_taxonomies" );
 	}
 
 	/**
 	 * Returns Facebook locales array values.
 	 *
 	 * @since 2.5.2
+	 * TODO collapse this with language_keys(), ll_CC => ll?, return array_keys here, array_values there?
+	 *
 	 * @see https://www.facebook.com/translations/FacebookLocales.xml (deprecated)
 	 * @see https://wordpress.org/support/topic/oglocale-problem/#post-11456346
 	 * mirror: http://web.archive.org/web/20190601043836/https://wordpress.org/support/topic/oglocale-problem/

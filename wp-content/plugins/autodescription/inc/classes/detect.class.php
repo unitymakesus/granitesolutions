@@ -6,7 +6,7 @@
 
 namespace The_SEO_Framework;
 
-defined( 'THE_SEO_FRAMEWORK_PRESENT' ) or die;
+\defined( 'THE_SEO_FRAMEWORK_PRESENT' ) or die;
 
 /**
  * The SEO Framework plugin
@@ -158,34 +158,35 @@ class Detect extends Render {
 			}
 		}
 
-		//* Check for constants
+		// Check for constants
 		if ( isset( $plugins['constants'] ) ) {
 			foreach ( $plugins['constants'] as $name ) {
-				if ( defined( $name ) ) {
+				if ( \defined( $name ) ) {
 					return true;
 				}
 			}
 		}
 
-		//* Check for functions
+		// Check for functions
 		if ( isset( $plugins['functions'] ) ) {
 			foreach ( $plugins['functions'] as $name ) {
-				if ( function_exists( $name ) ) {
+				if ( \function_exists( $name ) ) {
 					return true;
 				}
 			}
 		}
 
-		//* Check for classes
+		// Check for classes
 		if ( isset( $plugins['classes'] ) ) {
 			foreach ( $plugins['classes'] as $name ) {
+				// phpcs:ignore, TSF.Performance.Functions.PHP -- we don't autoload.
 				if ( class_exists( $name, false ) ) {
 					return true;
 				}
 			}
 		}
 
-		//* No globals, constant, function, or class found to exist
+		// No globals, constant, function, or class found to exist
 		return false;
 	}
 
@@ -210,18 +211,18 @@ class Detect extends Render {
 
 		$mapped = [];
 
-		//* Prepare multidimensional array for cache.
+		// Prepare multidimensional array for cache.
 		foreach ( $plugins as $key => $func ) {
-			if ( ! is_array( $func ) )
+			if ( ! \is_array( $func ) )
 				return false; // doing it wrong...
 
-			//* Sort alphanumeric by value, put values back after sorting.
+			// Sort alphanumeric by value, put values back after sorting.
 			// TODO Use asort or usort instead???
 			$func = array_flip( $func );
 			ksort( $func );
 			$func = array_flip( $func );
 
-			//* Glue with underscore and space for debugging purposes.
+			// Glue with underscore and space for debugging purposes.
 			$mapped[ $key ] = $key . '_' . implode( ' ', $func );
 		}
 
@@ -251,7 +252,7 @@ class Detect extends Render {
 	 */
 	public function detect_plugin_multi( array $plugins ) {
 
-		//* Check for globals
+		// Check for globals
 		if ( isset( $plugins['globals'] ) ) {
 			foreach ( $plugins['globals'] as $name ) {
 				if ( ! isset( $GLOBALS[ $name ] ) ) {
@@ -260,34 +261,35 @@ class Detect extends Render {
 			}
 		}
 
-		//* Check for constants
+		// Check for constants
 		if ( isset( $plugins['constants'] ) ) {
 			foreach ( $plugins['constants'] as $name ) {
-				if ( ! defined( $name ) ) {
+				if ( ! \defined( $name ) ) {
 					return false;
 				}
 			}
 		}
 
-		//* Check for functions
+		// Check for functions
 		if ( isset( $plugins['functions'] ) ) {
 			foreach ( $plugins['functions'] as $name ) {
-				if ( ! function_exists( $name ) ) {
+				if ( ! \function_exists( $name ) ) {
 					return false;
 				}
 			}
 		}
 
-		//* Check for classes
+		// Check for classes
 		if ( isset( $plugins['classes'] ) ) {
 			foreach ( $plugins['classes'] as $name ) {
+				// phpcs:ignore, TSF.Performance.Functions.PHP -- we don't autoload.
 				if ( ! class_exists( $name, false ) ) {
 					return false;
 				}
 			}
 		}
 
-		//* All classes, functions and constant have been found to exist
+		// All classes, functions and constant have been found to exist
 		return true;
 	}
 
@@ -309,11 +311,11 @@ class Detect extends Render {
 		$theme_parent = strtolower( $wp_get_theme->get( 'Template' ) );
 		$theme_name   = strtolower( $wp_get_theme->get( 'Name' ) );
 
-		if ( is_string( $themes ) ) {
+		if ( \is_string( $themes ) ) {
 			$themes = strtolower( $themes );
 			if ( $themes === $theme_parent || $themes === $theme_name )
 				return true;
-		} elseif ( is_array( $themes ) ) {
+		} elseif ( \is_array( $themes ) ) {
 			foreach ( $themes as $theme ) {
 				$theme = strtolower( $theme );
 				if ( $theme === $theme_parent || $theme === $theme_name ) {
@@ -348,7 +350,7 @@ class Detect extends Render {
 			$conflicting_plugins = $this->get_conflicting_plugins( 'seo_tools' );
 
 			foreach ( $conflicting_plugins as $plugin_name => $plugin ) {
-				if ( in_array( $plugin, $active_plugins, true ) ) {
+				if ( \in_array( $plugin, $active_plugins, true ) ) {
 					/**
 					 * @since 2.6.1
 					 * @since 3.1.0 Added second and third parameters.
@@ -389,7 +391,7 @@ class Detect extends Render {
 		if ( isset( $detected ) )
 			return $detected;
 
-		//* Detect SEO plugins beforehand.
+		// Detect SEO plugins beforehand.
 		if ( $this->detect_seo_plugins() )
 			return $detected = true;
 
@@ -399,7 +401,7 @@ class Detect extends Render {
 			$conflicting_plugins = $this->get_conflicting_plugins( 'open_graph' );
 
 			foreach ( $conflicting_plugins as $plugin_name => $plugin ) {
-				if ( in_array( $plugin, $active_plugins, true ) ) {
+				if ( \in_array( $plugin, $active_plugins, true ) ) {
 					/**
 					 * @since 2.6.1
 					 * @since 3.1.0 Added second and third parameters.
@@ -439,7 +441,7 @@ class Detect extends Render {
 		if ( isset( $detected ) )
 			return $detected;
 
-		//* Detect SEO plugins beforehand.
+		// Detect SEO plugins beforehand.
 		if ( $this->detect_seo_plugins() )
 			return $detected = true;
 
@@ -449,7 +451,7 @@ class Detect extends Render {
 			$conflicting_plugins = $this->get_conflicting_plugins( 'twitter_card' );
 
 			foreach ( $conflicting_plugins as $plugin_name => $plugin ) {
-				if ( in_array( $plugin, $active_plugins, true ) ) {
+				if ( \in_array( $plugin, $active_plugins, true ) ) {
 					/**
 					 * @since 2.6.1
 					 * @param bool   $detected    Whether the plugin should be detected.
@@ -505,7 +507,7 @@ class Detect extends Render {
 		if ( isset( $detected ) )
 			return $detected;
 
-		//* Detect SEO plugins beforehand.
+		// Detect SEO plugins beforehand.
 		if ( $this->detect_seo_plugins() )
 			return $detected = true;
 
@@ -515,7 +517,7 @@ class Detect extends Render {
 			$conflicting_plugins = $this->get_conflicting_plugins( 'sitemaps' );
 
 			foreach ( $conflicting_plugins as $plugin_name => $plugin ) {
-				if ( in_array( $plugin, $active_plugins, true ) ) {
+				if ( \in_array( $plugin, $active_plugins, true ) ) {
 					/**
 					 * @since 2.6.1
 					 * @param bool   $detected    Whether the plugin should be detected.
@@ -536,6 +538,33 @@ class Detect extends Render {
 		}
 
 		return $detected = (bool) $detected;
+	}
+
+	/**
+	 * Tells whether WP 5.5 Core Sitemaps are used.
+	 * Memoizes the return value.
+	 *
+	 * @since 4.1.2
+	 *
+	 * @return bool
+	 */
+	public function use_core_sitemaps() {
+		static $use;
+
+		if ( isset( $use ) ) return $use;
+
+		if ( $this->get_option( 'sitemaps_output' ) )
+			return $use = false;
+
+		if ( \function_exists( '\\wp_sitemaps_get_server' ) ) {
+			$wp_sitemaps_server = \wp_sitemaps_get_server();
+
+			return $use =
+				method_exists( $wp_sitemaps_server, 'sitemaps_enabled' )
+				&& $wp_sitemaps_server->sitemaps_enabled();
+		}
+
+		return $use = false;
 	}
 
 	/**
@@ -627,6 +656,7 @@ class Detect extends Render {
 	 * @since 3.1.0 Removed Jetpack's sitemap check -- it's no longer valid.
 	 * @since 4.0.0 : 1. Now uses has_robots_txt()
 	 *              : 2. Now uses the get_robots_txt_url() to determine validity.
+	 * FIXME This method also checks for file existence (and location...), but is only used when the file definitely doesn't exist.
 	 *
 	 * @param bool $check_option Whether to check for sitemap option.
 	 * @return bool True when no conflicting plugins are detected or when The SEO Framework's Sitemaps are output.
@@ -639,7 +669,7 @@ class Detect extends Render {
 				return false;
 		}
 
-		return ! $this->has_robots_txt() && strlen( $this->get_robots_txt_url() );
+		return ! $this->has_robots_txt() && \strlen( $this->get_robots_txt_url() );
 	}
 
 	/**
@@ -659,11 +689,12 @@ class Detect extends Render {
 			return $has_robots;
 
 		// Ensure get_home_path() is declared.
-		if ( ! function_exists( '\\get_home_path' ) )
+		if ( ! \function_exists( '\\get_home_path' ) )
 			require_once ABSPATH . 'wp-admin/includes/file.php';
 
 		$path = \get_home_path() . 'robots.txt';
 
+		// phpcs:ignore, TSF.Performance.Functions.PHP -- we use path, not URL.
 		return $has_robots = file_exists( $path );
 	}
 
@@ -684,11 +715,12 @@ class Detect extends Render {
 			return $has_map;
 
 		// Ensure get_home_path() is declared.
-		if ( ! function_exists( '\\get_home_path' ) )
+		if ( ! \function_exists( '\\get_home_path' ) )
 			require_once ABSPATH . 'wp-admin/includes/file.php';
 
 		$path = \get_home_path() . 'sitemap.xml';
 
+		// phpcs:ignore, TSF.Performance.Functions.PHP -- we use path, not URL.
 		return $has_map = file_exists( $path );
 	}
 
@@ -727,6 +759,7 @@ class Detect extends Render {
 	 *
 	 * @since 2.2.5
 	 * @since 3.1.0 Removed caching
+	 * @TODO deprecate me.
 	 *
 	 * @param string|array required $features The features to check for.
 	 * @return bool theme support.
@@ -958,7 +991,7 @@ class Detect extends Render {
 			[
 				$post_type
 					&& ! $this->is_post_type_disabled( $post_type )
-					&& in_array( $post_type, $this->get_public_post_types(), true ),
+					&& \in_array( $post_type, $this->get_public_post_types(), true ),
 				$post_type,
 			]
 		);
@@ -990,7 +1023,7 @@ class Detect extends Render {
 			[
 				$taxonomy
 					&& ! $this->is_taxonomy_disabled( $taxonomy )
-					&& in_array( $taxonomy, $this->get_public_taxonomies(), true ),
+					&& \in_array( $taxonomy, $this->get_public_taxonomies(), true ),
 				$taxonomy,
 			]
 		);
@@ -1109,7 +1142,7 @@ class Detect extends Render {
 			array_unique(
 				array_merge(
 					$this->get_forced_supported_taxonomies(),
-					//? array_values() because get_post_types() gives a sequential array.
+					//? array_values() because get_taxonomies() gives a sequential array.
 					array_values( (array) \get_taxonomies( [
 						'public'   => true,
 						'_builtin' => false,
@@ -1233,10 +1266,10 @@ class Detect extends Render {
 	 * @return bool
 	 */
 	public function is_gutenberg_page() {
-		if ( function_exists( '\\use_block_editor_for_post' ) )
+		if ( \function_exists( '\\use_block_editor_for_post' ) )
 			return ! empty( $GLOBALS['post'] ) && \use_block_editor_for_post( $GLOBALS['post'] );
 
-		if ( function_exists( '\\is_gutenberg_page' ) )
+		if ( \function_exists( '\\is_gutenberg_page' ) )
 			return \is_gutenberg_page();
 
 		return false;

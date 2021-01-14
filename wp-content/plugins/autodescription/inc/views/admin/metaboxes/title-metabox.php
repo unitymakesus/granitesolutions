@@ -4,13 +4,14 @@
  * @subpackage The_SEO_Framework\Admin\Settings
  */
 
-use The_SEO_Framework\Bridges\SeoSettings;
-
-defined( 'THE_SEO_FRAMEWORK_PRESENT' ) and $_this = the_seo_framework_class() and $this instanceof $_this or die;
-
+// phpcs:disable, VariableAnalysis.CodeAnalysis.VariableAnalysis.UndefinedVariable -- includes.
 // phpcs:disable, WordPress.WP.GlobalVariablesOverride -- This isn't the global scope.
 
-//* Fetch the required instance within this file.
+use The_SEO_Framework\Bridges\SeoSettings;
+
+defined( 'THE_SEO_FRAMEWORK_PRESENT' ) and the_seo_framework()->_verify_include_secret( $_secret ) or die;
+
+// Fetch the required instance within this file.
 $instance = $this->get_view_instance( 'the_seo_framework_title_metabox', $instance );
 
 switch ( $instance ) :
@@ -26,7 +27,7 @@ switch ( $instance ) :
 		$latest_cat_id  = $this->get_latest_category_id();
 
 		// phpcs:ignore, WordPress.WP.AlternativeFunctions.strip_tags_strip_tags -- We don't expect users to set scripts in titles.
-		$post_name  = strip_tags( get_the_title( $latest_post_id ) ?: __( 'Example Post', 'autodescription' ) );
+		$post_name  = strip_tags( get_the_title( $latest_post_id ) ) ?: __( 'Example Post', 'autodescription' );
 		$post_title = $this->s_title( $this->hellip_if_over( $post_name, 60 ) );
 
 		// phpcs:ignore, WordPress.WP.AlternativeFunctions.strip_tags_strip_tags -- We don't expect users to set scripts in titles.
@@ -84,6 +85,33 @@ switch ( $instance ) :
 
 		<hr>
 		<?php
+		if (
+			! ( defined( 'TSF_DISABLE_SUGGESTIONS' ) && TSF_DISABLE_SUGGESTIONS )
+			&& ! current_theme_supports( 'title-tag' )
+			&& ! defined( 'TSFEM_E_TITLE_FIX' )
+			&& current_user_can( 'install_plugins' )
+		) {
+			/* translators: %s = title-tag */
+			$_h4 = sprintf( esc_html__( 'Theme %s Support Missing', 'autodescription' ), '<code>title-tag</code>' );
+			?>
+			<h4 class=attention><?php echo $_h4; // phpcs:ignore, WordPress.Security.EscapeOutput.OutputNotEscaped ?></h4>
+			<?php
+			$this->description_noesc(
+				$this->convert_markdown(
+					sprintf(
+						/* translators: 1: Extension name, 2: Extension link. Markdown!  */
+						esc_html__( "The current theme doesn't support a feature that allows predictable output of titles. Consider installing [%1\$s](%2\$s) when you notice the title output in the browser-tab isn't as you have configured.", 'autodescription' ),
+						'Title Fix',
+						'https://theseoframework.com/?p=2298'
+					),
+					[ 'a' ],
+					[ 'a_internal' => false ]
+				)
+			);
+			?>
+			<hr>
+			<?php
+		}
 
 		$default_tabs = [
 			'general'   => [
@@ -166,7 +194,7 @@ switch ( $instance ) :
 		$info = $this->make_info(
 			sprintf(
 				/* translators: %s = HTML tag example */
-				__( 'This strips HTML tags, like %s, from the title.', 'autodescription' ),
+				__( 'This strips HTML tags, like %s, from the title. Disable this option to display generated HTML tags as plain text in meta titles.', 'autodescription' ),
 				'<code>&amp;lt;strong&amp;gt;</code>' // Double escaped HTML (&amp;) for attribute display.
 			),
 			'',

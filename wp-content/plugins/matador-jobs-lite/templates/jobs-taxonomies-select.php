@@ -103,26 +103,28 @@ do_action( 'matador_taxonomy_terms_before', $args );
 		 */
 		do_action( 'matador_taxonomy_terms_select_label', $args );
 		?>
-
-		<select id="<?php echo esc_attr( $taxonomy['key'] ); ?>" name="<?php echo esc_attr( $taxonomy['key'] ); ?>"
-			data-method="<?php echo esc_attr( $method ); ?>" <?php echo ( $multi ) ? 'multiple' : ''; ?> >
-
-			<?php if ( true === $show_all_option ) : ?>
-
-				<?php matador_get_template_part( 'jobs-taxonomies-select', 'all', $args ); ?>
-
-			<?php endif; ?>
-
-			<?php foreach ( $terms as $term ) : ?>
-
-				<?php $args['term'] = $term; ?>
-
-				<?php matador_get_template_part( 'jobs-taxonomies-select', 'term', $args ); ?>
-
-			<?php endforeach; ?>
-
-		</select>
 	</label>
+
+	<select id="<?php echo esc_attr( $taxonomy['key'] ); ?>"
+	        name="<?php echo esc_attr( $taxonomy['key'] ) . ( $multi ? '[]' : '' ); ?>"
+	        data-method="<?php echo esc_attr( $method ); ?>" <?php echo ( $multi ) ? 'multiple' : ''; ?> >
+
+		<?php if ( true === $show_all_option ) : ?>
+
+			<?php matador_get_template_part( 'jobs-taxonomies-select', 'all', $args ); ?>
+
+		<?php endif; ?>
+
+		<?php foreach ( $terms as $term ) : ?>
+
+			<?php $args['term'] = $term; ?>
+
+			<?php matador_get_template_part( 'jobs-taxonomies-select', 'term', $args ); ?>
+
+		<?php endforeach; ?>
+
+	</select>
+
 
 	<?php
 	/**

@@ -29,7 +29,7 @@ class Bullhorn_Api_Debug extends Bullhorn_Connection {
 
 		add_action( 'admin_menu', array( __CLASS__, 'matador_options_fields' ) );
 		add_action( 'wp_ajax_matador_api_test', array( $this, 'matador_api_test' ) );
-		add_action( 'wp_ajax_matador_api_job_sync', array( $this, 'matador_api_job_sync' ) );
+		add_action( 'wp_ajax_matador_api_job_sync_debug', array( $this, 'matador_api_job_sync' ) );
 	}
 
 
@@ -99,7 +99,10 @@ class Bullhorn_Api_Debug extends Bullhorn_Connection {
 
             <br />
             <button id="matador_api_test" style="width: 10%">Run</button>
-            <button id="job_sync" style="float: right;margin-right: 10%;">debug job sync</button>
+            <div  style="float: right;margin-right: 10%;">
+                <input id="bhid" type="number" placeholder="bhid">
+                <button id="job_sync"">debug job sync</button>
+            </div>
         </form>
 
         <pre id="matador_api_test_output">
@@ -140,8 +143,9 @@ class Bullhorn_Api_Debug extends Bullhorn_Connection {
                     e.preventDefault();
                     jQuery('#matador_api_test_output').html('Loading');
                     var data = {
-                        'action': 'matador_api_job_sync',
-                        'nonce': '<?php echo wp_create_nonce( "matador_api_test" ); ?>'
+                        'action': 'matador_api_job_sync_debug',
+                        'nonce': '<?php echo wp_create_nonce( "matador_api_test" ); ?>',
+                        'bhid': jQuery( '#bhid' ).val(),
                     };
                     // since 2.8 ajaxurl is always defined in the admin header and points to admin-ajax.php
                     jQuery.post(ajaxurl, data, function (response) {
@@ -164,7 +168,7 @@ class Bullhorn_Api_Debug extends Bullhorn_Connection {
 
                         case 'JobOrder':
                             jQuery('#api_method').val('query/JobOrder');
-                            jQuery('#api_params').val("fields|*~ where|isOpen=true AND isDeleted=false AND status<>'Archive'~count=50");
+                            jQuery('#api_params').val("fields|*~ where|isOpen=true AND isDeleted=false AND status<>'Archive'~count|50");
                             jQuery('#http_method').val('GET');
                             jQuery('#api_body').val('');
                             jQuery('#api_request_args').val('');
@@ -271,6 +275,15 @@ class Bullhorn_Api_Debug extends Bullhorn_Connection {
 		// Handle request then generate response using WP_Ajax_Response
 		check_ajax_referer( 'matador_api_test', 'nonce' );
 		add_action( 'matador_event_log_before_write', array( __CLASS__, 'matador_event_write' ), 10, 3 );
+		if ( isset( $_REQUEST['bhid'] ) && ! empty( absint( $_REQUEST['bhid'] ) )  && 0 < absint( $_REQUEST['bhid'] ) ) {
+		    add_filter( 'matador_bullhorn_import_the_job_where', function ( $where ){
+			    $where .= 'AND id=' . absint( $_REQUEST['bhid'] );
+		        return $where;
+            } );
+		    add_filter( 'matador_bullhorn_delete_missing_job_on_import', '__return_false' );
+		    // when sync a job by ID we don't what to allow it to be skipped
+		    remove_all_filters('matador_bullhorn_import_skip_job_on_update' );
+		}
 		ob_start();
 		$bullhorn = new Bullhorn_Import();
 		$bullhorn->sync();
@@ -310,7 +323,7 @@ class Bullhorn_Api_Debug extends Bullhorn_Connection {
 
 		$body = null;
 		if ( isset( $_REQUEST['api_body'] ) && ! empty( $_REQUEST['api_body'] ) ) {
-			$body           = $this->make_array( $_REQUEST['api_body'] );
+			$body           = $this->make_json( $_REQUEST['api_body'] );
 			$pramns['body'] = $body;
 		}
 
@@ -363,6 +376,10 @@ class Bullhorn_Api_Debug extends Bullhorn_Connection {
 		}
 
 		return $a;
+	}
+
+	function make_json( $string ) {
+		return json_decode( str_replace( [ "\'", '\"' ], '"', $string ) );
 	}
 
 }

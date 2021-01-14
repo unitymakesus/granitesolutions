@@ -30,7 +30,7 @@ namespace matador;
 			If you forgot your API Credentials, Bullhorn is pretty good about getting them for you
 			with a short, often emailed, support request. Since you will be taking the time to get 
 			everything set up, make sure you get everything you need, including the four API 
-			credentials and your callback or redirect URI whitelisted.To help you know what to say, 
+			credentials and your callback or redirect URI registered. To help you know what to say, 
 			we wrote this email for you to copy-and-paste, make a few updates, and send to them.
 			', 'matador-jobs' );
 		?>
@@ -46,8 +46,8 @@ namespace matador;
 	$email .= sprintf( __( 'We will be using %1$s with WordPress to integrate data from our Bullhorn account to our website with your API.', 'matador-jobs' ), __( 'Matador Jobs Board', 'matador-jobs' ) ) . ' ';
 	$email .= __( 'We believe we have access to the Web Developer API for our COMPANY NAME, but we forgot or lost our credentials.', 'matador-jobs' ) . ' ';
 	$email .= __( 'Can you please either reset or retrieve our credentials for us?', 'matador-jobs' ) . PHP_EOL . PHP_EOL;
-	$email .= __( 'At the minimum, we will need the API Client ID, API Client Secret ID, API User ID, and API User Password.', 'matador-jobs' ) . ' ';
-	$email .= __( 'Also, since we have you helping us, please add this URL to our API Redirect whitelist too:', 'matador-jobs' ) . PHP_EOL . PHP_EOL;
+	$email .= __( 'At the minimum, we will need the API Client ID, API Client Secret ID, API User ID, API User Password, and the server cluster id for our account.', 'matador-jobs' ) . ' ';
+	$email .= __( "Also, please also register and allow these following callback URL's:", 'matador-jobs' ) . PHP_EOL . PHP_EOL;
 	$email .= $endpoint . PHP_EOL;
 	$email .= ( false === strpos( $endpoint, 'http:' ) ) ? str_replace( 'https:', 'http:', $endpoint ) : str_replace( 'http:', 'https:', $endpoint ) . PHP_EOL;
 	$email .= PHP_EOL . PHP_EOL;
@@ -63,7 +63,7 @@ namespace matador;
 			<?php
 			esc_html_e( '
 				If you plan to use Matador on both a staging and a production site, you 
-				should ask for both sites to be whitelisted at the same time. It will save
+				should ask for URLs from both sites to be registered in this email. It will save
 				you from delays later on.
 				', 'matador-jobs' );
 			?>

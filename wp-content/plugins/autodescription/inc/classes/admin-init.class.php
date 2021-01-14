@@ -6,7 +6,7 @@
 
 namespace The_SEO_Framework;
 
-defined( 'THE_SEO_FRAMEWORK_PRESENT' ) or die;
+\defined( 'THE_SEO_FRAMEWORK_PRESENT' ) or die;
 
 /**
  * The SEO Framework plugin
@@ -62,12 +62,13 @@ class Admin_Init extends Init {
 	 * Adds post states for the post/page edit.php query.
 	 *
 	 * @since 4.0.0
+	 * @access private
 	 *
 	 * @param array    $states The current post states array
-	 * @param \WP_Post $post The Post Object.
+	 * @param \WP_Post $post   The Post Object.
 	 * @return array Adjusted $states
 	 */
-	public function _add_post_state( $states = [], $post ) {
+	public function _add_post_state( $states = [], $post = null ) {
 
 		$post_id = isset( $post->ID ) ? $post->ID : false;
 
@@ -91,6 +92,7 @@ class Admin_Init extends Init {
 	 * @since 3.1.0
 	 * @since 4.0.0 Now discerns autoloading between taxonomies and singular types.
 	 * @since 4.1.0 Now invokes autoloading when persistent scripts are enqueued (regardless of validity).
+	 * @since 4.1.2 Now autoenqueues on edit.php and edit-tags.php regardless of SEO Bar output (for quick/bulk-edit support).
 	 * @access private
 	 *
 	 * @param string|null $hook The current page hook.
@@ -121,19 +123,9 @@ class Admin_Init extends Init {
 					'edit-tags.php',
 					'term.php',
 				];
-
-				if ( ! $this->get_option( 'display_seo_bar_tables' ) ) {
-					$enqueue_hooks = array_diff(
-						$enqueue_hooks,
-						[
-							'edit.php',
-							'edit-tags.php',
-						]
-					);
-				}
 			}
 
-			if ( in_array( $hook, $enqueue_hooks, true ) )
+			if ( \in_array( $hook, $enqueue_hooks, true ) )
 				$autoenqueue = true;
 
 			if ( $this->get_static_cache( 'persistent_notices', [] ) )
@@ -396,7 +388,7 @@ class Admin_Init extends Init {
 		$target = \add_query_arg( $query_args, $url );
 		$target = \esc_url_raw( $target, [ 'https', 'http' ] );
 
-		//* Predict white screen:
+		// Predict white screen:
 		$headers_sent = headers_sent();
 
 		/**
@@ -406,7 +398,7 @@ class Admin_Init extends Init {
 		 */
 		$success = \wp_safe_redirect( $target, 302 ); // phpcs:ignore, VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
 
-		//* White screen of death for non-debugging users. Let's make it friendlier.
+		// White screen of death for non-debugging users. Let's make it friendlier.
 		if ( $headers_sent ) {
 			$this->handle_admin_redirect_error( $target );
 		}
@@ -430,8 +422,8 @@ class Admin_Init extends Init {
 		$headers_list = headers_list();
 		$location     = sprintf( 'Location: %s', \wp_sanitize_redirect( $target ) );
 
-		//* Test if WordPress's redirect header is sent. Bail if true.
-		if ( in_array( $location, $headers_list, true ) )
+		// Test if WordPress's redirect header is sent. Bail if true.
+		if ( \in_array( $location, $headers_list, true ) )
 			return;
 
 		// phpcs:disable, WordPress.Security.EscapeOutput -- convert_markdown escapes. Added esc_url() for sanity.
@@ -453,6 +445,7 @@ class Admin_Init extends Init {
 	 * Registers dismissible persistent notice, that'll respawn during page load until dismissed or otherwise expired.
 	 *
 	 * @since 4.1.0
+	 * @since 4.1.3 Now handles timeout values below -1 gracefully, by purging the whole notification gracelessly.
 	 * @uses $this->generate_dismissible_persistent_notice()
 	 *
 	 * @param string $message    The notice message. Expected to be escaped if $escape is false.
@@ -473,12 +466,14 @@ class Admin_Init extends Init {
 	 *     'count'        => int    Optional. The number of times the persistent notice may appear (for everyone allowed to see it).
 	 *                              Set to -1 for unlimited. When -1, the notice must be removed from display manually.
 	 *     'timeout'      => int    Optional. The number of seconds the notice should remain valid for display. Set to -1 to disable check.
+	 *                              When the timeout is below -1, then the notification will not be outputted.
+	 *                              Do not input non-integer values (such as `false`), for those might cause adverse events.
 	 * }
 	 */
 	public function register_dismissible_persistent_notice( $message, $key, array $args = [], array $conditions = [] ) {
 
 		// We made this mistake ourselves. Let's test against it. Can't wait for PHP 7.1+ support.
-		if ( ! is_scalar( $key ) || ! strlen( $key ) ) return;
+		if ( ! is_scalar( $key ) || ! \strlen( $key ) ) return;
 
 		// Sanitize the key so that HTML, JS, and PHP can communicate easily via it.
 		$key = \sanitize_key( $key );
@@ -506,6 +501,9 @@ class Admin_Init extends Init {
 
 		// Required key for security.
 		if ( ! $conditions['capability'] ) return;
+
+		// Timeout already expired. Let's not register it.
+		if ( $conditions['timeout'] < -1 ) return;
 
 		// Add current time to timeout, so we can compare against it later.
 		if ( $conditions['timeout'] > -1 )
@@ -655,12 +653,12 @@ class Admin_Init extends Init {
 		// phpcs:disable, WordPress.Security.NonceVerification -- _check_tsf_ajax_referer() does this.
 		$this->_check_tsf_ajax_referer( 'edit_posts' );
 
-		//* Remove output buffer.
+		// Remove output buffer.
 		$this->clean_response_header();
 
-		//* If current user isn't allowed to edit posts, don't do anything and kill PHP.
+		// If current user isn't allowed to edit posts, don't do anything and kill PHP.
 		if ( ! \current_user_can( 'edit_posts' ) ) {
-			//* Encode and echo results. Requires JSON decode within JS.
+			// Encode and echo results. Requires JSON decode within JS.
 			\wp_send_json( [
 				'type'  => 'failure',
 				'value' => '',
@@ -682,7 +680,7 @@ class Admin_Init extends Init {
 		if ( $value > 3 )
 			$value = 0;
 
-		//* Update the option and get results of action.
+		// Update the option and get results of action.
 		$type = $this->update_user_option( 0, 'counter_type', $value ) ? 'success' : 'error';
 
 		$results = [
@@ -690,7 +688,7 @@ class Admin_Init extends Init {
 			'value' => $value,
 		];
 
-		//* Encode and echo results. Requires JSON decode within JS.
+		// Encode and echo results. Requires JSON decode within JS.
 		\wp_send_json( $results );
 
 		// phpcs:enable, WordPress.Security.NonceVerification
@@ -834,7 +832,7 @@ class Admin_Init extends Init {
 		$attachment_id = \absint( $_POST['id'] );
 
 		$context = str_replace( '_', '-', \sanitize_key( $_POST['context'] ) );
-		$data    = array_map( 'absint', $_POST['cropDetails'] );
+		$data    = array_map( '\\absint', $_POST['cropDetails'] );
 		$cropped = \wp_crop_image( $attachment_id, $data['x1'], $data['y1'], $data['width'], $data['height'], $data['dst_width'], $data['dst_height'] );
 
 		if ( ! $cropped || \is_wp_error( $cropped ) )
@@ -861,7 +859,7 @@ class Admin_Init extends Init {
 				$parent_url = \wp_get_attachment_url( $attachment_id );
 				$url        = str_replace( basename( $parent_url ), basename( $cropped ), $parent_url );
 
-				// phpcs:ignore, WordPress.PHP.NoSilencedErrors -- Feature may be disabled.
+				// phpcs:ignore, WordPress.PHP.NoSilencedErrors -- Feature may be disabled; should not cause fatal errors.
 				$size       = @getimagesize( $cropped );
 				$image_type = ( $size ) ? $size['mime'] : 'image/jpeg';
 

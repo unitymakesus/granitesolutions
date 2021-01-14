@@ -27,6 +27,11 @@
 
 	$( '#matador-application-form' ).validate({
 		submitHandler: function (form) {
+			if (typeof grecaptcha !== 'undefined' && !grecaptcha.getResponse()) {
+				alert('Please mark the reCAPTCHA checkbox.');
+				return false;
+			}
+
 			$("[name='submit']").attr("disabled", true).addClass('madator-disabled');
 			$('#matador-upload-overlay').show();
 			return true;

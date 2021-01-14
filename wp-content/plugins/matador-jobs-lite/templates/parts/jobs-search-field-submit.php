@@ -25,12 +25,17 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Filters the class attribute of the submit button for the Matador Search form.
  *
  * @since 3.3.0
+ * @deprecated 3.6.0 please use matador_template_button_classes with context 'primary'
+ *
+ * @param string $class
+ *
+ * @return string
  */
 $button_class = apply_filters( 'matador_search_form_submit_button_class', 'matador-search-submit' );
 ?>
 <div class="matador-search-form-field-group matador-search-form-field-submit">
 
-	<button type="submit" id="matador-search-submit" class="<?php echo esc_attr( $button_class ); ?>">
+	<button type="submit" id="matador-search-submit" class="<?php matador_button_classes( [ $button_class, 'matador-button' ], 'primary' ); ?>">
 		<?php
 		/**
 		 * Filter: Matador Search From Submit Label

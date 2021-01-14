@@ -1,8 +1,8 @@
 <?php
 /**
- * Scripts
+ * Scripts & Styles
  *
- * @package     Bullpen
+ * @package     Matador Jobs
  * @subpackage  Functions
  * @copyright   Copyright (c) 2016, Jeremy Scott
  * @license     http://opensource.org/licenses/gpl-2.0.php GNU Public License
@@ -35,7 +35,7 @@ class Scripts {
 	 */
 	public static function matador_register_styles() {
 
-		// @to-do, setting so users can turn off css output
+		// @todo, setting so users can turn off css output
 		// if ( setting -> css == false )
 		// return
 

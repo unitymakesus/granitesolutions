@@ -78,7 +78,7 @@ if ( 'null_url' === $api_redirect_uri ) :
 			<p>
 				<?php
 				esc_html_e( '
-				Your site is unable to check if your Redirect URI is properly set. This is usually
+				Your site is unable to check if your Redirect URI is Registered with Bullhorn. This is usually
 				caused by an incorrect or missing Client ID or Client Secret and/or if the Bullhorn
 				service is currently down, eg: undergoing maintenance.
 				', 'matador-jobs' );
@@ -142,7 +142,7 @@ if ( 'null_url' === $api_redirect_uri ) :
 	<div>
 		<div class="callout callout-success">
 			<p>
-				<?php esc_html_e( 'Callback URI is Whitelisted.', 'matador-jobs' ); ?>
+				<?php esc_html_e( 'Callback URI is Registered.', 'matador-jobs' ); ?>
 			</p>
 		</div>
 
@@ -160,10 +160,9 @@ if ( 'null_url' === $api_redirect_uri ) :
 		<p>
 			<?php
 			esc_html_e( "
-			For security purposes, Bullhorn requires that the callback URI, or
-			redirect URI, is on a &quot;whitelist&quot; before Matador can 
-			talk to it. Congratulations, your site's callback URI is whitelisted,
-			so we can move onto the next step!
+			For security purposes, Bullhorn requires that the callback URI be on a list
+			of pre-approved allowed callback URIs before Matador can talk to it. Congratulations,
+			your site's callback URI was valid, so we can move onto the next step!
 			", 'matador-jobs' );
 			?>
 		</p>
@@ -206,13 +205,13 @@ if ( 'null_url' === $api_redirect_uri ) :
 <?php else : ?>
 
 	<header>
-		<h4><?php esc_html_e( 'Whitelist Callback URI', 'matador-jobs' ); ?></h4>
+		<h4><?php esc_html_e( 'Unregistered Callback URI', 'matador-jobs' ); ?></h4>
 	</header>
 
 	<div>
 		<div class="callout callout-error">
 			<p>
-				<?php esc_html_e( 'Callback URI is not on Bullhorn\'s Redirect URI whitelist.', 'matador-jobs' ); ?>
+				<?php esc_html_e( 'Callback URI is not Registered with Bullhorn', 'matador-jobs' ); ?>
 			</p>
 		</div>
 
@@ -230,11 +229,10 @@ if ( 'null_url' === $api_redirect_uri ) :
 		<p>
 			<?php
 			esc_html_e( "
-			For security purposes, Bullhorn requires that the callback URI, or
-			redirect URI, is on a &quot;whitelist&quot; before Matador can 
-			talk to it. We've checked: your site's callback URI is not 
-			whitelisted. Before we can continue, you will need to get it 
-			whitelisted.
+			For security purposes, Bullhorn requires that the callback URI be on a list
+			of pre-approved allowed callback URIs before Matador can talk to it. We've checked:
+			your site's callback URI is not valid. Before we can continue, you will need to get it added to the list 
+			of approved callback URIs.
 			", 'matador-jobs' );
 			?>
 		</p>
@@ -243,7 +241,7 @@ if ( 'null_url' === $api_redirect_uri ) :
 			<?php
 			esc_html_e( "
 			You will need to send an email to Bullhorn support to request they
-			add this URI to your account's whitelist. If you've already asked 
+			add this URI to your allowed API Redirect URI's list. If you've already asked 
 			them to do this and you're still seeing this message, its possible 
 			they didn't enter it exactly. This is callback or redirect URI for 
 			Matador.
@@ -264,7 +262,7 @@ if ( 'null_url' === $api_redirect_uri ) :
 				<?php
 				esc_html_e( '
 				If you plan to use Matador on both a staging and a production site, you 
-				should ask for both sites to be whitelisted at the same time. It will save
+				should ask for both site\'s callback URIs to be registered at the same time. It will save
 				you from delays later on.
 				', 'matador-jobs' );
 				?>
@@ -286,7 +284,7 @@ if ( 'null_url' === $api_redirect_uri ) :
 		$email .= __( 'Dear Bullhorn Support', 'matador-jobs' ) . ':' . PHP_EOL . PHP_EOL;
 		// Translators: ignore the placeholder.
 		$email .= sprintf( __( 'We will be using %1$s with WordPress to integrate data from our Bullhorn account to our website with your API.', 'matador-jobs' ), __( 'Matador Jobs Board', 'matador-jobs' ) ) . ' ';
-		$email .= __( 'We need the following API Redirect URI added to our redirect uri whitelist for our API account.', 'matador-jobs' ) . ' ';
+		$email .= __( "Please add these URL's to our list of allowed API Redirect URIs too:", 'matador-jobs' ) . ' ';
 		$email .= __( 'It is important that it be saved exactly as we include it below.', 'matador-jobs' ) . ' ';
 		$email .= __( 'This is for the API credentials that use the follow ClientID: ', 'matador-jobs' ) . ' ';
 		$email .= esc_attr( Matador::setting( 'bullhorn_api_client' ) ) . PHP_EOL . PHP_EOL; // Note, its safe to not handle for an empty return here, as an empty ClientID wouldn't reach this condition.

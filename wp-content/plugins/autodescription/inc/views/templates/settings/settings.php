@@ -4,6 +4,9 @@
  * @subpackage The_SEO_Framework\Admin\Settings
  */
 
+// phpcs:disable, VariableAnalysis.CodeAnalysis.VariableAnalysis.UndefinedVariable -- includes.
+// phpcs:disable, WordPress.WP.GlobalVariablesOverride -- This isn't the global scope.
+
 defined( 'THE_SEO_FRAMEWORK_PRESENT' ) and The_SEO_Framework\Builders\Scripts::verify( $_secret ) or die;
 
 ?>
@@ -11,7 +14,7 @@ defined( 'THE_SEO_FRAMEWORK_PRESENT' ) and The_SEO_Framework\Builders\Scripts::v
 	<span class="tsf-post-type-warning">
 		<?php
 		the_seo_framework()->make_info(
-			\esc_html__( "This post type is disabled, so this option won't work.", 'autodescription' )
+			esc_html__( "This post type is excluded, so this option won't work.", 'autodescription' )
 		);
 		?>
 	</span>
@@ -21,7 +24,7 @@ defined( 'THE_SEO_FRAMEWORK_PRESENT' ) and The_SEO_Framework\Builders\Scripts::v
 	<span class="tsf-taxonomy-warning">
 		<?php
 		the_seo_framework()->make_info(
-			\esc_html__( "This taxonomy is disabled, so this option won't work.", 'autodescription' )
+			esc_html__( "This taxonomy is excluded, so this option won't work.", 'autodescription' )
 		);
 		?>
 	</span>
@@ -31,7 +34,7 @@ defined( 'THE_SEO_FRAMEWORK_PRESENT' ) and The_SEO_Framework\Builders\Scripts::v
 	<span class="tsf-taxonomy-from-pt-warning">
 		<?php
 		the_seo_framework()->make_info(
-			\esc_html__( "This taxonomy's post types are also disabled, so this option won't have any effect.", 'autodescription' )
+			esc_html__( "This taxonomy's post types are also excluded, so this option won't have any effect.", 'autodescription' )
 		);
 		?>
 	</span>
@@ -41,7 +44,17 @@ defined( 'THE_SEO_FRAMEWORK_PRESENT' ) and The_SEO_Framework\Builders\Scripts::v
 	<span class="tsf-title-additions-warning">
 		<?php
 		the_seo_framework()->make_info(
-			\esc_html__( 'The site title is already removed from meta titles, so this option only affects the homepage.', 'autodescription' )
+			esc_html__( 'The site title is already removed from meta titles, so this option only affects the homepage.', 'autodescription' )
+		);
+		?>
+	</span>
+</script>
+
+<script type="text/html" id="tmpl-tsf-robots-pt-help">
+	<span class="tsf-taxonomy-from-pt-robots-warning">
+		<?php
+		the_seo_framework()->make_info(
+			esc_html__( "This taxonomy inherited the state from the post type, so this option won't have any effect.", 'autodescription' )
 		);
 		?>
 	</span>

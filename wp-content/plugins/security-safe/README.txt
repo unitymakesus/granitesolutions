@@ -1,9 +1,9 @@
 === WP Security Safe ===
-Contributors: sovstack, stevenayers63
+Contributors: sovstack, stevenayers63, freemius
 Tags: wp security, security audit, disable XMLRPC, limit-login, logs
 Requires at least: 3.5
 Requires PHP: 5.6
-Tested up to: 5.3
+Tested up to: 5.5.1
 Stable tag: trunk
 
 This WordPress security plugin helps you quickly audit, harden, and secure your website.
@@ -42,12 +42,11 @@ This WordPress security plugin helps you quickly audit, harden, and secure your 
 * Various Logs and Charts
 * Turn On/Off All Security Policies Easily
 
-Every WordPress security plugin becomes more complicated and bloated as more features are added. As a plugin's code grows, it consumes more time to load, thus slowing down your website. WP Security Safe's purpose is to protect your website from the majority of threats with minimal impact on website load time. We constantly test our load performance to ensure our features to ensure it continues to run fast and lean.
-
 > Note: [Upgrade to WP Security Safe Pro](https://checkout.freemius.com/mode/dialog/plugin/2439/plan/3762/) to unlock advanced Pro features.
 
-Twitter: [Follow WP Security Safe](https://twitter.com/wpSecuritySafe/)
-Website: [WP Security Safe](https://wpsecuritysafe.com)
+### WP Security Plugins Are Complicated
+
+Every WordPress security plugin becomes more complicated and bloated as more features are added. As a plugin's code grows, it consumes more time to load, thus slowing down your website. WP Security Safe's purpose is to protect your website from the majority of threats with minimal impact on website load time. We constantly test our load performance to ensure our features to ensure it continues to run fast and lean.
 
 ### LANGUAGE SUPPORT
 
@@ -65,6 +64,11 @@ https://player.vimeo.com/video/360060065
 2. Login Attempts
 3. Firewall Blocks
 
+### Follow Us: 
+
+Twitter: [Follow WP Security Safe](https://twitter.com/wpSecuritySafe/)
+Website: [WP Security Safe](https://wpsecuritysafe.com)
+
 == Installation ==
 
 1. Install WP Security Safe automatically or by uploading the ZIP file to your plugins folder. 
@@ -76,10 +80,17 @@ https://player.vimeo.com/video/360060065
 
 == Changelog ==
 
+= 2.3.2 (Medium Priority) =
+*Release Date - 11 September 2020*
+
+* Improvement: Removed feature Local Login as it was triggering a false positive due to browser caching.
+* Improvement: Updated PHP version checks
+* Tested up to: 5.5.1
+
 = 2.3.1 (High Priority) =
 *Release Date - 05 January 2020*
 
-* Bug Fix: version privacy for JS files conflicted with Google Recaptcha. Thank you [Lynn Appleget](https://applegetassoc.com/) for reporting this bug.
+* Bug Fix: version privacy for JS files conflicted with Google Recaptcha
 * Bug Fix: Plugin updates were not getting logged properly after an update.
 * Bug Fix: Plugin would not initialize in a multi-site network.
 * Bug Fix: Prevent caching of nonce for front-end login form

@@ -17,10 +17,11 @@
 
 namespace matador;
 
-// Don't call directly.
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+
+use \Exception;
 
 /**
  * Class Matador
@@ -44,7 +45,7 @@ final class Matador {
 	 *
 	 * @var string
 	 */
-	const VERSION = '3.5.6';
+	const VERSION = '3.6.4';
 
 	/**
 	 * Constant: ID
@@ -159,7 +160,13 @@ final class Matador {
 
 			self::$instance->setup_properties();
 
-			spl_autoload_register( array( __CLASS__, 'auto_loader' ) );
+			require self::$directory . 'vendor/autoload.php';
+
+			try {
+				spl_autoload_register( array( __CLASS__, 'auto_loader' ) );
+			} catch ( Exception $error ) {
+				_doing_it_wrong( __FUNCTION__, esc_html__( 'There was an error initializing the Autoloader. Contact the developer.', 'matador-jobs' ), esc_attr( self::VERSION ) );
+			}
 
 			add_action( 'plugins_loaded', array( self::$instance, 'load_textdomain' ) );
 
@@ -280,10 +287,6 @@ final class Matador {
 			new Scheduled_Events();
 		}
 
-		if ( apply_filters( 'matador_load_class_email', true ) ) {
-			new Email();
-		}
-
 		if ( apply_filters( 'matador_load_class_job_taxonomies', true ) ) {
 			new Job_Taxonomies();
 		}
@@ -360,7 +363,42 @@ final class Matador {
 	 * @return void
 	 */
 	public static function auto_loader( $class ) {
+
+		// New PSR-4 Autoloader Scheme
+
+		$prefix = 'matador\\MatadorJobs\\';
+
+		// does the class use the namespace prefix?
+		$len = strlen( $prefix );
+
+		// if ( strncmp( $prefix, $class, $len ) !== 0 ) {
+			// no, move to the next registered autoloader
+			// return;
+		// }
+
+		if ( strncmp( $prefix, $class, $len ) === 0 ) {
+			// get the relative class name
+			$relative_class = substr( $class, $len );
+
+			// base directory for the namespace prefix
+			$base_dir = self::$directory . 'src/';
+
+			// replace the namespace prefix with the base directory, replace namespace
+			// separators with directory separators in the relative class name, append
+			// with .php
+			$file = $base_dir . str_replace( '\\', '/', $relative_class ) . '.php';
+
+			// if the file exists, require it
+			if ( file_exists( $file ) ) {
+				require $file;
+				return;
+			}
+		}
+
+		// Old Matador Jobs 3.0.0 Autoloader (until phased out)
+
 		if ( 0 !== strpos( $class, __NAMESPACE__ ) ) {
+
 			return;
 		}
 

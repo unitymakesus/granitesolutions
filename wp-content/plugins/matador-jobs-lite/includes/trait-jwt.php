@@ -31,7 +31,7 @@ trait JWT {
 	/**
 	 * Accepted Algorithms
 	 *
-	 * @since 3.4.0
+	 * @since  3.4.0
 	 *
 	 * @access private
 	 * @static
@@ -50,17 +50,17 @@ trait JWT {
 	/**
 	 * Generate JSON Web Token (JWT)
 	 *
-	 * @since 3.4.0
+	 * @since  3.4.0
 	 *
 	 * @access private
 	 * @static
 	 *
-	 * @var stdClass|array $payload     A stdClass or array containing the payload. Required.
-	 * @var string         $private_key A private key. Required.
-	 * @var string         $algorithm   The hashing algorithm to use. Accepts algorithm in self::$algorithms array.
-	 *                                  Default 'HS256'. Optional.
-	 * @var string         $key_id      The key ID. Default null. Optional.
-	 * @var array          $header      The API request headers. Default empty array. Optional.
+	 * @param stdClass|array $payload     A stdClass or array containing the payload. Required.
+	 * @param string         $private_key A private key. Required.
+	 * @param string         $algorithm   The hashing algorithm to use. Accepts algorithm in self::$algorithms array.
+	 *                                    Default 'HS256'. Optional.
+	 * @param string         $key_id      The key ID. Default null. Optional.
+	 * @param array          $header      The API request headers. Default empty array. Optional.
 	 *
 	 * @return string JSON Web Token
 	 */
@@ -79,15 +79,15 @@ trait JWT {
 	/**
 	 * Generate JSON Web Token (JWT) Header
 	 *
-	 * @since 3.4.0
+	 * @since  3.4.0
 	 *
 	 * @access private
 	 * @static
 	 *
-	 * @var string         $algorithm   The hashing algorithm to use. Accepts algorithm in self::$algorithms array.
+	 * @param string $algorithm         The hashing algorithm to use. Accepts algorithm in self::$algorithms array.
 	 *                                  Default 'HS256'. Optional.
-	 * @var string         $key_id      The key ID. Default null. Optional.
-	 * @var array          $header      The API request headers. Default empty array. Optional.
+	 * @param string $key_id            The key ID. Default null. Optional.
+	 * @param array  $header            The API request headers. Default empty array. Optional.
 	 *
 	 * @return array JSON Web Token header
 	 */
@@ -111,15 +111,15 @@ trait JWT {
 	/**
 	 * Sign JSON Web Token (JWT)
 	 *
-	 * @since 3.4.0
+	 * @since  3.4.0
 	 *
 	 * @access private
 	 * @static
 	 *
-	 * @var string $message     The message to be encoded.
-	 * @var string $private_key A private key. Required.
-	 * @var string $algorithm   The hashing algorithm to use. Accepts algorithm in self::$algorithms array. Default
-	 *                          'HS256'. Optional.
+	 * @param string $message     The message to be encoded.
+	 * @param string $private_key A private key. Required.
+	 * @param string $algorithm   The hashing algorithm to use. Accepts algorithm in self::$algorithms array. Default
+	 *                            'HS256'. Optional.
 	 *
 	 * @return string Signed JSON Web Token
 	 */

@@ -22,6 +22,8 @@
 namespace matador;
 
 use stdClass;
+use DateTime;
+use WP_Query;
 
 // Exit if accessed directly or if parent class doesn't exist.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -34,6 +36,13 @@ class Bullhorn_Import extends Bullhorn_Connection {
 	 * @var array
 	 */
 	private $organization_url_cache;
+
+	/**
+	 * Property: Latest Synced Modified Job Time
+	 *
+	 * @var int|null
+	 */
+	private $latest_sync = null;
 
 	/**
 	 * Constructor
@@ -62,7 +71,6 @@ class Bullhorn_Import extends Bullhorn_Connection {
 		add_action( 'matador_bullhorn_import_save_job', array( $this, 'save_job_jsonld' ), 30, 2 );
 
 		add_filter( 'matador_save_job_meta', array( $this, 'matador_save_job_meta' ), 10, 2 );
-
 	}
 
 	/**
@@ -71,11 +79,14 @@ class Bullhorn_Import extends Bullhorn_Connection {
 	 * This is THE method that does all the import magic. This is the only
 	 * method publicly callable.
 	 *
-	 * @access public
 	 * @since 3.0.0
 	 *
+	 * @access public
+	 *
 	 * @param bool $sync_tax
+	 *
 	 * @return bool
+	 *
 	 * @throws Exception
 	 */
 	public function sync( $sync_tax = true ) {
@@ -139,8 +150,11 @@ class Bullhorn_Import extends Bullhorn_Connection {
 	 *
 	 * This retrieves all available jobs from Bullhorn.
 	 *
-	 * @throws Exception
 	 * @since 3.0.0
+	 *
+	 * @access private
+	 *
+	 * @throws Exception
 	 */
 	private function get_remote_jobs() {
 
@@ -160,6 +174,7 @@ class Bullhorn_Import extends Bullhorn_Connection {
 				'where'  => $this->the_jobs_where(),
 				'count'  => $limit,
 				'start'  => $offset,
+				'order'  => 'dateLastModified',
 			);
 
 			// API Call
@@ -188,6 +203,7 @@ class Bullhorn_Import extends Bullhorn_Connection {
 
 		if ( empty( $jobs ) ) {
 			new Event_Log( 'bullhorn-import-no-found-jobs', esc_html__( 'Sync found no eligible jobs for import.', 'matador-jobs' ) );
+
 			return false;
 		} else {
 			// Translators: Placeholder is for number of found jobs.
@@ -201,7 +217,8 @@ class Bullhorn_Import extends Bullhorn_Connection {
 			 * @since 3.5.0
 			 *
 			 * @param  stdClass $jobs
-			 * @return stdClass $jobs
+			 *
+			 * @return stdClass
 			 */
 			return apply_filters( 'matador_bullhorn_import_get_remote_jobs', $jobs );
 		}
@@ -215,6 +232,7 @@ class Bullhorn_Import extends Bullhorn_Connection {
 	 * and returns an array of Bullhorn IDs with the value of WordPress IDs.
 	 *
 	 * @since 3.0.0
+	 *
 	 * @return boolean|array
 	 */
 	private function get_local_jobs() {
@@ -250,7 +268,7 @@ class Bullhorn_Import extends Bullhorn_Connection {
 			);
 
 			// WP Query
-			$posts = new \WP_Query( $args );
+			$posts = new WP_Query( $args );
 
 			if ( $posts->have_posts() && ! is_wp_error( $posts ) ) {
 
@@ -310,7 +328,7 @@ class Bullhorn_Import extends Bullhorn_Connection {
 	 * @since 3.0.0
 	 *
 	 * @param stdClass $remote_jobs
-	 * @param array  $local_jobs
+	 * @param array    $local_jobs
 	 *
 	 * @return array (empty or populated)
 	 */
@@ -345,9 +363,9 @@ class Bullhorn_Import extends Bullhorn_Connection {
 	 *
 	 * @param integer $job_id optional, if passed requests categories for only single job.
 	 *
-	 * @throws Exception
-	 *
 	 * @return array
+	 *
+	 * @throws Exception
 	 */
 	private function get_category_terms( $job_id = null ) {
 		$cache_key = 'matador_bullhorn_categories_list' . ( null !== $job_id ) ? '_' . $job_id : '';
@@ -392,9 +410,9 @@ class Bullhorn_Import extends Bullhorn_Connection {
 	 * So we need to format country data into an array of
 	 * IDs and names.
 	 *
-	 * @throws Exception
-	 *
 	 * @return array|boolean;
+	 *
+	 * @throws Exception
 	 */
 	public function get_countries() {
 
@@ -462,9 +480,9 @@ class Bullhorn_Import extends Bullhorn_Connection {
 	 *
 	 * @param integer $organization_id ID from Bullhorn for Organization
 	 *
-	 * @throws Exception
-	 *
 	 * @return boolean|string;
+	 *
+	 * @throws Exception
 	 */
 	private function get_hiring_organization_url( $organization_id = null ) {
 
@@ -520,11 +538,13 @@ class Bullhorn_Import extends Bullhorn_Connection {
 	 * Given an array existing jobs and an array of retrieved jobs,
 	 * save jobs to database.
 	 *
-	 * @access private
 	 * @since  2.1.0
+	 *
+	 * @access private
 	 *
 	 * @param array $jobs
 	 * @param array $existing
+	 *
 	 * @return boolean
 	 */
 	private function save_jobs( $jobs, $existing ) {
@@ -547,11 +567,15 @@ class Bullhorn_Import extends Bullhorn_Connection {
 					continue;
 				}
 
-				$job->dateAdded = self::timestamp_to_epoch( $job->dateAdded ); // @codingStandardsIgnoreLine (SnakeCase)
-				$job->dateEnd   = self::timestamp_to_epoch( $job->dateEnd ); // @codingStandardsIgnoreLine (SnakeCase)
+				// fix weird date format used by Bullhorn
+				$job->dateAdded          = self::timestamp_to_epoch( $job->dateAdded );
+				$job->dateEnd            = self::timestamp_to_epoch( $job->dateEnd );
+				$job->dateLastPublished  = self::timestamp_to_epoch( $job->dateLastPublished );
+				$job->dateLastModified   = self::timestamp_to_epoch( $job->dateLastModified );
 
 				$wpid = isset( $existing[ $job->id ] ) ? $existing[ $job->id ] : null;
 
+				// Determine should we update/save post? Check if $wpid is present.
 				if ( null !== $wpid ) {
 
 					/**
@@ -561,11 +585,11 @@ class Bullhorn_Import extends Bullhorn_Connection {
 					 *
 					 * @since 3.5.0
 					 *
-					 * @param bool $overwrite default true
-					 * @param stdClass $job the current job being imported
-					 * @param int $wpid the ID corresponding to the current job if it exists in DB, else null
+					 * @param bool     $overwrite default true
+					 * @param stdClass $job       the current job being imported
+					 * @param int      $wpid      the ID corresponding to the current job if it exists in DB, else null
 					 *
-					 * @return bool $overwrite
+					 * @return bool
 					 */
 					if ( apply_filters( 'matador_bullhorn_import_skip_job_on_update', false, $job, $wpid ) ) {
 						// Translators: Placeholders are for Bullhorn ID and WordPress Post ID
@@ -573,8 +597,20 @@ class Bullhorn_Import extends Bullhorn_Connection {
 						continue;
 					}
 
-					// Translators: Placeholders are for Bullhorn ID and WordPress Post ID
-					new Event_Log( 'bullhorn-import-overwrite-save-job', esc_html( sprintf( __( 'Bullhorn Job #%1$s exists as WP post #%2$s and is updated.', 'matador-jobs' ), $job->id, $wpid ) ) );
+					if ( ! isset( $_REQUEST['bhid'] ) && $this->get_latest_synced_job_date() && strtotime( Helper::format_datetime_to_mysql( $this->get_date_modified( $job ) ) ) <= $this->get_latest_synced_job_date() ) {
+						// Translators:: placeholder 1 is Job ID
+						new Event_Log( 'bullhorn-import-skip-job-not-modified-skip', esc_html( sprintf( __( 'Bullhorn Job #%1$s was not modified since last import skipping save.', 'matador-jobs' ), $job->id ) ) );
+						continue;
+					}
+
+					if ( isset( $_REQUEST['bhid'] ) ) {
+						// Translators: Placeholders are for Bullhorn ID and WordPress Post ID
+						new Event_Log( 'bullhorn-import-overwrite-force-save-job', esc_html( sprintf( __( 'Bullhorn Job #%1$s exists as WP post #%2$s and is force updated due to user action.', 'matador-jobs' ), $job->id, $wpid ) ) );
+					} else {
+						// Translators: Placeholders are for Bullhorn ID and WordPress Post ID
+						new Event_Log( 'bullhorn-import-overwrite-save-job', esc_html( sprintf( __( 'Bullhorn Job #%1$s exists as WP post #%2$s and is updated.', 'matador-jobs' ), $job->id, $wpid ) ) );
+					}
+
 				} else {
 					/**
 					 * Filter : Matador Bullhorn Import Skip New Job on Create
@@ -583,10 +619,10 @@ class Bullhorn_Import extends Bullhorn_Connection {
 					 *
 					 * @since 3.5.4
 					 *
-					 * @param bool $skip default true
-					 * @param stdClass $job the current job being imported
+					 * @param bool     $skip default true
+					 * @param stdClass $job  the current job being imported
 					 *
-					 * @return bool $overwrite
+					 * @return bool
 					 */
 					if ( apply_filters( 'matador_bullhorn_import_skip_job_on_create', false, $job ) ) {
 						// Translators: Placeholders are for Bullhorn ID
@@ -623,7 +659,7 @@ class Bullhorn_Import extends Bullhorn_Connection {
 
 			delete_transient( $cache_key );
 
-		} // End if().
+		}
 
 		return true;
 	}
@@ -634,11 +670,12 @@ class Bullhorn_Import extends Bullhorn_Connection {
 	 * Given a job object and an optional WP post ID,
 	 * insert or add a job post type post to WordPress.
 	 *
+	 * @since 3.0.0
+	 *
 	 * @param array|stdClass $job
-	 * @param integer      $wpid
+	 * @param integer        $wpid
 	 *
 	 * @return integer WP post ID
-	 * @since 3.0.0
 	 */
 	public function save_job( $job, $wpid = null ) {
 
@@ -665,14 +702,15 @@ class Bullhorn_Import extends Bullhorn_Connection {
 			 *
 			 * @param string
 			 */
-			'post_content' => wp_kses( apply_filters( 'matador_import_job_description', $job->{$this->the_jobs_description_field()} ), $this->the_jobs_description_allowed_tags() ),
+			'post_content' => wp_kses( apply_filters( 'matador_import_job_description', $job->{$this->the_jobs_description_field()} ), $this->the_jobs_description_allowed_tags(), $this->the_jobs_description_allowed_protocols() ),
 			'post_type'    => Matador::variable( 'post_type_key_job_listing' ),
 			'post_name'    => $this->the_jobs_slug( $job ),
-			'post_date'    => Helper::format_datetime_to_mysql( $job->dateAdded ), // @codingStandardsIgnoreLine (SnakeCase)
+			'post_date'    => Helper::format_datetime_to_mysql( $this->get_post_date( $job ) ),
 			'post_status'  => $status,
 			'meta_input'   => array(
-				'_matador_source'    => 'bullhorn',
-				'_matador_source_id' => $job->id,
+				'_matador_source'               => 'bullhorn',
+				'_matador_source_id'            => $job->id,
+				'_matador_source_date_modified' => strtotime( Helper::format_datetime_to_mysql( $this->get_date_modified( $job ) ) ),
 			),
 		);
 
@@ -690,8 +728,8 @@ class Bullhorn_Import extends Bullhorn_Connection {
 		 * @since 3.5.4
 		 *
 		 * @param array $args to passed to wp_insert_posts
-		 * @param object $job the being imported
-		 * @param id|null  $wpid the wp id to be update or null
+		 * @param stdClass $job the being imported
+		 * @param int  $wpid the wp id to be update or null
 		 */
 		$args = apply_filters( 'matador_import_job_save_args', $args, $job, $wpid );
 
@@ -701,16 +739,17 @@ class Bullhorn_Import extends Bullhorn_Connection {
 	/**
 	 * Save Job Categories
 	 *
-	 * @access public
 	 * @since 1.0.0
 	 * @since 3.5.0 added logic to handle new publishedCategory field in Bullhorn
+	 *
+	 * @access public
 	 *
 	 * @param stdClass $job
 	 * @param int      $wpid
 	 *
-	 * @throws Exception
-	 *
 	 * @return boolean
+	 *
+	 * @throws Exception
 	 */
 	public function save_job_categories( $job = null, $wpid = null ) {
 
@@ -763,7 +802,7 @@ class Bullhorn_Import extends Bullhorn_Connection {
 	 * Save Job Types
 	 *
 	 * @param stdClass $job
-	 * @param integer $wpid
+	 * @param integer  $wpid
 	 *
 	 * @return boolean
 	 */
@@ -773,12 +812,12 @@ class Bullhorn_Import extends Bullhorn_Connection {
 			return false;
 		}
 
-		if ( isset( $job->employmentType ) ) { // @codingStandardsIgnoreLine (SnakeCase)
+		if ( isset( $job->employmentType ) ) {
 			$taxonomies = Matador::variable( 'job_taxonomies' );
 
 			if ( isset( $taxonomies['type']['key'] ) ) {
 
-				return wp_set_object_terms( $wpid, $job->employmentType, $taxonomies['type']['key'] ); // @codingStandardsIgnoreLine (SnakeCase)
+				return wp_set_object_terms( $wpid, $job->employmentType, $taxonomies['type']['key'] );
 			}
 		}
 
@@ -789,14 +828,17 @@ class Bullhorn_Import extends Bullhorn_Connection {
 	 * Save Job Meta
 	 *
 	 * @access public
+	 *
 	 * @since 3.0.0
 	 * @since 3.4.0 Added support for saveas = object, flatten an array to a string when saveas = meta
 	 *
 	 * @param stdClass $job
 	 * @param int    $wpid
+	 *
 	 * @return void
+	 *
 	 * @throws Exception
-	 **/
+	 */
 	public function save_job_meta( $job = null, $wpid = null ) {
 		if ( ! $job || ! $wpid ) {
 			return;
@@ -869,7 +911,7 @@ class Bullhorn_Import extends Bullhorn_Connection {
 			}
 		}
 
-		$job_meta_fields['hiringOrganizationURL'] = $this->get_hiring_organization_url( $job->clientCorporation->id ); // @codingStandardsIgnoreLine (SnakeCase)
+		$job_meta_fields['hiringOrganizationURL'] = $this->get_hiring_organization_url( $job->clientCorporation->id );
 
 		foreach ( $job_meta_fields as $key => $val ) {
 
@@ -880,12 +922,15 @@ class Bullhorn_Import extends Bullhorn_Connection {
 	/**
 	 * Save Job Address
 	 *
-	 * @access public
 	 * @since  2.1.0
+	 *
+	 * @access public
 	 *
 	 * @param stdClass $job
 	 * @param int    $wpid
+	 *
 	 * @return void
+	 *
 	 * @throws Exception
 	 */
 	public function save_job_address( $job = null, $wpid = null ) {
@@ -894,11 +939,23 @@ class Bullhorn_Import extends Bullhorn_Connection {
 			return;
 		}
 
+		/**
+		 * Matador Import Before Save Job Location Action
+		 *
+		 * Run before the Job Address data is saved
+		 *
+		 * @since 3.6.0
+		 *
+		 * @param stdClass $job  Job Object (from Bullhorn)
+		 * @param int      $wpid WordPress Job Post Type ID
+		 */
+		do_action( 'matador_import_before_save_job_location', $job, $wpid );
+
 		$street     = isset( $job->address->address1 ) ? $job->address->address1 : null;
 		$city       = isset( $job->address->city ) ? $job->address->city : null;
 		$state      = isset( $job->address->state ) ? $job->address->state : null;
 		$zip        = isset( $job->address->zip ) ? $job->address->zip : null;
-		$country_id = isset( $job->address->countryID ) ? $job->address->countryID : null;  // @codingStandardsIgnoreLine (SnakeCase)
+		$country_id = isset( $job->address->countryID ) ? $job->address->countryID : null;
 		$country    = $country_id ? $this->the_job_country_name( $country_id ) : null;
 
 		// Some Formatting Help
@@ -925,17 +982,53 @@ class Bullhorn_Import extends Bullhorn_Connection {
 		$location_string = sprintf( '%s%s%s%s%s%s%s', $city, $comma, $state, $space, $zip, $dash, $country );
 		update_post_meta( $wpid, 'bullhorn_job_location', $location_string );
 
-		$location_data    = array(
+		$location_data = array(
 			'street'  => $street,
 			'city'    => $city,
 			'state'   => $state,
 			'zip'     => $zip,
 			'country' => $country,
 		);
-		$general_location = apply_filters( 'matador_import_job_general_location', $city . $comma . $state, $location_data );
+		/**
+		 * Job General Location Filter
+		 *
+		 * @since 3.4.0
+		 * @since 3.6.0 added $wpid arg
+		 *
+		 * @param string $general_location
+		 * @param array  $location_data . Values are "street", "city" for city or locality, "state", "zip" for ZIP or Postal Code, and "country"
+		 * @param int    $wpid ID of the current job post.
+		 *
+		 * @return string $general_location
+		 */
+		$general_location = apply_filters( 'matador_import_job_general_location', $city . $comma . $state, $location_data, $wpid );
 
 		update_post_meta( $wpid, 'job_general_location', $general_location );
 
+		/**
+		 * Matador Import After Save Job Address Action
+		 *
+		 * Run after the Job Address data is saved
+		 *
+		 * @since 3.6.0 added $job to sync
+		 *
+		 * @param stdClass $job  Job Object (from Bullhorn)
+		 * @param int      $wpid WordPress Job Post Type ID
+		 */
+		do_action( 'matador_import_after_save_job_location', $job, $wpid );
+
+		/**
+		 * Matador Import Save Job Address
+		 *
+		 * Run after the Job Address is saved.
+		 *
+		 * @since 3.0.0
+		 * @deprecated 3.6.0 Use 'matador_import_after_save_job_address'
+		 *
+		 * @param string $location_string
+		 * @param int $wpid
+		 * @param array $data
+		 */
 		do_action( 'matador_save_job_address', $location_string, $wpid, array(
 			'street'  => $street,
 			'city'    => $city,
@@ -951,13 +1044,14 @@ class Bullhorn_Import extends Bullhorn_Connection {
 	 * This function accepts location data stored as meta values to generate taxonomy terms. It includes a routine
 	 * where a site operator can generate additional location-based taxonomy, ie: one for state, one for city.
 	 *
+	 * @since 3.0.0
+	 *
 	 * @access public
-	 * @since (unknown)
 	 *
-	 * @param null $job
-	 * @param null $wpid
+	 * @param stdClass $job
+	 * @param int      $wpid
 	 *
-	 * @todo look up value for @since
+	 * @return void
 	 */
 	public function save_job_location( $job = null, $wpid = null ) {
 
@@ -971,12 +1065,11 @@ class Bullhorn_Import extends Bullhorn_Connection {
 		 * This defines which possible values are allowed as terms for the Location Taxonomy. This should correlate to
 		 * job meta fields.
 		 *
-		 * @since (unknown)
+		 * @since 3.0.0
 		 *
 		 * @param array $fields
-		 * @return array
 		 *
-		 * @todo look up @since
+		 * @return array
 		 */
 		$allowed = apply_filters( 'matador_import_location_taxonomy_allowed_fields', array( 'city', 'state', 'zip', 'country', 'job_general_location' ) );
 
@@ -986,12 +1079,11 @@ class Bullhorn_Import extends Bullhorn_Connection {
 		 * This allows the user to set which value determines the location taxonomy term. Must be from list of allowed
 		 * fields, which in turn is a list of valid meta previously defined.
 		 *
-		 * @since (unknown)
+		 * @since 3.0.0
 		 *
 		 * @param  string $field, default is 'city'
-		 * @return string
 		 *
-		 * @todo look up @since
+		 * @return string
 		 */
 		$field = apply_filters( 'matador_import_location_taxonomy_field', 'city' );
 
@@ -1038,7 +1130,7 @@ class Bullhorn_Import extends Bullhorn_Connection {
 		 * @param string|int|array $value     A single term slug, single term id, or array of either term slugs or ids.
 		 *                                    Will replace all existing related terms in this taxonomy. Passing an
 		 *                                    empty value will remove all related terms.
-		 * @param int $wpid                   The WordPress post (job) ID
+		 * @param int    $wpid                The WordPress post (job) ID
 		 * @param string $field               The Bullhorn Import field name.
 		 *
 		 * @return string|int|array
@@ -1053,12 +1145,15 @@ class Bullhorn_Import extends Bullhorn_Connection {
 	/**
 	 * Format Job As JSON LD
 	 *
-	 * @access public
 	 * @since 3.0.0
+	 *
+	 * @access public
 	 *
 	 * @param stdClass $job
 	 * @param int      $wpid
+	 *
 	 * @return void
+	 *
 	 * @throws Exception
 	 */
 	public function save_job_jsonld( $job = null, $wpid = null ) {
@@ -1071,15 +1166,15 @@ class Bullhorn_Import extends Bullhorn_Connection {
 		$ld['@type']                           = 'JobPosting';
 		$ld['title']                           = $job->{$this->the_jobs_title_field()};
 		$ld['description']                     = $job->{$this->the_jobs_description_field()};
-		$ld['datePosted']                      = Helper::format_datetime_to_8601( $job->dateAdded ); // @codingStandardsIgnoreLine (SnakeCase)
+		$ld['datePosted']                      = Helper::format_datetime_to_8601( $this->get_post_date( $job ) );
 		$ld['jobLocation']['@type']            = 'Place';
 		$ld['jobLocation']['address']['@type'] = 'PostalAddress';
 		$ld['hiringOrganization']['@type']     = 'Organization';
 
-		if ( null !== $job->dateEnd && $job->dateAdded < $job->dateEnd ) { // @codingStandardsIgnoreLine (SnakeCase)
-			$ld['validThrough'] = Helper::format_datetime_to_8601( $job->dateEnd ); // @codingStandardsIgnoreLine (SnakeCase)
+		if ( null !== $job->dateEnd && $job->dateAdded < $job->dateEnd ) {
+			$ld['validThrough'] = Helper::format_datetime_to_8601( $job->dateEnd );
 		} else {
-			$d = $job->dateAdded; // @codingStandardsIgnoreLine (SnakeCase)
+			$d = $this->get_post_date( $job );
 			$d->modify( '+ 1 years' ); //@todo this should be a new DateTime
 			$ld['validThrough'] = Helper::format_datetime_to_8601( $d );
 		}
@@ -1114,11 +1209,11 @@ class Bullhorn_Import extends Bullhorn_Connection {
 		$hiring_company_url  = get_bloginfo( 'url' );
 
 		if ( 'company' === $is_company ) {
-			if ( isset( $job->clientCorporation->name ) ) {  // @codingStandardsIgnoreLine (SnakeCase)
-				$hiring_company_name = $job->clientCorporation->name; // @codingStandardsIgnoreLine (SnakeCase)
+			if ( isset( $job->clientCorporation->name ) ) {
+				$hiring_company_name = $job->clientCorporation->name;
 			}
-			if ( isset( $job->clientCorporation->id ) && self::get_hiring_organization_url( $job->clientCorporation->id ) ) { // @codingStandardsIgnoreLine (SnakeCase)
-				$hiring_company_url = self::get_hiring_organization_url( $job->clientCorporation->id ); // @codingStandardsIgnoreLine (SnakeCase)
+			if ( isset( $job->clientCorporation->id ) && self::get_hiring_organization_url( $job->clientCorporation->id ) ) {
+				$hiring_company_url = self::get_hiring_organization_url( $job->clientCorporation->id );
 			}
 		}
 
@@ -1134,9 +1229,10 @@ class Bullhorn_Import extends Bullhorn_Connection {
 		 * @param  int      $wpid
 		 * @param  stdClass $job
 		 * @param  bool     $is_company
-		 * @return string   $name
+		 *
+		 * @return string
 		 **/
-		$ld['hiringOrganization']['name'] = apply_filters( 'matador_get_hiring_organization_name', $hiring_company_name, $wpid, $job, $is_company ); // @codingStandardsIgnoreLine (SnakeCase)
+		$ld['hiringOrganization']['name'] = apply_filters( 'matador_get_hiring_organization_name', $hiring_company_name, $wpid, $job, $is_company );
 
 		/**
 		 * Filter Matador Get Hiring Organization URL
@@ -1152,36 +1248,103 @@ class Bullhorn_Import extends Bullhorn_Connection {
 		 * @param  bool     $is_company
 		 * @return string   $url
 		 **/
-		$ld['hiringOrganization']['sameAs'] = apply_filters( 'matador_get_hiring_organization_url', $hiring_company_url, $wpid, $job, $is_company ); // @codingStandardsIgnoreLine (SnakeCase)
+		$ld['hiringOrganization']['sameAs'] = apply_filters( 'matador_get_hiring_organization_url', $hiring_company_url, $wpid, $job, $is_company );
 
 		// Kitchen Sink
-		if ( isset( $job->educationDegree ) && ! empty( $job->educationDegree ) ) { // @codingStandardsIgnoreLine (SnakeCase)
-			$ld['educationRequirements'] = $job->educationDegree; // @codingStandardsIgnoreLine (SnakeCase)
+		if ( isset( $job->educationDegree ) && ! empty( $job->educationDegree ) ) {
+			$ld['educationRequirements'] = $job->educationDegree;
 		}
-		if ( isset( $job->degreeList ) && ! empty( $job->degreeList ) ) { // @codingStandardsIgnoreLine (SnakeCase)
-			$ld['educationRequirements'] = $job->degreeList; // @codingStandardsIgnoreLine (SnakeCase)
+		if ( isset( $job->degreeList ) && ! empty( $job->degreeList ) ) {
+			$ld['educationRequirements'] = $job->degreeList;
 		}
-		if ( isset( $job->employmentType ) && ! empty( $job->employmentType ) ) { // @codingStandardsIgnoreLine (SnakeCase)
-			$ld['employmentType'] = $job->employmentType; // @codingStandardsIgnoreLine (SnakeCase)
+		if ( ! empty( $job->employmentType ) ) {
+
+			$employment_type = $job->employmentType;
+
+			/**
+			 * Filter: Matador Bullhorn Import Employment Type (Before)
+			 *
+			 * Allows user to filter the employment_type before we map it to allowed values
+			 *
+			 * @since 3.6.0
+			 *
+			 * @param string $employment_type
+			 *
+			 * @return string
+			 */
+			$employment_type = apply_filters( 'matador_bullhorn_import_employment_type_before', $employment_type );
+
+			$employment_types = array(
+				'direct hire'      => 'FULL_TIME',
+				'full time'        => 'FULL_TIME',
+				'part time'        => 'PART_TIME',
+				'contract'         => 'CONTRACTOR',
+				'contract to hire' => [ "FULL_TIME", "CONTRACTOR" ],
+				'temp'             => 'TEMPORARY',
+				'intern'           => 'INTERN',
+				'volunteer'        => 'VOLUNTEER',
+				'per_diem'         => 'PER_DIEM',
+				'other'            => 'OTHER',
+			);
+
+			/**
+			 * Filter: Matador Job Structured Data Employment Type Map
+			 *
+			 * We've mapped Schema.org/Google Employment Types to default Bullhorn values with similar meaning. If using
+			 * custom "Employment Types", modify this array with mappings for best results.
+			 *
+			 * @since 3.6.0
+			 *
+			 * @param array $employment_types
+			 *
+			 * @return array
+			 */
+			$employment_types = apply_filters( 'matador_bullhorn_import_employment_types', $employment_types );
+
+			if ( array_key_exists( strtolower( $employment_type ), $employment_types ) ) {
+				$employment_type = $employment_types[ strtolower( $employment_type ) ];
+			} else {
+				$employment_type = strtoupper( $employment_type );
+			}
+
+			/**
+			 * Filter: Matador Bullhorn Import Employment Type (after processing, before set)
+			 *
+			 * Allows user to filter the after processing but before we finally set it
+			 *
+			 * @since 3.6.0
+			 *
+			 * @param string $employment_type
+			 * @param string $input_employment_type
+			 * @param array  $employment_types
+			 *
+			 * @return string
+			 */
+			$employment_type = apply_filters( 'matador_bullhorn_import_employment_type', $employment_type, $job->employmentType, $employment_types );
+
+			if ( ! empty( $employment_type ) ) {
+				$ld['employmentType'] = $employment_type;
+			}
 		}
+
 		if ( isset( $job->benefits ) && ! empty( $job->benefits ) ) {
 			$ld['jobBenefits'] = $job->benefits;
 		}
 
-		if ( Matador::setting( 'jsonld_salary' ) && ( isset( $job->salary ) || isset( $job->payRate ) ) ) { // @codingStandardsIgnoreLine (SnakeCase)
+		if ( Matador::setting( 'jsonld_salary' ) && ( isset( $job->salary ) || isset( $job->payRate ) ) ) {
 			$ld['baseSalary']['@type']          = 'MonetaryAmount';
 			$ld['baseSalary']['currency']       = self::get_bullorn_currency_format();
 			$ld['baseSalary']['value']['@type'] = 'QuantitativeValue';
 			if ( 0 < $job->salary ) {
 				$ld['baseSalary']['value']['value'] = $job->salary;
-			} elseif ( 0 < $job->payRate ) { // @codingStandardsIgnoreLine (SnakeCase)
-				$ld['baseSalary']['value']['value'] = $job->payRate; // @codingStandardsIgnoreLine (SnakeCase)
+			} elseif ( 0 < $job->payRate ) {
+				$ld['baseSalary']['value']['value'] = $job->payRate;
 			}
-			if ( isset( $job->salaryUnit ) && ! empty( $job->salaryUnit ) ) { // @codingStandardsIgnoreLine (SnakeCase)
+			if ( isset( $job->salaryUnit ) && ! empty( $job->salaryUnit ) ) {
 				//
 				// @todo can we use translations to partially avoid this need? Our normalization method only considers English words.
 				//
-				switch ( strtoupper( preg_replace( '/\s+/', '', $job->salaryUnit ) ) ) { // @codingStandardsIgnoreLine (SnakeCase)
+				switch ( strtoupper( preg_replace( '/\s+/', '', $job->salaryUnit ) ) ) {
 					case 'PERHOUR':
 					case 'HOURLY':
 					case '/HR':
@@ -1211,8 +1374,8 @@ class Bullhorn_Import extends Bullhorn_Connection {
 						$unit = 'YEAR';
 						break;
 					default:
-						if ( in_array( strtoupper( $job->salaryUnit ), array( 'HOUR', 'DAY', 'WEEK', 'MONTH', 'YEAR' ), true ) ) {  // @codingStandardsIgnoreLine (SnakeCase)
-							$unit = strtoupper( $job->salaryUnit );  // @codingStandardsIgnoreLine (SnakeCase)
+						if ( in_array( strtoupper( $job->salaryUnit ), array( 'HOUR', 'DAY', 'WEEK', 'MONTH', 'YEAR' ), true ) ) {
+							$unit = strtoupper( $job->salaryUnit );
 						} else {
 							$unit = false;
 						}
@@ -1230,7 +1393,7 @@ class Bullhorn_Import extends Bullhorn_Connection {
 				 *
 				 * @return string
 				 */
-				$unit = apply_filters( 'matador_job_structured_data_salary_unit', $unit, $job->salaryUnit ); // @codingStandardsIgnoreLine (SnakeCase)
+				$unit = apply_filters( 'matador_job_structured_data_salary_unit', $unit, $job->salaryUnit );
 
 				if ( $unit ) {
 					$ld['baseSalary']['value']['unitText'] = $unit;
@@ -1238,11 +1401,76 @@ class Bullhorn_Import extends Bullhorn_Connection {
 			}
 		}
 
-		if ( isset( $job->yearsRequired ) && ! empty( $job->yearsRequired ) ) { // @codingStandardsIgnoreLine (SnakeCase)
-			$ld['experienceRequirements'] = $job->yearsRequired; // @codingStandardsIgnoreLine (SnakeCase)
+		if ( isset( $job->yearsRequired ) && ! empty( $job->yearsRequired ) ) {
+			$ld['experienceRequirements'] = $job->yearsRequired;
 		}
-		if ( isset( $job->bonusPackage ) && ! empty( $job->bonusPackage ) ) { // @codingStandardsIgnoreLine (SnakeCase)
-			$ld['incentiveCompensation'] = $job->bonusPackage; // @codingStandardsIgnoreLine (SnakeCase)
+		if ( isset( $job->bonusPackage ) && ! empty( $job->bonusPackage ) ) {
+			$ld['incentiveCompensation'] = $job->bonusPackage;
+		}
+
+		if ( ! empty( $job->onSite ) ) {
+
+			$telecommute = $job->onSite;
+
+			/**
+			 * Filter: Matador Bullhorn Import Telecommunite (Before)
+			 *
+			 * Allows user to filter the onsite (telecommute value) before we map it to allowed values
+			 *
+			 * @since 3.6.0
+			 *
+			 * @param string $telecommute
+			 *
+			 * @return string
+			 */
+			$telecommute = apply_filters( 'matador_bullhorn_import_telecommute_before', $telecommute );
+
+			$telecommute_types = array(
+				'off-site',
+				'no preference',
+			);
+
+			/**
+			 * Filter: Matador Bullhorn Import Telecommute Types
+			 *
+			 * Allows user to filter which of the values set in bullhorn for the onSite option are considered as remote
+			 * jobs that will trigger the code to set jobLocationType to "TELECOMMUTE" in JSON+LD Structured Data
+			 *
+			 * @since 3.6.0
+			 *
+			 * @param array $telecommute_types
+			 *
+			 * @return array
+			 */
+			$telecommute_types = array_map( 'strtolower', apply_filters( 'matador_bullhorn_import_telecommute_types', $telecommute_types ) );
+
+			if ( in_array( strtolower( $telecommute ), $telecommute_types, true ) ) {
+				$ld['jobLocationType'] = "TELECOMMUTE";
+			}
+		}
+
+		if ( isset( $ld['jobLocationType'] ) && "TELECOMMUTE" === $ld['jobLocationType'] ) {
+
+			// Job Listing Schema (JSON+LD) requests we set a location type and value when a work from home/telecommute
+			// job is posted. If not set, the country of the job hiring org will be automatically assumed. If the user
+			// needs to limit a job for example to a specific state, ie: AZ, or can have multiple countries, they must
+			// pass those into the value through Bullhorn custom fields.
+
+			/**
+			 * Filter: Matador Job Structured Data sets the BH field hold the type and value for applicantLocationRequirements
+			 *
+			 * Allows user to set which of the options set in bullhorn to be used for applicantLocationRequirements in the JSON+LD
+			 *
+			 * @param array $remote_type default ['type' => '', 'name' => '']
+			 *
+			 * @return array
+			 */
+			$fields = apply_filters( 'matador_bullhorn_import_location_requirements_fields', array( 'type' => '', 'name' => '' ) );
+
+			if ( ! empty( $fields['type'] ) && ! empty( ! $job->$fields['type'] ) && ! empty( $fields['name'] ) && ! empty( ! $job->$fields['name'] ) ) {
+				$ld['applicantLocationRequirements']['@type'] = $job->$fields['type'];
+				$ld['applicantLocationRequirements']['@name'] = $job->$fields['name'];
+			}
 		}
 
 		/**
@@ -1274,7 +1502,7 @@ class Bullhorn_Import extends Bullhorn_Connection {
 	 *
 	 * @since 2.1
 	 */
-	private function save_taxonomy( $terms = null, $taxonomy ) {
+	private function save_taxonomy( $terms = array(), $taxonomy = '' ) {
 		if ( isset( $terms ) ) {
 			foreach ( $terms as $term ) {
 				wp_insert_term( $term, $taxonomy );
@@ -1287,8 +1515,13 @@ class Bullhorn_Import extends Bullhorn_Connection {
 	 *
 	 * This gets the Currency format set in Bullhorn.
 	 *
-	 *
 	 * @since 3.0.6
+	 *
+	 * @access public
+	 *
+	 * @throws Exception
+	 *
+	 * @return string
 	 */
 	private function get_bullorn_currency_format() {
 		$cache_key = 'matador_currency_format';
@@ -1308,8 +1541,8 @@ class Bullhorn_Import extends Bullhorn_Connection {
 			$response = $this->request( $request, $params );
 			// Handle Response
 			if ( ! is_wp_error( $response ) ) {
-				if ( isset( $response->currencyFormat ) ) { // @codingStandardsIgnoreLine (SnakeCase)
-					$currency_format = $response->currencyFormat; // @codingStandardsIgnoreLine (SnakeCase)
+				if ( isset( $response->currencyFormat ) ) {
+					$currency_format = $response->currencyFormat;
 					set_transient( $cache_key, $currency_format, HOUR_IN_SECONDS * 24 );
 				} else {
 					$currency_format = '';
@@ -1332,9 +1565,6 @@ class Bullhorn_Import extends Bullhorn_Connection {
 
 				break;
 			case 'responseUser':
-				$data->email = self::get_email_user_id( $data->id );
-
-				break;
 			case 'owner':
 				$data->email = self::get_email_user_id( $data->id );
 
@@ -1344,7 +1574,15 @@ class Bullhorn_Import extends Bullhorn_Connection {
 		return $data;
 	}
 
-
+	/**
+	 * Get Email User ID
+	 *
+	 * @param $id
+	 *
+	 * @return string
+	 *
+	 * @throws Exception
+	 */
 	private function get_email_user_id( $id ) {
 
 		$cache_key = 'matador_user_email';
@@ -1448,6 +1686,14 @@ class Bullhorn_Import extends Bullhorn_Connection {
 				'type'   => 'time',
 				'saveas' => 'core',
 			),
+			'dateLastPublished'                 => array(
+				'type'   => 'time',
+				'saveas' => 'core',
+			),
+			'dateLastModified'                  => array(
+				'type'   => 'time',
+				'saveas' => 'core',
+			),
 			'status'                            => array(
 				'type'   => 'string',
 				'saveas' => 'core',
@@ -1532,7 +1778,38 @@ class Bullhorn_Import extends Bullhorn_Connection {
 				'type'   => 'association',
 				'saveas' => 'meta',
 			),
+			'onSite'                            => array(
+				'type'   => 'string',
+				'saveas' => 'meta',
+			),
 		), $fields );
+
+		// Spacer start location type requirements
+
+		/**
+		 * Filter: Matador Job Structured Data sets the BH field hold the type and value for applicantLocationRequirements
+		 *
+		 * Allows user to set which of the options set in bullhorn to be used for applicantLocationRequirements in the JSON+LD
+		 *
+		 * @param  array $remote_type default ['type' => '', 'name' => '']
+		 *
+		 * @return array
+		 */
+		$applicant_location_type = apply_filters( 'matador_bullhorn_import_location_requirements_fields', array( 'type' => '', 'name' => '' ) );
+
+		if ( ! empty( $applicant_location_type['type'] ) && ! empty( $applicant_location_type['name'] ) ) {
+
+			$fields[ $applicant_location_type['name'] ] = array(
+				'type'   => 'string',
+				'saveas' => 'core',
+			);
+			$fields[ $applicant_location_type['type'] ] = array(
+				'type'   => 'string',
+				'saveas' => 'core',
+			);
+		}
+
+		// Spacer end location type requirements
 
 		if ( 'string' === $format ) {
 			return implode( ',', array_keys( $fields ) );
@@ -1548,6 +1825,9 @@ class Bullhorn_Import extends Bullhorn_Connection {
 	 * Uses the settings and filters to prepare it.
 	 *
 	 * @since 3.0.0
+	 *
+	 * @access private
+	 *
 	 * @return string 'where' clause.
 	 */
 	private function the_jobs_where() {
@@ -1566,15 +1846,18 @@ class Bullhorn_Import extends Bullhorn_Connection {
 				$where .= ' AND isPublic=1';
 				break;
 		}
+
 		/**
 		 * Deprecated Filter : Matador the Job Where
 		 *
 		 * @since      3.0.0
 		 * @deprecated 3.5.0
-		 * @todo add deprecated handler
 		 *
 		 * @param string $where
-		 * @return string $where
+		 *
+		 * @return string
+		 *
+		 * @todo add deprecated handler
 		 */
 		$where = apply_filters( 'matador-the-job-where', $where );
 
@@ -1584,9 +1867,47 @@ class Bullhorn_Import extends Bullhorn_Connection {
 		 * @since 3.5.0
 		 *
 		 * @param string $where
+		 *
 		 * @return string $where
 		 */
 		return apply_filters( 'matador_bullhorn_import_the_job_where', $where );
+	}
+
+	/**
+	 * Get Latest Synced Job Date
+	 *
+	 * This function determines the latest last updated date of the synced items to use as a baseline for determining
+	 * if a found item should be updated by the Matador sync.
+	 *
+	 * @since 3.6.0
+	 *
+	 * @access public
+	 *
+	 * @return int|null
+	 */
+	private function get_latest_synced_job_date() {
+
+		if ( ! is_null( $this->latest_sync ) ) {
+			return $this->latest_sync;
+		}
+
+		$this->latest_sync = 0;
+
+		$latest_synced_post = get_posts( array(
+			'post_type'      => Matador::variable( 'post_type_key_job_listing' ),
+			'posts_per_page' => 1,
+			'meta_key'       => '_matador_source_date_modified',
+			'orderby'        => 'meta_value_num',
+		) );
+
+		if ( ! empty( $latest_synced_post ) && ! is_wp_error( $latest_synced_post ) ) {
+			$last_modified = get_post_meta( $latest_synced_post[0]->ID, '_matador_source_date_modified', true );
+			if ( ! empty( $last_modified ) ) {
+				$this->latest_sync = intval( $last_modified );
+			}
+		}
+
+		return $this->latest_sync;
 	}
 
 	/**
@@ -1595,6 +1916,9 @@ class Bullhorn_Import extends Bullhorn_Connection {
 	 * Which field will be used for the title.
 	 *
 	 * @since 3.4.0
+	 *
+	 * @access private
+	 *
 	 * @return string title field name
 	 */
 	private function the_jobs_title_field() {
@@ -1605,6 +1929,7 @@ class Bullhorn_Import extends Bullhorn_Connection {
 		 * If there is a filter here, it is overriding one of the two core fields.
 		 *
 		 * @since 3.4.0
+		 *
 		 * @return string description field name (in external source)
 		 */
 		return apply_filters( 'matador_import_job_title_field', 'title' );
@@ -1616,8 +1941,9 @@ class Bullhorn_Import extends Bullhorn_Connection {
 	 *
 	 * How should the importer determine the job URL slug
 	 *
-	 * @access private
 	 * @since 3.4.0
+	 *
+	 * @access private
 	 *
 	 * @param stdClass $job
 	 *
@@ -1672,6 +1998,9 @@ class Bullhorn_Import extends Bullhorn_Connection {
 	 * Looks for a setting for Job Description field and verifies its a valid option.
 	 *
 	 * @since 3.0.0
+	 *
+	 * @access private
+	 *
 	 * @return string description field name
 	 */
 	private function the_jobs_description_field() {
@@ -1726,11 +2055,13 @@ class Bullhorn_Import extends Bullhorn_Connection {
 	 *
 	 * @since 3.0.0
 	 *
+	 * @access private
+	 *
 	 * @param integer $country_id
 	 *
-	 * @throws Exception
-	 *
 	 * @return string country name
+	 *
+	 * @throws Exception
 	 */
 	private function the_job_country_name( $country_id ) {
 
@@ -1749,6 +2080,7 @@ class Bullhorn_Import extends Bullhorn_Connection {
 	 * Allowed fields array for the wp_kses() filter on the description imported from Bullhorn.
 	 *
 	 * @since 3.0.0
+	 *
 	 * @return array
 	 */
 	private function the_jobs_description_allowed_tags() {
@@ -1830,7 +2162,34 @@ class Bullhorn_Import extends Bullhorn_Connection {
 				'width'    => true,
 			),
 		) );
+	}
 
+	/**
+	 * Job Description Allowed Protocols
+	 *
+	 * Allowed protocols array for the wp_kses() filter on the job description.
+	 *
+	 * WARNING: Allowing additional protocols deemed unsafe by WordPress is DANGEROUS. Only do so if you know what you
+	 * are doing and the implications of such. Matador Jobs provides this filter as a tool to limit additional allowed
+	 * protocols to only job descriptions, but provides no warranty of the security of what you let through.
+	 *
+	 * @since 3.6.4
+	 *
+	 * @return array
+	 */
+	private function the_jobs_description_allowed_protocols() {
+
+		/**
+		 * Job Description Allowed Protocols
+		 *
+		 * @since 3.6.4
+		 *
+		 * @param array $protocols Default is returned value from wp_allowed_protocols(), subject to any global-level
+		 *                         filtered values.
+		 *
+		 * @return array
+		 */
+		return apply_filters( 'matador_the_jobs_description_allowed_protocols', wp_allowed_protocols() );
 	}
 
 	/**
@@ -1840,9 +2199,9 @@ class Bullhorn_Import extends Bullhorn_Connection {
 	 *
 	 * @since 3.0.0
 	 *
-	 * @param \DateTime|null $timestamp
+	 * @param DateTime|null $timestamp
 	 *
-	 * @return \DateTime
+	 * @return DateTime
 	 */
 	private static function timestamp_to_epoch( $timestamp = null ) {
 
@@ -1856,6 +2215,48 @@ class Bullhorn_Import extends Bullhorn_Connection {
 			$microtime = $microtime . '.00';
 		}
 
-		return \DateTime::createFromFormat( 'U.u', $microtime );
+		return DateTime::createFromFormat( 'U.u', $microtime );
+	}
+
+	/**
+	 * Get Job Date Last Modified
+	 *
+	 * @param $job
+	 *
+	 * @return mixed
+	 */
+	private function get_date_modified( $job ) {
+		$date_modified = $job->dateLastPublished;
+
+		if ( empty( $date_modified ) ) {
+			$date_modified = $job->dateLastModified;
+		}
+
+		return $date_modified;
+	}
+
+	/**
+	 * Get Job Post Date
+	 *
+	 * @param $job
+	 *
+	 * @return DateTime
+	 */
+	private function get_post_date( $job ) {
+
+		$setting   = Matador::setting( 'bullhorn_date_field' );
+		$post_date = '';
+
+		if ( 'date_last_published' === $setting ) {
+			$post_date = $job->dateLastPublished; // is a DateTime
+		} elseif ( 'date_last_modified' === $setting ) {
+			$post_date = $job->dateLastModified; // is a DateTime
+		}
+
+		if ( ! $post_date ) {
+			$post_date = $job->dateAdded; // is a DateTime
+		}
+
+		return $post_date;
 	}
 }

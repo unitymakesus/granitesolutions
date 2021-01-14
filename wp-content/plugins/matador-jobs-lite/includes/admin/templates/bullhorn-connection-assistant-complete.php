@@ -51,7 +51,7 @@ namespace matador;
 
 	<?php endif; ?>
 
-	<?php // IS WHITELISTED CHECK ?>
+	<?php // IS APPROVED URL CHECK ?>
 
 	<?php
 
@@ -77,7 +77,7 @@ namespace matador;
 
 		<div class="callout callout-error">
 			<p>
-				<?php esc_html_e( "Callback URI is not on Bullhorn's Redirect URI whitelist.", 'matador-jobs' ); ?>
+				<?php esc_html_e( "Callback URI is not registered with Bullhorn.", 'matador-jobs' ); ?>
 				<a href="<?php esc_url( Bullhorn_Connection_Assistant::get_url( 'callback' ) ); ?>"><?php esc_html_e( 'Troubleshoot.', 'matador-jobs' ); ?></a>
 			</p>
 		</div>
@@ -179,7 +179,13 @@ namespace matador;
 	}
 
 	?>
-
+	<p>
+		<?php
+		esc_html_e( 'You must have the following URL registered with Bullhorn in order for Matador to be able to connect.', 'matador-jobs' );
+		echo ' ';
+		echo Matador::variable( 'api_redirect_uri' ) ?: trailingslashit( home_url() ) . trailingslashit( Matador::variable( 'api_endpoint_prefix' ) . 'authorize/' );
+		?>
+	</p>
 
 </div>
 

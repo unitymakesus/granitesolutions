@@ -2,8 +2,8 @@
 Contributors: iqcomputing
 Tags: contact-form-7, contact-form-7-recaptcha, recaptcha, spam
 Requires at least: 4.9
-Tested up to: 5.4
-Stable tag: 1.2.7
+Tested up to: 5.6
+Stable tag: 1.3.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -60,11 +60,14 @@ Should the above be correct, at this point it's time to open a support thread fo
 
 == Changelog ==
 
+= 1.2.9 (2020-08-26) =
+* Updated external scripts enqueue method based on user feedback.
+
+= 1.2.8 (2020-08-19) =
+* Updated supported version to 5.5.
+* Fixed JS issue in which response was not looking for correct element ( Thanks @fuadyp ).
+* Moved inline script to enqueued script ( Props @m3h1nd3r ).
+* Removed instance of "whitelist".
+
 = 1.2.7 (2020-06-15) =
 * Rearranged the plugin method calls so that inclusion of files is last.
-
-= 1.2.6 (2020-04-22) =
-* Updated reCpatcha Javascript to use the passed event to find the given form.
-
-= 1.2.5 (2020-04-20) =
-* Updated WordPress Version to denote support for 5.4+

@@ -6,7 +6,7 @@
 
 namespace The_SEO_Framework;
 
-defined( 'THE_SEO_FRAMEWORK_PRESENT' ) or die;
+\defined( 'THE_SEO_FRAMEWORK_PRESENT' ) or die;
 
 /**
  * The SEO Framework plugin
@@ -45,10 +45,10 @@ class Cache extends Site_Options {
 
 		$this->init_post_cache_actions();
 
-		//* Deletes author transient.
+		// Deletes author transient.
 		\add_action( 'profile_update', [ $this, 'delete_author_cache' ] );
 
-		//* Delete Sitemap transient on permalink structure change.
+		// Delete Sitemap transient on permalink structure change.
 		\add_action( 'load-options-permalink.php', [ $this, 'delete_sitemap_transient_permalink_updated' ], 20 );
 
 		\add_action( 'activated_plugin', [ $this, 'set_plugin_check_caches' ] );
@@ -69,17 +69,17 @@ class Cache extends Site_Options {
 
 		if ( _has_run( __METHOD__ ) ) return;
 
-		//* Can-be cron actions.
+		// Can-be cron actions.
 		\add_action( 'publish_post', [ $this, 'delete_post_cache' ] );
 		\add_action( 'publish_page', [ $this, 'delete_post_cache' ] );
 
-		//* Other actions.
+		// Other actions.
 		\add_action( 'deleted_post', [ $this, 'delete_post_cache' ] );
 		\add_action( 'deleted_page', [ $this, 'delete_post_cache' ] );
 		\add_action( 'post_updated', [ $this, 'delete_post_cache' ] );
 		\add_action( 'page_updated', [ $this, 'delete_post_cache' ] );
 
-		//* Excluded IDs cache.
+		// Excluded IDs cache.
 		\add_action( 'save_post', [ $this, 'delete_excluded_ids_cache' ] );
 		\add_action( 'edit_attachment', [ $this, 'delete_excluded_ids_cache' ] );
 	}
@@ -113,6 +113,8 @@ class Cache extends Site_Options {
 	 *
 	 * @since 2.8.0
 	 * @since 3.0.0 Process is halted when no valid $post_id is supplied.
+	 * @since 4.1.3 Now flushes the sitemap cache (and instigates pinging thereof)
+	 *              even when TSF sitemaps are disabled.
 	 *
 	 * @param int $post_id The Post ID that has been updated.
 	 * @return bool True on success, false on failure.
@@ -123,13 +125,11 @@ class Cache extends Site_Options {
 
 		$success[] = $this->delete_cache( 'post', $post_id );
 
-		if ( $this->get_option( 'sitemaps_output' ) ) {
-			//* Don't flush sitemap on revision.
-			if ( ! \wp_is_post_revision( $post_id ) )
-				$success[] = $this->delete_cache( 'sitemap' );
-		}
+		// Don't flush sitemap on revision.
+		if ( ! \wp_is_post_revision( $post_id ) )
+			$success[] = $this->delete_cache( 'sitemap' );
 
-		return ! in_array( false, $success, true );
+		return ! \in_array( false, $success, true );
 	}
 
 	/**
@@ -220,7 +220,7 @@ class Cache extends Site_Options {
 							break;
 
 						default:
-							//* Generic key for CPT.
+							// Generic key for CPT.
 							$post_type = 'singular';
 							break;
 					}
@@ -230,7 +230,7 @@ class Cache extends Site_Options {
 				}
 				break;
 
-			//* Careful, this can only run on archive pages. For now.
+			// Careful, this can only run on archive pages. For now.
 			case 'term':
 				$this->object_cache_delete( $this->get_meta_output_cache_key_by_type( $id, $args['term'], 'term' ) );
 				$success = true;
@@ -336,6 +336,8 @@ class Cache extends Site_Options {
 	 * If the transient does not exists, does not have a value or has expired,
 	 * or transients have been disabled through a constant, then the transient
 	 * will be false.
+	 *
+	 * N.B. not all transient settings make use of this function, bypassing the constant check.
 	 *
 	 * @since 2.6.0
 	 * @uses $this->the_seo_framework_use_transients
@@ -482,7 +484,7 @@ class Cache extends Site_Options {
 		if ( isset( $cached_id[ $page_id ][ $taxonomy ] ) )
 			return $cached_id[ $page_id ][ $taxonomy ];
 
-		//* Placeholder ID.
+		// Placeholder ID.
 		$the_id = '';
 		$_t     = $taxonomy;
 
@@ -516,7 +518,7 @@ class Cache extends Site_Options {
 					} elseif ( $this->is_month() ) {
 						$the_id .= 'month_' . \mysql2date( 'm_y', $date, false );
 					} elseif ( $this->is_day() ) {
-						//* Day. The correct notation.
+						// Day. The correct notation.
 						$the_id .= 'day_' . \mysql2date( 'd_m_y', $date, false );
 					}
 				} else {
@@ -527,19 +529,19 @@ class Cache extends Site_Options {
 					if ( ! isset( $unix ) )
 						$unix = time();
 
-					//* Temporarily disable caches to prevent database spam.
+					// Temporarily disable caches to prevent database spam.
 					$this->the_seo_framework_use_transients = false;
 					$this->use_object_cache                 = false;
 
 					$the_id = 'unix_' . $unix;
 				}
 			} else {
-				//* Other taxonomical archives.
+				// Other taxonomical archives.
 
 				if ( empty( $_t ) ) {
 					$post_type = \get_query_var( 'post_type' );
 
-					if ( is_array( $post_type ) )
+					if ( \is_array( $post_type ) )
 						reset( $post_type );
 
 					if ( $post_type )
@@ -549,7 +551,7 @@ class Cache extends Site_Options {
 						$_t = $post_type_obj->labels->name;
 				}
 
-				//* Still empty? Try this.
+				// Still empty? Try this.
 				if ( empty( $_t ) )
 					$_t = \get_query_var( 'taxonomy' );
 
@@ -558,7 +560,7 @@ class Cache extends Site_Options {
 				$the_id = 'archives_' . $the_id;
 			}
 		} elseif ( ( $this->is_real_front_page() || $this->is_front_page_by_id( $page_id ) ) || ( \is_admin() && $this->is_seo_settings_page( true ) ) ) {
-			//* Front/HomePage.
+			// Front/HomePage.
 			$the_id = $this->generate_front_page_cache_key();
 		} elseif ( $this->is_blog_page( $page_id ) ) {
 			$the_id = 'blog_' . $page_id;
@@ -584,10 +586,10 @@ class Cache extends Site_Options {
 					break;
 			endswitch;
 		} elseif ( $this->is_search() ) {
-			//* Remove spaces, jumble with md5, Limit to 12 chars.
+			// Remove spaces, jumble with md5, Limit to 12 chars.
 			$query = \esc_sql( substr( md5( str_replace( ' ', '', \get_search_query( true ) ) ), 0, 12 ) );
 
-			//* Temporarily disable caches to prevent database spam.
+			// Temporarily disable caches to prevent database spam.
 			$this->the_seo_framework_use_transients = false;
 			$this->use_object_cache                 = false;
 
@@ -616,6 +618,7 @@ class Cache extends Site_Options {
 	 *
 	 * @since 2.9.1
 	 * @since 2.9.2 Now returns false when an incorrect $type is supplied.
+	 * @since 4.1.2 Now accepts $type 'sitemap_lock'.
 	 * @see $this->generate_cache_key().
 	 * @see $this->generate_cache_key_by_query() to get cache key from the query.
 	 *
@@ -642,6 +645,8 @@ class Cache extends Site_Options {
 				return $this->add_cache_key_suffix( $this->generate_taxonomical_cache_key( $page_id, $taxonomy ) );
 			case 'ping':
 				return $this->add_cache_key_suffix( 'tsf_throttle_ping' );
+			case 'sitemap_lock':
+				return $this->add_cache_key_suffix( 'tsf_sitemap_lock' );
 			default:
 				$this->_doing_it_wrong( __METHOD__, 'Third parameter must be a known type.', '2.6.5' );
 				return $this->add_cache_key_suffix( \esc_sql( $type . '_' . $page_id . '_' . $taxonomy ) );
@@ -701,10 +706,10 @@ class Cache extends Site_Options {
 
 		if ( false !== strpos( $taxonomy, '_' ) ) {
 			$taxonomy_name = explode( '_', $taxonomy );
-			if ( is_array( $taxonomy_name ) ) {
+			if ( \is_array( $taxonomy_name ) ) {
 				foreach ( $taxonomy_name as $name ) {
-					if ( strlen( $name ) >= 3 ) {
-						$the_id .= substr( $name, 0, 3 ) . '_';
+					if ( \strlen( $name ) >= 3 ) {
+						$the_id .= \substr( $name, 0, 3 ) . '_';
 					} else {
 						$the_id = $name . '_';
 					}
@@ -713,7 +718,7 @@ class Cache extends Site_Options {
 		}
 
 		if ( ! $the_id ) {
-			if ( strlen( $taxonomy ) >= 6 ) {
+			if ( \strlen( $taxonomy ) >= 6 ) {
 				$the_id = substr( $taxonomy, 0, 6 );
 			} else {
 				$the_id = $taxonomy;
@@ -722,7 +727,7 @@ class Cache extends Site_Options {
 
 		$the_id = strtolower( \esc_sql( $the_id ) );
 
-		//* Put it all together.
+		// Put it all together.
 		return rtrim( $the_id, '_' ) . '_' . $page_id;
 	}
 
@@ -815,26 +820,40 @@ class Cache extends Site_Options {
 	 * @since 2.2.9
 	 * @since 2.8.0 Now listens to option 'cache_sitemap' before deleting transient.
 	 * @since 2.8.2 Added cache to prevent duplicated flushes.
+	 * @since 4.1.1 Now fires an action.
 	 *
 	 * @return bool True on success, false on failure.
 	 */
 	public function delete_sitemap_transient() {
 
-		static $run = false;
-
-		if ( $run )
-			return false;
+		if ( _has_run( __METHOD__ ) ) return false;
 
 		$transient = $this->get_sitemap_transient_name();
 		$transient and \delete_transient( $transient );
 
-		if ( $this->get_option( 'ping_use_cron' ) ) {
+		$ping_use_cron           = $this->get_option( 'ping_use_cron' );
+		$ping_use_cron_prerender = $this->get_option( 'ping_use_cron_prerender' );
+
+		/**
+		 * @since 4.1.1
+		 * @since 4.1.2 Added index `ping_use_cron_prerender` to the first parameter.
+		 * @param array $params Any useful environment parameters.
+		 */
+		\do_action(
+			'the_seo_framework_sitemap_transient_cleared',
+			[
+				'ping_use_cron'           => $ping_use_cron,
+				'ping_use_cron_prerender' => $ping_use_cron_prerender,
+			]
+		);
+
+		if ( $ping_use_cron ) {
 			\The_SEO_Framework\Bridges\Ping::engage_pinging_cron();
 		} else {
 			\The_SEO_Framework\Bridges\Ping::ping_search_engines();
 		}
 
-		return $run = true;
+		return true;
 	}
 
 	/**
@@ -871,6 +890,7 @@ class Cache extends Site_Options {
 			foreach ( [ 'archive', 'search' ] as $key ) {
 				array_walk(
 					$cache[ $key ],
+					// Performance: This won't be cached completely by OpCache, but we cache the results, anyway.
 					function( &$v ) {
 						if ( isset( $v->meta_value, $v->post_id ) && $v->meta_value ) {
 							$v = (int) $v->post_id;

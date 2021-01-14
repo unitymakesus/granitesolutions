@@ -1,25 +1,25 @@
-import React, { Component, Fragment } from 'react'
-import InlineEditor from 'components/inline-editor'
-import { NotificationsManager } from 'builder/notifications'
-import { SVGSymbols } from './svg'
+import React from 'react'
+import { useSystemState } from 'data'
+import { NotificationsManager } from './notifications'
+import InlineEditor from './inline-editor'
+import { HelpPanel } from './help-panel'
+import { SVGSymbols } from './art'
+import Workspace from './workspace'
+import './assistant'
 
-/**
- * Class for rendering all of the main
- * builder UI components.
- *
- * @since 2.1
- * @class UI
- */
-class UI extends Component {
-	render() {
-		return (
-			<Fragment>
-				<InlineEditor />
-				<NotificationsManager />
-				<SVGSymbols />
-			</Fragment>
-		)
-	}
+const UI = () => {
+	const { isEditing } = useSystemState()
+	return (
+		<>
+			<InlineEditor />
+			<SVGSymbols />
+			<NotificationsManager />
+			{ isEditing && <>
+				<HelpPanel />
+				<Workspace />
+			</> }
+		</>
+	)
 }
 
 export default UI

@@ -6,7 +6,7 @@
 
 namespace The_SEO_Framework;
 
-defined( 'THE_SEO_FRAMEWORK_PRESENT' ) or die;
+\defined( 'THE_SEO_FRAMEWORK_PRESENT' ) or die;
 
 /**
  * The SEO Framework plugin
@@ -472,7 +472,7 @@ final class Deprecated {
 		if ( isset( $term[ $id ] ) )
 			return $term[ $id ];
 
-		//* Return null if no term can be detected.
+		// Return null if no term can be detected.
 		if ( false === $tsf->is_archive() )
 			return false;
 
@@ -489,7 +489,7 @@ final class Deprecated {
 				$term[ $id ] = \get_term_by( 'slug', \get_query_var( 'term' ), \get_query_var( 'taxonomy' ) );
 			} elseif ( \is_post_type_archive() ) {
 				$post_type = \get_query_var( 'post_type' );
-				$post_type = is_array( $post_type ) ? reset( $post_type ) : $post_type;
+				$post_type = \is_array( $post_type ) ? reset( $post_type ) : $post_type;
 
 				$term[ $id ] = \get_post_type_object( $post_type );
 			}
@@ -522,7 +522,7 @@ final class Deprecated {
 
 		$tsf->_deprecated_function( 'the_seo_framework()->get_custom_field()', '4.0.0', 'the_seo_framework()->get_post_meta_item()' );
 
-		//* If field is falsesque, get_post_meta() will return an array.
+		// If field is falsesque, get_post_meta() will return an array.
 		if ( ! $field )
 			return false;
 
@@ -536,12 +536,12 @@ final class Deprecated {
 
 		$custom_field = \get_post_meta( $post_id, $field, true );
 
-		//* If custom field is empty, empty cache..
+		// If custom field is empty, empty cache..
 		if ( empty( $custom_field ) )
 			$field_cache[ $field ][ $post_id ] = '';
 
-		//* Render custom field, slashes stripped, sanitized if string
-		$field_cache[ $field ][ $post_id ] = is_array( $custom_field ) ? \stripslashes_deep( $custom_field ) : stripslashes( $custom_field );
+		// Render custom field, slashes stripped, sanitized if string
+		$field_cache[ $field ][ $post_id ] = \is_array( $custom_field ) ? \stripslashes_deep( $custom_field ) : stripslashes( $custom_field );
 
 		return $field_cache[ $field ][ $post_id ];
 	}
@@ -743,7 +743,7 @@ final class Deprecated {
 
 		$ids = [];
 
-		if ( function_exists( '\\The_SEO_Framework\\_get_product_gallery_image_details' ) ) {
+		if ( \function_exists( '\\The_SEO_Framework\\_get_product_gallery_image_details' ) ) {
 			foreach ( \The_SEO_Framework\_get_product_gallery_image_details() as $details ) {
 				$ids[] = $details['id'];
 			}
@@ -783,7 +783,7 @@ final class Deprecated {
 
 		\the_seo_framework()->_deprecated_function( 'the_seo_framework()->get_site_icon()', '4.0.0' );
 
-		$size = is_string( $size ) ? $size : 'full';
+		$size = \is_string( $size ) ? $size : 'full';
 
 		return \The_SEO_Framework\Builders\Images::get_site_icon_image_details( null, $size )->current()['url'];
 	}

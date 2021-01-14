@@ -67,7 +67,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 						$id      = $name . '-' . $option_value;
 						$checked = '';
 						if ( is_array( $value ) ) {
-							$checked = ( null !== $value ) ? checked( in_array( $option_value, $value, true ), true, false ) : '';
+							$checked = checked( in_array( strval( $option_value ), $value, true ), true, false );
 						}
 
 						$input = sprintf( '<input type="checkbox" id="%1$s" name="%2$s[]" value="%3$s" %4$s %5$s />', $id, $name, $option_value, $checked, matador_build_attributes( $attributes ) );
